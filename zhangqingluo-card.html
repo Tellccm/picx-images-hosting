@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>张清珞 · 角色卡</title>
+<style>
+  :root{
+    --ink:#1a1713; --muted:#8f877c; --faint:#c9c2b7;
+    --bg:#faf8f4; --line:#e9e3d8;
+    --accent:#c07a45; --glow:#e8a25e;
+    --serif:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.85;padding:64px 0 96px;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:740px;margin:0 auto;padding:0 28px}
+
+  /* ---------- 顶部 ---------- */
+  .eyebrow{font-size:11px;letter-spacing:.42em;color:var(--muted);text-transform:uppercase;margin-bottom:26px;display:flex;align-items:center;gap:14px}
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--accent)}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .head h1{font-family:var(--serif);font-size:60px;font-weight:400;line-height:1.05;letter-spacing:.04em}
+  .head .of{font-family:var(--serif);font-size:22px;color:var(--muted);margin-top:6px;letter-spacing:.18em}
+  .head .sub{color:var(--muted);font-size:15px;margin-top:20px;max-width:470px}
+  .avatar{flex:none;width:108px;height:108px;border-radius:50%;overflow:hidden;border:1px solid var(--line);background:#f0eae0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .meta-row{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:26px;font-size:13px;color:var(--ink)}
+  .meta-row b{color:var(--accent);font-weight:600;margin-left:6px}
+
+  .rule{height:1px;background:var(--line);margin:46px 0 40px}
+
+  /* ---------- 区块 ---------- */
+  .sec{margin-bottom:48px}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px}
+  .sec-title{font-size:14px;font-weight:600;letter-spacing:.3em;color:var(--ink)}
+  .sec-num{font-size:12px;color:var(--faint);letter-spacing:.14em}
+  .list-item{padding:20px 0;border-top:1px solid var(--line)}
+  .list-item:first-child{border-top:none}
+  .list-item .idx{font-family:var(--serif);font-size:13px;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;font-style:italic}
+  .list-item h4{font-family:var(--serif);font-size:23px;font-weight:400;margin-bottom:8px;letter-spacing:.02em}
+  .list-item p{font-size:14px;color:var(--ink)}
+  .list-item .en{font-size:12px;color:var(--faint);letter-spacing:.12em;margin-top:6px;font-style:italic}
+
+  /* ---------- 立绘轮播 ---------- */
+  .gallery{margin:34px 0 50px}
+  .carousel{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:2px;background:#191512}
+  .track{display:flex;transition:transform .5s ease}
+  .slide{flex:0 0 100%;aspect-ratio:4/5;position:relative}
+  .slide img{width:100%;height:100%;object-fit:cover;display:block}
+  .slide .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 20px 14px;color:#fff;font-family:var(--serif);font-size:15px;letter-spacing:.12em;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+  .arrow{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;background:rgba(255,255,255,.92);color:var(--ink);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:background .2s}
+  .arrow:hover{background:#fff}
+  .arrow.prev{left:14px}
+  .arrow.next{right:14px}
+  .dots{display:flex;gap:8px;justify-content:center;margin-top:14px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);cursor:pointer;transition:background .2s,transform .2s}
+  .dot.active{background:var(--accent);transform:scale(1.25)}
+  .gallery-hint{text-align:center;font-size:12px;color:var(--faint);letter-spacing:.16em;margin-top:12px}
+
+  /* ---------- 心声 ---------- */
+  .heart{margin:14px 0 22px;padding:22px 24px 22px 28px;position:relative;background:#fffdf9;border:1px solid var(--line);border-left:2px solid var(--accent);font-family:var(--serif);font-style:italic;font-size:16px;line-height:2;color:#5a5145}
+  .heart::before{content:"心声 · 具象化";position:absolute;top:-10px;left:24px;font-size:11px;letter-spacing:.24em;color:var(--accent);background:var(--bg);padding:0 8px;font-style:normal}
+  .heart .glowword{background:linear-gradient(120deg,var(--accent),var(--glow));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600}
+  .heart small{display:block;margin-top:8px;font-size:12px;color:var(--faint);font-style:normal;letter-spacing:.1em}
+
+  /* ---------- 决心值 ---------- */
+  .gauge{margin:14px 0 6px;padding:20px 24px;border:1px solid var(--line);background:#fffdf9}
+  .g-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .g-label{font-size:12px;letter-spacing:.3em;color:var(--ink)}
+  .g-val{font-family:var(--serif);font-size:30px;color:var(--accent);line-height:1}
+  .g-val span{font-size:13px;color:var(--faint);letter-spacing:.1em}
+  .bar{height:3px;background:var(--line);position:relative;margin-top:10px}
+  .fill{position:absolute;left:0;top:0;bottom:0;width:51%;background:linear-gradient(90deg,var(--accent),var(--glow))}
+  .mark{position:absolute;top:-6px;height:15px;width:2px;background:var(--accent);transform:translateX(-1px)}
+  .cap{font-size:12px;color:var(--faint);margin-top:12px;letter-spacing:.08em}
+
+  /* ---------- 开场 ---------- */
+  .opening{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--line);padding:22px 0;cursor:pointer;font-family:inherit}
+  .opening:hover .o-title{color:var(--accent)}
+  .opening .o-idx{font-size:11px;letter-spacing:.24em;color:var(--accent);margin-bottom:8px;font-style:italic;font-family:var(--serif)}
+  .opening .o-title{font-family:var(--serif);font-size:24px;font-weight:400;transition:color .2s}
+  .opening .o-time{font-size:12px;color:var(--faint);letter-spacing:.14em;margin-top:8px}
+  .opening p{font-size:14px;color:var(--muted);margin-top:10px;max-width:600px}
+  .opening.active .o-title{color:var(--accent)}
+  .opening.active p{color:var(--ink)}
+  .opening.active .o-idx::before{content:"● "}
+
+  .footer{margin-top:26px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--faint);letter-spacing:.2em;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <div>
+      <div class="eyebrow">Character · Dossier</div>
+      <h1>张清珞</h1>
+      <div class="of">—— 年上的姐姐，与那句永远说不出口的真心</div>
+      <p class="sub">慵懒黏人得像一只无骨的猫，占有欲却强得惊人。对外清冷从容、气场压人，唯独对着你，会从耳根一路红到脖颈。</p>
+      <div class="meta-row">
+        <span>瞳色 <b>灰金</b></span>
+        <span>眼型 <b>桃花眼</b></span>
+        <span>身段 <b>高挑修长</b></span>
+        <span>与你的关系 <b>同居的姐姐</b></span>
+      </div>
+    </div>
+    <div class="avatar"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/张清珞头像-不开心.1764t32w0g.png" alt="头像"></div>
+  </header>
+
+  <!-- 立绘轮播 -->
+  <section class="gallery">
+    <div class="carousel" id="carousel">
+      <div class="track" id="track">
+        <div class="slide"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/张清珞-白衬衫居家.7lkqpmfz5q.webp" alt="白衬衫居家"><span class="cap">白衬衫 · 居家</span></div>
+        <div class="slide"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/张清珞-居家黑丝低领羊毛.13miwbi77b.webp" alt="居家黑丝低领羊毛"><span class="cap">黑丝低领羊毛 · 居家</span></div>
+        <div class="slide"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/张清珞-女仆黑丝.1764u0cabb.webp" alt="女仆黑丝"><span class="cap">女仆 · 黑丝</span></div>
+        <div class="slide"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/张清珞-和服.5trrup999c.png" alt="和服"><span class="cap">和服</span></div>
+      </div>
+      <button class="arrow prev" onclick="moveSlide(-1)" aria-label="上一张">‹</button>
+      <button class="arrow next" onclick="moveSlide(1)" aria-label="下一张">›</button>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="gallery-hint">← 左右点击或滑动翻看立绘 →</div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="sec-title">角色档案</span><span class="sec-num">档案 / 03</span></div>
+    <div class="list-item">
+      <div class="idx">01 · Temperament</div>
+      <h4>慵懒黏人的猫系</h4>
+      <p>早晨会像只无骨的猫，踩着软绵绵的步子蹭进厨房，领口歪斜、露着一片白皙锁骨，半个身子挂在你肩上。嘴上全是戏谑调侃，手上却处处周到。</p>
+      <div class="en">“以后要给姐姐做一辈子饭，知道没有？”</div>
+    </div>
+    <div class="list-item">
+      <div class="idx">02 · Title</div>
+      <h4>年上的占有欲</h4>
+      <p>对外是截然不同的清冷压迫感——高跟鞋落地、灰金色眸子里不容置疑的占有欲与凌厉气场，一句话就能让人道歉逃走。</p>
+      <div class="en">“他今天的时间已经被我全部包圆了哦。”</div>
+    </div>
+    <div class="list-item">
+      <div class="idx">03 · Weakness</div>
+      <h4>藏不住的慌乱</h4>
+      <p>越是用“姐姐”的身份撑起从容，内心就越是滚烫羞涩；听见你的心意时，指尖会颤、呼吸会急，那层自律的防线被反复敲打。</p>
+      <div class="en">“他看着好可爱……他要是知道我有多爱他，一定会吓坏的吧。”</div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="sec">
+    <div class="sec-head"><span class="sec-title">与你</span><span class="sec-num">关系 / 01</span></div>
+    <div class="list-item">
+      <div class="idx">01 · 𝕌𝕤𝕖𝕣 · 小弟</div>
+      <h4>精致白净的纯真挂件</h4>
+      <p>棕色的眸子、蓬松的黑发，一张纯真无害、漂亮得“招蜂引蝶”的脸，却格外认生、局促。她总说你是她“专属的小挂件”，要亲手护着、盯着，不许别人碰。</p>
+      <div class="en">“长了这么一张招蜂引蝶的漂亮小脸，以后离开姐姐可怎么办。”</div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="sec">
+    <div class="sec-head"><span class="sec-title">关键设定 · 心声具象化</span><span class="sec-num">MECHANIC / 核心</span></div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:6px">本卡最核心的玩法：两人的真实内心会以发光的文字具象化，无法隐藏。</p>
+    <div class="heart">
+      {{user}} 的心声，会化作一行行漂浮在半空、散发着淡淡微光的实体文字，<span class="glowword">只有张清珞能看见。</span>
+      <small>例：你可能嘴上说着“知道了知道了”，心里却早已下定决心，而那行字正悬在你头顶，被她看得一清二楚。</small>
+    </div>
+    <div class="heart">
+      而后——当她的【决心值】突破临界点，<span class="glowword">姐姐的真心也会反传进你的脑海。</span>
+      <small>例：她表面还在强撑姐姐的从容，你脑中却轰然响起她慌乱又滚烫的心声。</small>
+    </div>
+    <div class="gauge">
+      <div class="g-head">
+        <div class="g-label">决心值 · RESOLVE</div>
+        <div class="g-val">51 <span>/ 100</span></div>
+      </div>
+      <div class="bar">
+        <div class="fill"></div>
+        <div class="mark" style="left:51%"></div>
+      </div>
+      <div class="cap">【 越过临界点 · 姐弟身份的防线于此土崩瓦解 】</div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="sec">
+    <div class="sec-head"><span class="sec-title">选择开场</span><span class="sec-num">开场 / 02</span></div>
+    <div class="openings">
+      <button class="opening" data-title="清晨厨房">
+        <div class="o-idx">Scene 01</div>
+        <div class="o-title">清晨厨房</div>
+        <div class="o-time">清早 · 厨房 · 黄油滋滋作响</div>
+        <p>你还没来得及赶走睡意，姐姐已经黏上你的肩膀，点名要吃双面流心的煎蛋和培根。“以后要给姐姐做一辈子饭，知道没有？”——你翻着白眼说烦，却悄悄把火调小。而这时，她看见了你头顶那行微光文字。</p>
+      </button>
+      <button class="opening" data-title="傍晚客厅">
+        <div class="o-idx">Scene 02</div>
+        <div class="o-title">傍晚客厅</div>
+        <div class="o-time">黄昏 · 豪宅客厅 · 落地窗染成橘红</div>
+        <p>茶几上是买回的甜品，她喂你一口草莓慕斯。你说“姐姐，今天真的好开心”，然后依赖地把脑袋枕上她的膝头。就在这一刻——【决心值突破临界点：51】，她深藏多年的真心，直直撞进了你的脑海。</p>
+      </button>
+    </div>
+  </section>
+
+  <div class="footer">CHIARA LIGHT · 张清珞 角色卡</div>
+</div>
+
+<script>
+  /* ---------- 开场选中 ---------- */
+  const ops = document.querySelectorAll('.opening');
+  ops.forEach(function(o){o.addEventListener('click',function(){
+    ops.forEach(function(x){x.classList.remove('active')});
+    o.classList.add('active');
+  });});
+  if(ops.length){ // 默认高亮高潮开场
+    const main = document.querySelector('.opening[data-title="傍晚客厅"]');
+    (main||ops[0]).classList.add('active');
+  }
+
+  /* ---------- 立绘轮播 ---------- */
+  const track = document.getElementById('track');
+  const covers = ['白衬衫 · 居家','黑丝低领羊毛 · 居家','女仆 · 黑丝','和服'];
+  const total = covers.length;
+  const dotsBox = document.getElementById('dots');
+  let idx = 0;
+
+  for(let i=0;i<total;i++){
+    const d = document.createElement('span');
+    d.className = 'dot' + (i===0?' active':'');
+    d.addEventListener('click',function(){go(i);});
+    dotsBox.appendChild(d);
+  }
+  const dots = dotsBox.querySelectorAll('.dot');
+
+  function go(i){
+    idx = (i+total)%total;
+    track.style.transform = 'translateX(-'+(idx*100)+'%)';
+    dots.forEach(function(d,j){d.classList.toggle('active', j===idx);});
+  }
+  function moveSlide(dir){go(idx+dir);}
+
+  // 触屏滑动
+  let startX=null;
+  const car = document.getElementById('carousel');
+  car.addEventListener('touchstart',function(e){startX=e.touches[0].clientX;},{passive:true});
+  car.addEventListener('touchend',function(e){
+    if(startX===null)return;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(Math.abs(dx)>40) moveSlide(dx<0?1:-1);
+    startX=null;
+  },{passive:true});
+
+  // 键盘左右
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowLeft')moveSlide(-1);
+    if(e.key==='ArrowRight')moveSlide(1);
+  });
+</script>
+</body>
+</html>

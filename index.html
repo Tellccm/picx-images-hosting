@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>张清珞 · 加载入口</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#faf8f4;min-height:100vh}
+  body > .wrap{max-width:740px;margin:0 auto;padding:0 28px}
+</style>
+</head>
+<body>
+  <!-- 将卡页远程拉入并执行（同开头那段 .load 的写法） -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script>
+    $('body').load('https://cdn.jsdelivr.net/gh/Tellccm/tallccm-cards@master/zhangqingluo-card.html')
+  </script>
+</body>
+</html>
