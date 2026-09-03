@@ -4,6 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>张清珞 · 角色卡</title>
+<script>
+  /* 酒馆 TavernHelper 桥：点击开场 = 切换到对应 swipe（酒馆原生机制，无需 SillyQR） */
+  (function (global) {
+    'use strict';
+    function scope(name) {
+      const candidates = [global];
+      try { if (global.parent && global.parent !== global) candidates.push(global.parent); } catch (_) {}
+      try { if (global.top && !candidates.includes(global.top)) candidates.push(global.top); } catch (_) {}
+      for (const candidate of candidates) {
+        try { if (candidate && candidate[name] !== undefined) return candidate[name]; } catch (_) {}
+      }
+      return undefined;
+    }
+    function helperCall(name) {
+      const helper = scope('TavernHelper');
+      if (helper && typeof helper[name] === 'function') return helper[name].bind(helper);
+      const direct = scope(name);
+      return typeof direct === 'function' ? direct : null;
+    }
+    async function selectGreeting(swipeId) {
+      const index = Number(swipeId);
+      if (!Number.isInteger(index) || index < 1) throw new Error('开场编号无效');
+      const getMessages = helperCall('getChatMessages');
+      const setMessage = helperCall('setChatMessage');
+      if (!getMessages || !setMessage) throw new Error('当前运行环境不支持开场切换（请在酒馆聊天中点击）');
+      const messages = await getMessages('0', { include_swipes: true });
+      const first = messages && messages[0];
+      if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) throw new Error('所选开场不存在，请确认卡片已导入 alternate greetings');
+      return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
+    }
+    global.ZhangQingLuoBridgeV1 = Object.freeze({ version: 1, selectGreeting });
+  })(globalThis);
+</script>
 <style>
   :root{
     --ink:#1a1713; --muted:#8f877c; --faint:#c9c2b7;
@@ -192,35 +225,53 @@
   <section class="sec">
     <div class="sec-head"><span class="sec-title">选择开场</span><span class="sec-num">开场 / 02</span></div>
     <div class="openings">
-      <button class="opening" data-title="清晨厨房">
+      <button class="opening" type="button" data-swipe="1" data-title="清晨厨房">
         <div class="o-idx">Scene 01</div>
         <div class="o-title">清晨厨房</div>
         <div class="o-time">清早 · 厨房 · 黄油滋滋作响</div>
         <p>你还没来得及赶走睡意，姐姐已经黏上你的肩膀，点名要吃双面流心的煎蛋和培根。“以后要给姐姐做一辈子饭，知道没有？”——你翻着白眼说烦，却悄悄把火调小。而这时，她看见了你头顶那行微光文字。</p>
       </button>
-      <button class="opening" data-title="傍晚客厅">
+      <button class="opening" type="button" data-swipe="2" data-title="傍晚客厅">
         <div class="o-idx">Scene 02</div>
         <div class="o-title">傍晚客厅</div>
         <div class="o-time">黄昏 · 豪宅客厅 · 落地窗染成橘红</div>
         <p>茶几上是买回的甜品，她喂你一口草莓慕斯。你说“姐姐，今天真的好开心”，然后依赖地把脑袋枕上她的膝头。就在这一刻——【决心值突破临界点：51】，她深藏多年的真心，直直撞进了你的脑海。</p>
       </button>
     </div>
+    <div class="opening-status" style="display:none;margin-top:12px;padding:10px 16px;border:1px solid var(--line);border-radius:12px;background:#fffdf9;font-size:13.5px;color:var(--muted);text-align:center;">…</div>
   </section>
 
   <div class="footer">CHIARA LIGHT · 张清珞 角色卡</div>
 </div>
 
 <script>
-  /* ---------- 开场选中 ---------- */
+  /* ---------- 开场选中：点击 → 通过 TavernHelper 切换对应 swipe ---------- */
   const ops = document.querySelectorAll('.opening');
-  ops.forEach(function(o){o.addEventListener('click',function(){
-    ops.forEach(function(x){x.classList.remove('active')});
-    o.classList.add('active');
-  });});
-  if(ops.length){ // 默认高亮高潮开场
-    const main = document.querySelector('.opening[data-title="傍晚客厅"]');
-    (main||ops[0]).classList.add('active');
-  }
+  const status = document.querySelector('.opening-status');
+  const showStatus = function(txt, isError){
+    if(!status) return;
+    status.style.display = 'block';
+    status.textContent = txt;
+    status.style.color = isError ? '#c0392b' : 'var(--muted)';
+  };
+  ops.forEach(function(o){
+    o.addEventListener('click', async function(){
+      const swipeId = Number(o.dataset.swipe);
+      ops.forEach(function(x){ x.classList.remove('active'); x.disabled = true; });
+      o.classList.add('active');
+      showStatus('正在进入开场 ' + String(swipeId).padStart(2,'0') + '……');
+      try {
+        const bridge = globalThis.ZhangQingLuoBridgeV1 || {};
+        if (typeof bridge.selectGreeting !== 'function') throw new Error('开场桥接尚未就绪');
+        await bridge.selectGreeting(swipeId);
+        showStatus('✅ 开场已切换，请查看上方开场白');
+      } catch (err) {
+        showStatus('⚠️ ' + (err && err.message ? err.message : '切换开场失败') + '（若在浏览器中直接打开，此为正常提示；请在酒馆聊天中点击）', true);
+      } finally {
+        ops.forEach(function(x){ x.disabled = false; });
+      }
+    });
+  });
 
   /* ---------- 立绘轮播 ---------- */
   const track = document.getElementById('track');
