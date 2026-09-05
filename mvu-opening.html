@@ -510,7 +510,7 @@ function renderSum(){
     '<div class="r"><span class="k">对应槽位</span><b>槽位 ' + slotOf() + '</b></div>';
 }
 
-/* ---------- 变量同步（跳转后写楼层 user 姓名/总成绩） ---------- */
+/* ---------- 变量同步（跳转后写楼层 user 姓名/总成绩，含防覆盖重试） ---------- */
 function findWin(pred){
   var w = window, depth = 0;
   while (w && depth < 12) {
@@ -527,24 +527,36 @@ function gl(name){
 function patchMvu(name, score){
   var M = gl('Mvu');
   if (!M) { return; }
-  var mids = ['latest', 0], done = 0;
-  mids.forEach(function (mid) {
-    try {
-      var data = M.getMvuData({ type: 'message', message_id: mid });
-      if (data && data.stat_data && data.stat_data.user) {
-        var u = data.stat_data.user;
-        if (name) { u['姓名'] = name; }
-        u['总成绩值'] = clamp(Math.round(score) || 230, 0, 750);
-        M.replaceMvuData(data, { type: 'message', message_id: mid }).then(function () {
-          done++;
-          if (done >= 2) {
-            try { window.dispatchEvent(new Event('mag_variable_update_ended')); } catch (e) {}
-            try { if (window.parent) { window.parent.dispatchEvent(new Event('mag_variable_update_ended')); } } catch (e) {}
-          }
-        }).catch(function () { done++; });
-      } else { done++; }
-    } catch (e) { done++; }
-  });
+  var lastWrite = 0;
+  function writeOnce(){
+    var now = Date.now();
+    if (now - lastWrite < 800) { return; }
+    lastWrite = now;
+    ['latest', 0].forEach(function (mid) {
+      try {
+        var d = M.getMvuData({ type: 'message', message_id: mid });
+        if (d && d.stat_data && d.stat_data.user) {
+          var u = d.stat_data.user;
+          if (name) { u['姓名'] = name; }
+          u['总成绩值'] = clamp(Math.round(score) || 230, 0, 750);
+          M.replaceMvuData(d, { type: 'message', message_id: mid }).catch(function () {});
+        }
+      } catch (e) {}
+    });
+  }
+  writeOnce();
+  /* 楼层 schema 初始化在切换后可能才跑并覆盖默认值，故延时+事件伴随反复写回 */
+  var attempts = 0;
+  function reapply(){
+    writeOnce();
+    if (++attempts < 8) { setTimeout(reapply, 600); }
+  }
+  setTimeout(function () { reapply(); }, 600);
+  setTimeout(function () { reapply(); }, 1600);
+  try {
+    var pw = window.parent || window;
+    if (pw && pw.addEventListener) { pw.addEventListener('mag_variable_update_ended', writeOnce); }
+  } catch (e) {}
 }
 
 /* ============ 二次确认浮层（A5） ============ */
