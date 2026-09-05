@@ -279,6 +279,47 @@
 </div>
 
 <script>
+/* ============ 桥（TavernHelper）：切换消息 0 的开场白 swipe ============ */
+(function (global) {
+  'use strict';
+  function scope(name) {
+    var candidates = [global];
+    try { if (global.parent && global.parent !== global) { candidates.push(global.parent); } } catch (_) {}
+    try { if (global.top && candidates.indexOf(global.top) === -1) { candidates.push(global.top); } } catch (_) {}
+    for (var i = 0; i < candidates.length; i++) {
+      try { if (candidates[i] && candidates[i][name] !== undefined) { return candidates[i][name]; } } catch (_) {}
+    }
+    return undefined;
+  }
+  function helperCall(name) {
+    var h = scope('TavernHelper');
+    if (h && typeof h[name] === 'function') { return h[name].bind(h); }
+    var d = scope(name);
+    return typeof d === 'function' ? d : null;
+  }
+  async function selectGreeting(swipeId) {
+    var index = Number(swipeId);
+    if (!Number.isInteger(index) || index < 1) { throw new Error('开场编号无效'); }
+    var getMessages = helperCall('getChatMessages');
+    if (!getMessages) { throw new Error('当前环境不支持读取开场白（无 getChatMessages）'); }
+    var messages = await getMessages(0, { include_swipes: true });
+    var first = messages && messages[0];
+    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) {
+      throw new Error('所选开场不存在（槽位 ' + index + '）');
+    }
+    // 优先：酒馆助手风格 API setChatMessages([{message_id,swipe_id}])
+    var setMessages = helperCall('setChatMessages');
+    if (setMessages) { return setMessages([{ message_id: 0, swipe_id: index }]); }
+    // 次选：skill 风格 setChatMessage(text,0,{swipe_id,refresh})
+    var setMessage = helperCall('setChatMessage');
+    if (setMessage) { return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' }); }
+    throw new Error('当前环境不支持切换开场（找不到 setChatMessage/setChatMessages）');
+  }
+  global.MyCardBridgeV1 = Object.freeze({ version: 1, selectGreeting: selectGreeting });
+})(globalThis);
+</script>
+
+<script>
 /* ============ 集中配置（C11） ============ */
 var MOMS = {
   A: {
