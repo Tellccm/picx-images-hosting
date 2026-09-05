@@ -636,24 +636,31 @@ function runOnTop(fn, delay){
   try { top.setTimeout(fn, delay || 0); } catch (e) { try { setTimeout(fn, delay || 0); } catch (e2) {} }
 }
 function applyMain(score, name){
+  var M = gl('Mvu');
+  var target = clamp(Math.round(score) || 230, 0, 750);
+  var nameEsc = (name || '').replace(/['"\\]/g, '');
+  /* 首选：走真实 MVU 管道（parseMessage→replaceMvuData），该层不会被渲染校验覆盖 */
+  if (M && typeof M.parseMessage === 'function' && typeof M.getMvuData === 'function' && typeof M.replaceMvuData === 'function') {
+    var cmd = "_.set('user.总成绩值', " + target + ");" + (nameEsc ? "_.set('user.姓名', '" + nameEsc + "');" : "");
+    ['latest', 0].forEach(function (mid) {
+      try {
+        var old = M.getMvuData({ type: 'message', message_id: mid });
+        M.parseMessage(cmd, old).then(function (nw) {
+          if (nw) { try { M.replaceMvuData(nw, { type: 'message', message_id: mid }); } catch (e) {} }
+        }).catch(function () {});
+      } catch (e) {}
+    });
+    return true;
+  }
+  /* 兜底：主窗口 updateVariablesWith */
   var top = topWin();
   var setter = top.updateVariablesWith || null;
-  var target = clamp(Math.round(score) || 230, 0, 750);
   function mutate(v){
     v = v || {};
     var root = (v.stat_data && v.stat_data.user) ? v.stat_data : (v.user ? v : null);
     if (!root && v.stat_data) { root = v.stat_data; }
-    if (root) {
-      if (!root.user) { root.user = {}; }
-      var u = root.user;
-      if (name) { u['姓名'] = name; }
-      u['总成绩值'] = target;
-    } else {
-      if (!v.stat_data) { v.stat_data = {}; }
-      if (!v.stat_data.user) { v.stat_data.user = {}; }
-      if (name) { v.stat_data.user['姓名'] = name; }
-      v.stat_data.user['总成绩值'] = target;
-    }
+    if (root) { if (!root.user) { root.user = {}; } var u = root.user; if (nameEsc) { u['姓名'] = nameEsc; } u['总成绩值'] = target; }
+    else { if (!v.stat_data) { v.stat_data = {}; } if (!v.stat_data.user) { v.stat_data.user = {}; } if (nameEsc) { v.stat_data.user['姓名'] = nameEsc; } v.stat_data.user['总成绩值'] = target; }
     return v;
   }
   if (setter) {
@@ -663,36 +670,42 @@ function applyMain(score, name){
   return !!setter;
 }
 function reapplyMain(score, name){
-  /* 在主窗口调度，跨楼层切换仍存活；多次回写，最终一次生效 */
-  var delays = [400, 1000, 2000];
+  var delays = [500, 1200, 2400, 3600];
   delays.forEach(function (d) {
     runOnTop(function () { try { applyMain(score, name); } catch (e) {} }, d);
   });
 }
 function verifyMain(score){
-  var top = topWin();
-  var getter = top.getVariables || null;
+  var M = gl('Mvu');
   var target = clamp(Math.round(score) || 230, 0, 750);
   var guard = 0;
-  var fin = setInterval(function () {
-    guard++;
-    var val = null;
+  function readVal(){
     try {
+      if (M && typeof M.getMvuData === 'function') {
+        var d = M.getMvuData({ type: 'message', message_id: 0 });
+        if (d && d.stat_data && d.stat_data.user) { return d.stat_data.user['总成绩值']; }
+      }
+      var top = topWin(), getter = top.getVariables || null;
       if (getter) {
         var v = getter({ type: 'message', message_id: 0 });
-        if (v && v.stat_data && v.stat_data.user) { val = v.stat_data.user['总成绩值']; }
-        else if (v && v.user) { val = v.user['总成绩值']; }
+        if (v && v.stat_data && v.stat_data.user) { return v.stat_data.user['总成绩值']; }
+        if (v && v.user) { return v.user['总成绩值']; }
       }
     } catch (e) {}
+    return null;
+  }
+  var fin = setInterval(function () {
+    guard++;
+    var val = readVal();
     if (val !== null) {
       clearInterval(fin);
       if (Number(val) !== target) { notify('⚠ 成绩未同步：目标 ' + target + '，状态栏显示 ' + val, true); }
       else { notify('✓ 已确认状态栏成绩 = ' + val); }
-    } else if (guard > 10) {
+    } else if (guard > 12) {
       clearInterval(fin);
-      notify('⚠ 未能读取楼层总成绩（请打开酒馆变量面板核对）', true);
+      notify('⚠ 未能读取楼层总成绩（可在酒馆变量面板核对）', true);
     }
-  }, 900);
+  }, 800);
 }
 
 function finish(){
