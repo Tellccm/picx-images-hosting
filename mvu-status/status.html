@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>状态栏 UI（外链加载版，供 jQuery .load 拉取）</title>
+<style>
+/* ============================================================
+   状态栏 UI —— 外链加载版
+   使用方式：酒馆 MVU状态栏 正则的 replaceString 只放加载器：
+     <script>$(function(){ $('body').load('本文件的URL'); });</script>
+   本文件被 .load 拉入消息楼层文档后，<style> 生效、<script> 执行，
+   可直接使用该文档作用域内的 MVU 全局。
+   - 主题切换：纯 CSS（隐藏 radio + :has），无需脚本
+   - 变量填充：等 MVU 就绪 + 1.2s 兜底 + VARIABLE_UPDATE_ENDED/window 双事件
+   ============================================================ */
+
+/* ---------- 四套主题 token ---------- */
+.tk-status{ /* 默认 A 和纸·绯墨 */
+  --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
+  --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
+  --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a;
+  --tk-radius:10px; --tk-track:#ece5d8;
+}
+.tk-status:has(#tk-a:checked){ --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
+  --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
+  --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a; --tk-radius:10px; --tk-track:#ece5d8; }
+.tk-status:has(#tk-b:checked){ --tk-bg:#241f1a; --tk-bg-soft:#2f2822; --tk-line:#4a4035; --tk-line-strong:#6b5c47;
+  --tk-ink:#ece4d6; --tk-ink-2:#b8ab97; --tk-ink-3:#857766;
+  --tk-mom:#d8a95c; --tk-you:#9fb6c9; --tk-gold:#caa24f; --tk-radius:8px; --tk-track:#3a322a; }
+.tk-status:has(#tk-c:checked){ --tk-bg:#f3f5f7; --tk-bg-soft:#e9edf1; --tk-line:#d5dde3; --tk-line-strong:#b9c6cf;
+  --tk-ink:#33424f; --tk-ink-2:#5c6b78; --tk-ink-3:#8d9aa5;
+  --tk-mom:#b3545c; --tk-you:#3f6478; --tk-gold:#9a8c5f; --tk-radius:10px; --tk-track:#dfe6ea; }
+.tk-status:has(#tk-d:checked){ --tk-bg:#f4f2ea; --tk-bg-soft:#ebe7da; --tk-line:#dcd5c3; --tk-line-strong:#c2b896;
+  --tk-ink:#3a3a2e; --tk-ink-2:#6a6755; --tk-ink-3:#97917b;
+  --tk-mom:#8a6b3f; --tk-you:#4a6b57; --tk-gold:#a58a4b; --tk-radius:6px; --tk-track:#e2dccb; }
+html[data-theme="a"], .tk-status[data-theme="a"]{
+  --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
+  --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
+  --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a; --tk-radius:10px; --tk-track:#ece5d8; }
+html[data-theme="b"], .tk-status[data-theme="b"]{
+  --tk-bg:#241f1a; --tk-bg-soft:#2f2822; --tk-line:#4a4035; --tk-line-strong:#6b5c47;
+  --tk-ink:#ece4d6; --tk-ink-2:#b8ab97; --tk-ink-3:#857766;
+  --tk-mom:#d8a95c; --tk-you:#9fb6c9; --tk-gold:#caa24f; --tk-radius:8px; --tk-track:#3a322a; }
+html[data-theme="c"], .tk-status[data-theme="c"]{
+  --tk-bg:#f3f5f7; --tk-bg-soft:#e9edf1; --tk-line:#d5dde3; --tk-line-strong:#b9c6cf;
+  --tk-ink:#33424f; --tk-ink-2:#5c6b78; --tk-ink-3:#8d9aa5;
+  --tk-mom:#b3545c; --tk-you:#3f6478; --tk-gold:#9a8c5f; --tk-radius:10px; --tk-track:#dfe6ea; }
+html[data-theme="d"], .tk-status[data-theme="d"]{
+  --tk-bg:#f4f2ea; --tk-bg-soft:#ebe7da; --tk-line:#dcd5c3; --tk-line-strong:#c2b896;
+  --tk-ink:#3a3a2e; --tk-ink-2:#6a6755; --tk-ink-3:#97917b;
+  --tk-mom:#8a6b3f; --tk-you:#4a6b57; --tk-gold:#a58a4b; --tk-radius:6px; --tk-track:#e2dccb; }
+
+html, body{ margin:0; padding:0; }
+
+.tk-status { width:100%; box-sizing:border-box; font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; color:var(--tk-ink);
+  background:var(--tk-bg); border:1px solid var(--tk-line); border-radius:var(--tk-radius);
+  padding:14px 16px 12px; box-shadow:0 1px 0 rgba(64,56,44,.04) inset, 0 3px 10px rgba(64,56,44,.05); }
+.tk-status * { box-sizing:border-box; }
+.tk-radio{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+  overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
+
+.tk-head { display:flex; align-items:center; gap:10px; padding-bottom:9px; margin-bottom:11px;
+  border-bottom:1px solid var(--tk-line); }
+.tk-title { font-family:"Songti SC","STSong","SimSun",serif; font-size:15px; font-weight:700; letter-spacing:.18em; color:var(--tk-mom); }
+.tk-head-name { margin-left:auto; font-size:11px; letter-spacing:.12em; color:var(--tk-ink-2); }
+
+.tk-swatches { display:flex; gap:6px; margin-left:10px; align-items:center; }
+.tk-swatch { width:11px; height:11px; border-radius:50%; cursor:pointer; padding:0; border:1px solid rgba(0,0,0,.14);
+  background:var(--sw); opacity:.55; transition:transform .15s ease, opacity .15s ease; box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); }
+.tk-swatch:hover { transform:scale(1.18); opacity:.9; }
+.tk-swatch[data-theme="a"]{--sw:#a03a44}
+.tk-swatch[data-theme="b"]{--sw:#caa24f}
+.tk-swatch[data-theme="c"]{--sw:#3f6478}
+.tk-swatch[data-theme="d"]{--sw:#4a6b57}
+.tk-swatch.on, .tk-status:has(#tk-a:checked) .tk-swatch[data-theme="a"],
+.tk-status:has(#tk-b:checked) .tk-swatch[data-theme="b"],
+.tk-status:has(#tk-c:checked) .tk-swatch[data-theme="c"],
+.tk-status:has(#tk-d:checked) .tk-swatch[data-theme="d"]{ opacity:1;
+  box-shadow:0 0 0 1.5px var(--tk-bg), 0 0 0 3px var(--sw); transform:scale(1.05); }
+
+.tk-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:11px; }
+.tk-cell { background:var(--tk-bg-soft); border:1px solid var(--tk-line); border-radius:calc(var(--tk-radius) - 2px);
+  padding:8px 10px 9px; position:relative; }
+.tk-cell::before { content:""; position:absolute; left:0; top:8px; bottom:8px; width:2px;
+  background:var(--tk-mom); border-radius:1px; opacity:.55; }
+.tk-cell-tag { display:block; font-size:10px; letter-spacing:.2em; color:var(--tk-ink-3); margin-bottom:4px; }
+.tk-cell-status { display:block; font-size:13px; font-weight:600; color:var(--tk-ink); margin-bottom:4px; letter-spacing:.04em; }
+.tk-cell-desc { display:block; font-size:10.5px; line-height:1.5; color:var(--tk-ink-2); }
+
+.tk-thought { background:var(--tk-bg-soft); border-left:2px solid var(--tk-gold); border-radius:0 6px 6px 0;
+  padding:8px 12px; margin-bottom:13px; font-size:11.5px; line-height:1.6; color:var(--tk-ink-2); }
+.tk-thought b { font-family:"Songti SC","STSong","SimSun",serif; font-weight:700; color:var(--tk-mom); letter-spacing:.2em; font-size:10.5px; margin-right:8px; }
+
+.tk-divider { display:flex; align-items:center; gap:10px; margin:13px 0 11px; color:var(--tk-ink-3); font-size:10px; letter-spacing:.3em; }
+.tk-divider::before, .tk-divider::after { content:""; flex:1; height:1px; background:var(--tk-line); }
+
+.tk-you { background:var(--tk-bg-soft); border:1px solid var(--tk-line); border-radius:calc(var(--tk-radius) - 2px); padding:10px 14px 12px; }
+.tk-you-head { display:flex; align-items:baseline; gap:8px; margin-bottom:9px; }
+.tk-you-title { font-family:"Songti SC","STSong","SimSun",serif; font-size:13px; font-weight:700; letter-spacing:.2em; color:var(--tk-you); }
+.tk-you-name { margin-left:auto; font-size:11px; color:var(--tk-ink-2); letter-spacing:.1em; }
+.tk-bar { margin-bottom:8px; }
+.tk-bar:last-child { margin-bottom:0; }
+.tk-bar-info { display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px; }
+.tk-bar-info .n { color:var(--tk-ink-2); letter-spacing:.15em; }
+.tk-bar-info .v { color:var(--tk-ink); font-weight:600; font-variant-numeric:tabular-nums; }
+.tk-track { height:6px; background:var(--tk-track); border-radius:3px; overflow:hidden; }
+.tk-fill { height:100%; border-radius:3px; transition:width .45s ease; }
+.tk-fill-energy { background:var(--tk-mom); }
+.tk-fill-score { background:var(--tk-you); }
+.tk-foot { margin-top:11px; text-align:right; font-size:9.5px; letter-spacing:.25em; color:var(--tk-ink-3); }
+</style>
+</head>
+<body>
+<div class="tk-status">
+  <input type="radio" name="tk-theme" id="tk-a" value="a" class="tk-radio" checked>
+  <input type="radio" name="tk-theme" id="tk-b" value="b" class="tk-radio">
+  <input type="radio" name="tk-theme" id="tk-c" value="c" class="tk-radio">
+  <input type="radio" name="tk-theme" id="tk-d" value="d" class="tk-radio">
+
+  <div class="tk-head">
+    <span class="tk-title">母亲状态</span>
+    <span class="tk-swatches" title="切换主题">
+      <label class="tk-swatch on" for="tk-a" data-theme="a" title="和纸·绯墨"></label>
+      <label class="tk-swatch" for="tk-b" data-theme="b" title="暮色金箔"></label>
+      <label class="tk-swatch" for="tk-c" data-theme="c" title="雾蓝晨光"></label>
+      <label class="tk-swatch" for="tk-d" data-theme="d" title="竹青茶烟"></label>
+    </span>
+    <span class="tk-head-name" id="val-mom-name">中岛美咲子</span>
+  </div>
+
+  <div class="tk-grid">
+    <div class="tk-cell">
+      <span class="tk-cell-tag">乳 頭</span>
+      <span class="tk-cell-status" id="val-nipple-status">粉嫩微挺</span>
+      <span class="tk-cell-desc" id="val-nipple-desc">平时被大号罩杯严实包裹，此刻在薄布下透着隐约轮廓与温度。</span>
+    </div>
+    <div class="tk-cell">
+      <span class="tk-cell-tag">秘 処</span>
+      <span class="tk-cell-status" id="val-pussy-status">紧闭干爽</span>
+      <span class="tk-cell-desc" id="val-pussy-desc">被居家短裤包裹得严严实实，尚处于未开发的成熟人妻私密地带。</span>
+    </div>
+    <div class="tk-cell">
+      <span class="tk-cell-tag">大 腿</span>
+      <span class="tk-cell-status" id="val-thigh-status">丰满紧致</span>
+      <span class="tk-cell-desc" id="val-thigh-desc">白皙修长且富有肉感，蹲下时泛着成熟女性独有的圆润光泽。</span>
+    </div>
+  </div>
+  <div class="tk-thought"><b>心 声</b><span id="val-mom-thought">这孩子……到底在胡思乱想些什么啊，真是拿他没办法。</span></div>
+
+  <div class="tk-divider">自身状态</div>
+
+  <div class="tk-you">
+    <div class="tk-you-head">
+      <span class="tk-you-title">自身状态</span>
+      <span class="tk-you-name" id="val-user-name">user</span>
+    </div>
+    <div class="tk-bar">
+      <div class="tk-bar-info">
+        <span class="n">精 力</span>
+        <span class="v" id="val-energy-num">100 / 100</span>
+      </div>
+      <div class="tk-track"><div class="tk-fill tk-fill-energy" id="bar-energy-fill" style="width:100%"></div></div>
+    </div>
+    <div class="tk-bar">
+      <div class="tk-bar-info">
+        <span class="n">总成绩</span>
+        <span class="v" id="val-score-num">320 / 750</span>
+      </div>
+      <div class="tk-track"><div class="tk-fill tk-fill-score" id="bar-score-fill" style="width:42.7%"></div></div>
+    </div>
+  </div>
+  <div class="tk-foot">— 時之写カード —</div>
+</div>
+
+<script>
+/* ============================================================
+   运行时：本文件被 jQuery .load 拉入消息楼层文档后执行。
+   优先取当前 window 的 MVU 全局；找不到再向 window.parent 要
+   （加载进楼层 iframe 时，MVU 全局可能挂在父窗口）。
+   ============================================================ */
+(function () {
+  'use strict';
+  var TK_KEY = 'tk_theme';
+  var TK_THEMES = ['a', 'b', 'c', 'd'];
+
+  /* 全局解析：当前 window → window.parent */
+  function gl(name) {
+    try { if (typeof window[name] !== 'undefined') { return window[name]; } } catch (e) {}
+    try { if (window.parent && typeof window.parent[name] !== 'undefined') { return window.parent[name]; } } catch (e) {}
+    return undefined;
+  }
+  function callable(name) { return typeof gl(name) === 'function' ? gl(name) : null; }
+
+  function getPath(o, p, d) {
+    var r = o, ks, i;
+    try { ks = p.split('.'); for (i = 0; i < ks.length; i++) { r = (r == null) ? undefined : r[ks[i]]; } } catch (e) { r = undefined; }
+    return r === undefined ? d : r;
+  }
+
+  function tkSet(t) {
+    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
+    var d = document;
+    try { d.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    var boxes = d.querySelectorAll('.tk-status');
+    for (var i = 0; i < boxes.length; i++) { try { boxes[i].setAttribute('data-theme', t); } catch (e) {} }
+    var rb = d.getElementById('tk-' + t);
+    if (rb && !rb.checked) { try { rb.checked = true; } catch (e) {} }
+    var setvar = callable('setvar');
+    if (setvar) { try { setvar(TK_KEY, t); } catch (e) {} }
+    try { localStorage.setItem(TK_KEY, t); } catch (e) {}
+    var sws = d.querySelectorAll('.tk-swatch');
+    for (var j = 0; j < sws.length; j++) {
+      try { sws[j].classList.toggle('on', sws[j].getAttribute('data-theme') === t); } catch (e) {}
+    }
+  }
+  function tkRestore() {
+    var t = 'a';
+    var getvar = callable('getvar');
+    try { if (getvar) { var g = getvar(TK_KEY); if (g) { t = String(g); } } } catch (e) {}
+    if (TK_THEMES.indexOf(t) === -1) { try { t = localStorage.getItem(TK_KEY) || 'a'; } catch (e) { t = 'a'; } }
+    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
+    tkSet(t);
+  }
+
+  function populateCharacterData() {
+    var getAllVariables = callable('getAllVariables');
+    var allVars = getAllVariables ? getAllVariables() : {};
+    var statData = getPath(allVars, 'stat_data', {});
+    var set = function (id, v) { var el = document.getElementById(id); if (el) { el.textContent = v; } };
+
+    set('val-mom-name', getPath(statData, '妈妈.姓名', '中岛美咲子'));
+    set('val-nipple-status', getPath(statData, '妈妈.乳头.状态', '粉嫩微挺'));
+    set('val-nipple-desc', getPath(statData, '妈妈.乳头.短描写', '平时被大号罩杯严实包裹，此刻在薄布下透着隐约轮廓与温度。'));
+    set('val-pussy-status', getPath(statData, '妈妈.小穴.状态', '紧闭干爽'));
+    set('val-pussy-desc', getPath(statData, '妈妈.小穴.短描写', '被居家短裤包裹得严严实实，尚处于未开发的成熟人妻私密地带。'));
+    set('val-thigh-status', getPath(statData, '妈妈.大腿.状态', '丰满紧致'));
+    set('val-thigh-desc', getPath(statData, '妈妈.大腿.短描写', '白皙修长且富有肉感，蹲下时泛着成熟女性独有的圆润光泽。'));
+    set('val-mom-thought', getPath(statData, '妈妈.心里话', '这孩子……到底在胡思乱想些什么啊，真是拿他没办法。'));
+    set('val-user-name', getPath(statData, 'user.姓名', 'user'));
+
+    var energyVal = Number(getPath(statData, 'user.精力值', 100));
+    var scoreVal = Number(getPath(statData, 'user.总成绩值', 320));
+    if (isNaN(energyVal)) { energyVal = 100; }
+    if (isNaN(scoreVal)) { scoreVal = 320; }
+    set('val-energy-num', energyVal + ' / 100');
+    set('val-score-num', scoreVal + ' / 750');
+
+    var ef = document.getElementById('bar-energy-fill');
+    var sf = document.getElementById('bar-score-fill');
+    var energyPercent = Math.min(Math.max(energyVal, 0), 100);
+    var scorePercent = Math.min(Math.max((scoreVal / 750) * 100, 0), 100);
+    if (ef) { ef.style.width = energyPercent + '%'; }
+    if (sf) { sf.style.width = scorePercent + '%'; }
+  }
+
+  function init() {
+    document.addEventListener('change', function (ev) {
+      var t = ev.target;
+      if (t && t.type === 'radio' && t.className.indexOf('tk-radio') !== -1 && t.checked) { tkSet(t.value); }
+    });
+    document.addEventListener('click', function (ev) {
+      var sw = ev.target && ev.target.closest ? ev.target.closest('.tk-swatch[data-theme]') : null;
+      if (sw) { tkSet(sw.getAttribute('data-theme')); }
+    });
+
+    populateCharacterData();
+    tkRestore();
+    setTimeout(function () { try { populateCharacterData(); } catch (e) {} }, 1200);
+
+    var eventOn = callable('eventOn');
+    var Mvu = gl('Mvu');
+    if (eventOn && Mvu && Mvu.events && Mvu.events.VARIABLE_UPDATE_ENDED) {
+      try { eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, populateCharacterData); } catch (e) {}
+    }
+    try { window.addEventListener('VARIABLE_UPDATE_ENDED', populateCharacterData); } catch (e) {}
+  }
+
+  function boot() {
+    var go = function () { try { init(); } catch (e) { try { populateCharacterData(); } catch (e2) {} } };
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', go); }
+    else { go(); }
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
