@@ -315,7 +315,30 @@
     if (setMessage) { return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' }); }
     throw new Error('当前环境不支持切换开场（找不到 setChatMessage/setChatMessages）');
   }
-  global.MyCardBridgeV1 = Object.freeze({ version: 1, selectGreeting: selectGreeting });
+  async function switchWithText(swipeId, suffix) {
+    var index = Number(swipeId);
+    if (!Number.isInteger(index) || index < 1) { throw new Error('开场编号无效'); }
+    var getMessages = helperCall('getChatMessages');
+    if (!getMessages) { throw new Error('当前环境不支持读取开场白（无 getChatMessages）'); }
+    var messages = await getMessages(0, { include_swipes: true });
+    var first = messages && messages[0];
+    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) {
+      throw new Error('所选开场不存在（槽位 ' + index + '）');
+    }
+    var setMessage = helperCall('setChatMessage');
+    if (setMessage) {
+      var text = String(first.swipes[index]);
+      if (suffix) { text = text.replace(/\s*$/, '\n' + suffix); }
+      try {
+        await setMessage(text, 0, { swipe_id: index, refresh: 'display_and_render_current' });
+        return { via: 'text' };
+      } catch (e) {}
+    }
+    var setMessages = helperCall('setChatMessages');
+    if (setMessages) { await setMessages([{ message_id: 0, swipe_id: index }]); return { via: 'switch' }; }
+    throw new Error('当前环境不支持切换开场（找不到 setChatMessage/setChatMessages）');
+  }
+  global.MyCardBridgeV1 = Object.freeze({ version: 1, selectGreeting: selectGreeting, switchWithText: switchWithText });
 })(globalThis);
 </script>
 
@@ -606,29 +629,100 @@ function openOv(){
   byId('ov').classList.add('open');
 }
 function closeOv(){ byId('ov').classList.remove('open'); }
+/* ---------- 主窗口变量写入/校验（不依赖楼层面板存活） ---------- */
+function topWin(){ var w = window; while (w && w.parent && w.parent !== w) { w = w.parent; } return w; }
+function applyMain(score, name){
+  var top = topWin();
+  var setter = top.updateVariablesWith || null;
+  var target = clamp(Math.round(score) || 230, 0, 750);
+  function mutate(v){
+    v = v || {};
+    var root = (v.stat_data && v.stat_data.user) ? v.stat_data : (v.user ? v : null);
+    if (!root && v.stat_data) { root = v.stat_data; }
+    if (root) {
+      if (!root.user) { root.user = {}; }
+      var u = root.user;
+      if (name) { u['姓名'] = name; }
+      u['总成绩值'] = target;
+    } else {
+      if (!v.stat_data) { v.stat_data = {}; }
+      if (!v.stat_data.user) { v.stat_data.user = {}; }
+      if (name) { v.stat_data.user['姓名'] = name; }
+      v.stat_data.user['总成绩值'] = target;
+    }
+    return v;
+  }
+  if (setter) {
+    try { setter(mutate, { type: 'message', message_id: 0 }); } catch (e) {}
+    try { setter(mutate, { type: 'message', message_id: 'latest' }); } catch (e) {}
+  }
+  return !!setter;
+}
+function verifyMain(score){
+  var top = topWin();
+  var getter = top.getVariables || null;
+  var target = clamp(Math.round(score) || 230, 0, 750);
+  var guard = 0;
+  var fin = setInterval(function () {
+    guard++;
+    var val = null;
+    try {
+      if (getter) {
+        var v = getter({ type: 'message', message_id: 0 });
+        if (v && v.stat_data && v.stat_data.user) { val = v.stat_data.user['总成绩值']; }
+        else if (v && v.user) { val = v.user['总成绩值']; }
+      }
+    } catch (e) {}
+    if (val !== null) {
+      clearInterval(fin);
+      if (Number(val) !== target) { notify('⚠ 成绩未同步：目标 ' + target + '，状态栏显示 ' + val, true); }
+      else { notify('✓ 已确认状态栏成绩 = ' + val); }
+    } else if (guard > 10) {
+      clearInterval(fin);
+      notify('⚠ 未能读取楼层总成绩（请打开酒馆变量面板核对）', true);
+    }
+  }, 900);
+}
+
 function finish(){
   var slot = slotOf();
-  var msg = '';
+  var name = byId('f-name').value.trim();
+  var score = Number(byId('f-score').value);
+  /* 切之前先写主窗口变量（持久、不随楼层回收销毁） */
+  var prewritten = applyMain(score, name);
+  /* 初始变量块：注入到开场白文本末尾（若环境支持 setChatMessage 文本写入则更确定） */
+  var suffix = '<UpdateVariable>\n_.set(\'user.总成绩值\', ' + clamp(Math.round(score) || 230, 0, 750) + ');\n' +
+    (name ? '_.set(\'user.姓名\', \'' + name.replace(/['\\]/g, '') + '\');\n' : '') +
+    '</UpdateVariable>';
+  function afterSwitch(kind){
+    if (kind === 'text') {
+      notify('✓ 已切换到槽位 ' + slot + ' 开场白，并注入初始变量（状态栏应显示所选成绩）');
+      byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 开场白（注入初始变量）';
+    } else {
+      notify('✓ 已切换到槽位 ' + slot + ' 的开场白' + (prewritten ? '（已预写初始变量）' : '（正在同步成绩，稍后状态栏更新）'));
+      byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白';
+    }
+    setTimeout(function(){ verifyMain(score); }, 1200);
+    setTimeout(closeOv, 1000);
+  }
+  function fail(e){
+    var em = e && e.message ? e.message : '切换失败';
+    byId('ov-msg').textContent = '⚠ ' + em;
+    notify('⚠ ' + em, true);
+  }
   try {
     var bridge = globalThis.MyCardBridgeV1 || {};
+    if (typeof bridge.switchWithText === 'function') {
+      bridge.switchWithText(slot, suffix).then(function(r){ afterSwitch(r && r.via === 'text' ? 'text' : 'switch'); }).catch(fail);
+      return;
+    }
     if (typeof bridge.selectGreeting === 'function') {
-      bridge.selectGreeting(slot)
-        .then(function(){
-          notify('✓ 已切换到槽位 ' + slot + ' 的开场白（正在同步成绩，稍后状态栏更新）');
-          byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白';
-          setTimeout(closeOv, 1200);
-          try { patchMvu(byId('f-name').value.trim(), Number(byId('f-score').value), slot); } catch (e) {}
-        })
-        .catch(function(e){
-          var em = e && e.message ? e.message : '切换失败';
-          byId('ov-msg').textContent = '⚠ ' + em;
-          notify('⚠ ' + em, true);
-        });
+      bridge.selectGreeting(slot).then(function(){ afterSwitch('switch'); }).catch(fail);
       return;
     }
   } catch(e){}
   /* 预览 / 无桥兜底（C12） */
-  msg = '预览模式：确认将进入「' + comboHead() + '」对应槽位 ' + slot + '（接入酒馆后自动跳转并同步变量）';
+  var msg = '预览模式：确认将进入「' + comboHead() + '」对应槽位 ' + slot + '（接入酒馆后自动跳转并同步变量）';
   byId('ov-msg').textContent = msg;
   setTimeout(closeOv, 1600);
 }
