@@ -699,10 +699,13 @@ function verifyMain(score){
     var val = readVal();
     if (val !== null) {
       clearInterval(fin);
-      if (Number(val) !== target) { notify('⚠ 成绩未同步：目标 ' + target + '，状态栏显示 ' + val, true); }
+      var match = Number(val) === target;
+      try { console.info('[开局] 最终校验 target=' + target + ' 实际=' + val + ' → ' + (match ? '一致' : '不一致')); } catch (e) {}
+      if (!match) { notify('⚠ 成绩未同步：目标 ' + target + '，状态栏显示 ' + val, true); }
       else { notify('✓ 已确认状态栏成绩 = ' + val); }
     } else if (guard > 12) {
       clearInterval(fin);
+      try { console.warn('[开局] 校验超时：未能读取楼层总成绩'); } catch (e) {}
       notify('⚠ 未能读取楼层总成绩（可在酒馆变量面板核对）', true);
     }
   }, 800);
