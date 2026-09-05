@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>开局选择 · 自定义开局面板</title>
+<title>开局选择 · 本卡双开局（内置/自定义）</title>
 <style>
 html, body{ margin:0; padding:0; }
 body{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; -webkit-font-smoothing:antialiased; }
@@ -17,7 +17,7 @@ body{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
   box-shadow:0 1px 0 rgba(64,56,44,.04) inset, 0 6px 18px -14px rgba(64,50,30,.35);
   font-size:12px; line-height:1.6;
 }
-.op-panel *,.op-panel *::before,.op-panel *::after{ box-sizing:border-box; }
+.op-panel *, .op-panel *::before, .op-panel *::after{ box-sizing:border-box; }
 
 .op-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px;
   border-bottom:1px solid var(--ln); padding-bottom:7px; margin-bottom:11px; }
@@ -26,45 +26,54 @@ body{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
 .op-title::before{ content:""; flex:none; width:4px; height:13px; border-radius:2px; background:var(--mom); }
 .op-sub{ font-size:9.5px; letter-spacing:.2em; color:var(--ink3); }
 
-/* 固定开局卡 */
-.op-fixed{
-  background:var(--bg2); border:1px solid var(--ln); border-radius:8px;
-  padding:9px 11px; margin-bottom:10px;
+/* 内置开局卡列表 */
+.op-defs-title{ display:block; font-size:10px; letter-spacing:.22em; color:var(--mom); font-weight:700; margin:0 0 8px; }
+.op-defs{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.op-def{
+  display:flex; align-items:flex-start; gap:10px;
+  background:var(--bg2); border:1px solid var(--ln); border-radius:8px; padding:9px 11px; cursor:pointer;
+  transition:border-color .15s ease, box-shadow .15s ease;
 }
-.op-fixed-name{ display:block; font-size:10px; letter-spacing:.22em; color:var(--mom); font-weight:700; margin-bottom:4px; }
-.op-fixed-desc{ display:block; font-size:11px; line-height:1.65; color:var(--ink2); margin-bottom:7px; }
+.op-def:hover{ border-color:var(--mom); box-shadow:0 0 0 1px var(--mom); }
+.op-def-badge{ flex:none; width:34px; height:34px; border-radius:8px; display:flex; align-items:center;
+  justify-content:center; background:var(--mom); color:#fff; font-size:13px; font-weight:700; letter-spacing:.05em; }
+.op-def-body{ flex:1; min-width:0; }
+.op-def-name{ display:block; font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:2px; letter-spacing:.04em; }
+.op-def-preview{ display:block; font-size:10.5px; line-height:1.55; color:var(--ink2);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.op-def-arrow{ flex:none; align-self:center; font-size:16px; color:var(--mom); line-height:1; }
+.op-def-empty{
+  background:var(--bg2); border:1px dashed var(--ln); border-radius:8px; padding:9px 11px;
+  font-size:11px; color:var(--ink2);
+}
 
-.btn{
-  display:inline-block; border:1px solid var(--ln); background:#fffdf8; color:var(--ink);
-  border-radius:999px; padding:5px 16px; font-size:12px; letter-spacing:.12em; cursor:pointer;
-}
-.btn:hover{ border-color:var(--mom); color:var(--mom); }
-.btn.primary{ background:var(--mom); border-color:var(--mom); color:#fff; }
-.btn.primary:hover{ opacity:.9; }
-.btn.ghost{ border-color:var(--ln); }
+.op-sep{ display:flex; align-items:center; gap:10px; margin:12px 0; color:var(--ink3); font-size:9px; letter-spacing:.3em; }
+.op-sep::before, .op-sep::after{ content:""; flex:1; height:1px; background:var(--ln); }
 
 /* 自定义开局表 */
 .op-custom{ background:var(--bg2); border:1px solid var(--ln); border-radius:8px; padding:10px 11px; }
 .op-custom-name{ display:block; font-size:10px; letter-spacing:.22em; color:var(--you); font-weight:700; margin-bottom:8px; }
 .op-row{ margin-bottom:7px; }
-.op-row label{ display:flex; align-items:center; gap:8px; margin-bottom:2px; font-size:10px; letter-spacing:.14em; color:var(--ink3); }
-.op-row label b{ flex:none; width:64px; font-weight:700; color:var(--ink2); letter-spacing:.1em; }
-.op-input{
-  width:100%; border:1px solid var(--ln); border-radius:6px; background:#fffdf8; color:var(--ink);
-  padding:5px 8px; font-size:12px; font-family:inherit; outline:none;
-}
+.op-row label{ display:block; margin-bottom:2px; font-size:10px; letter-spacing:.14em; color:var(--ink3); }
+.op-row label b{ width:64px; font-weight:700; color:var(--ink2); letter-spacing:.1em; }
+.op-input{ width:100%; border:1px solid var(--ln); border-radius:6px; background:#fffdf8; color:var(--ink);
+  padding:5px 8px; font-size:12px; font-family:inherit; outline:none; }
 .op-input:focus{ border-color:var(--mom); }
 textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
-
 .op-range{ display:flex; align-items:center; gap:10px; }
 .op-range input[type=range]{ flex:1; accent-color:var(--you); }
 .op-range em{ flex:none; width:86px; font-style:normal; text-align:right; font-size:11px;
   color:var(--ink2); font-weight:600; font-variant-numeric:tabular-nums; }
 
 .op-actions{ display:flex; gap:8px; justify-content:flex-end; align-items:center; margin-top:10px; flex-wrap:wrap; }
-.op-actions .spacer{ flex:1; }
+.btn{ display:inline-block; border:1px solid var(--ln); background:#fffdf8; color:var(--ink);
+  border-radius:999px; padding:5px 16px; font-size:12px; letter-spacing:.12em; cursor:pointer; }
+.btn:hover{ border-color:var(--mom); color:var(--mom); }
+.btn.primary{ background:var(--mom); border-color:var(--mom); color:#fff; }
+.btn.primary:hover{ opacity:.9; }
+.btn.ghost{ border-color:var(--ln); }
 .op-note{ margin-top:8px; font-size:10px; color:var(--ink3); letter-spacing:.06em; line-height:1.6; }
-.op-log{ margin-top:8px; font-size:10.5px; color:var(--mom); min-height:14px; }
+.op-log{ margin-top:8px; font-size:10.5px; color:var(--mom); min-height:14px; white-space:pre-wrap; }
 .hidden{ display:none !important; }
 </style>
 </head>
@@ -72,47 +81,29 @@ textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
 <div class="op-panel">
   <div class="op-head">
     <span class="op-title">开局选择</span>
-    <span class="op-sub">本卡 · 双开局</span>
+    <span class="op-sub">点击内置开局卡直接进入对应开场白 · 或自定义开局</span>
   </div>
 
-  <!-- 固定开局 -->
-  <div class="op-fixed">
-    <span class="op-fixed-name">固定开局 · 本卡自带开场白</span>
-    <span class="op-fixed-desc">采用角色卡默认设定：母亲中岛美咲子与高三压力下的儿子。初始变量保持卡内默认（精力 100 / 总成绩 230）。点击后直接进入默认开局，无需发送文字。</span>
-    <button class="btn primary" id="op-fixed-btn">采用固定开局</button>
-  </div>
+  <!-- ===== 内置开局（读角色卡 alternate_greetings 动态生成，点击=切 swipe） ===== -->
+  <span class="op-defs-title">内置开局</span>
+  <div class="op-defs" id="op-defs"><div class="op-def-empty">正在读取本卡内置开局…</div></div>
 
-  <!-- 自定义开局 -->
+  <div class="op-sep">或 自定义你的开局</div>
+
+  <!-- ===== 自定义开局 ===== -->
   <div class="op-custom">
-    <span class="op-custom-name">自定义开局 · 填写你的设定</span>
-    <div class="op-row">
-      <label><b>姓名</b><input class="op-input" id="op-name" placeholder="儿子的名字（必填）"></label>
-    </div>
-    <div class="op-row">
-      <label><b>年龄</b><input class="op-input" id="op-age" placeholder="如 17 岁"></label>
-    </div>
-    <div class="op-row">
-      <label><b>外貌性格</b><textarea class="op-input" id="op-look" placeholder="外貌特征、性格倾向…"></textarea></label>
-    </div>
-    <div class="op-row">
-      <label><b>人物背景</b><textarea class="op-input" id="op-bg" placeholder="与妈妈的关系、家庭、经历…"></textarea></label>
-    </div>
-    <div class="op-row">
-      <label><b>开局场景</b><textarea class="op-input" id="op-scene" placeholder="此刻正发生在哪、妈妈与你在做什么…"></textarea></label>
-    </div>
-    <div class="op-row op-range">
-      <label style="flex:1"><b>初始精力</b>
-        <span class="op-range"><input type="range" id="op-energy" min="0" max="100" value="100"><em id="op-energy-num">100 / 100</em></span>
-      </label>
-    </div>
-    <div class="op-row op-range">
-      <label style="flex:1"><b>初始成绩</b>
-        <span class="op-range"><input type="range" id="op-score" min="0" max="750" value="230"><em id="op-score-num">230 / 750</em></span>
-      </label>
-    </div>
-
+    <span class="op-custom-name">自定义开局 · 填写设定后发送</span>
+    <div class="op-row"><label><b>姓名</b></label><input class="op-input" id="op-name" placeholder="儿子的名字（必填）"></div>
+    <div class="op-row"><label><b>年龄</b></label><input class="op-input" id="op-age" placeholder="如 17 岁"></div>
+    <div class="op-row"><label><b>外貌性格</b></label><textarea class="op-input" id="op-look" placeholder="外貌特征、性格倾向…"></textarea></div>
+    <div class="op-row"><label><b>人物背景</b></label><textarea class="op-input" id="op-bg" placeholder="与妈妈的关系、家庭、经历…"></textarea></div>
+    <div class="op-row"><label><b>开局场景</b></label><textarea class="op-input" id="op-scene" placeholder="此刻正发生在哪、妈妈与你在做什么…"></textarea></div>
+    <div class="op-row op-range"><label><b>初始精力</b></label>
+      <span class="op-range"><input type="range" id="op-energy" min="0" max="100" value="100"><em id="op-energy-num">100 / 100</em></span></div>
+    <div class="op-row op-range"><label><b>初始成绩</b></label>
+      <span class="op-range"><input type="range" id="op-score" min="0" max="750" value="230"><em id="op-score-num">230 / 750</em></span></div>
     <div class="op-actions">
-      <span class="op-note" id="op-note">将汇总为设定指令写入发言框并发送；同步覆盖本楼层 user 姓名/精力/成绩。</span>
+      <span class="op-note">汇总为设定指令发送，并同步覆盖楼层 user 姓名/精力/成绩。</span>
       <button class="btn" id="op-reset">清空</button>
       <button class="btn primary" id="op-send">生成自定义开局并发送</button>
     </div>
@@ -122,25 +113,142 @@ textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
 
 <script>
 /* ============================================================
-   开局面板脚本：运行于“新开场白楼层”的楼层文档（与状态栏同机制）。
-   能力：读楼层 MVU 变量→覆盖 user.姓名/精力值/总成绩值；
-   找到主酒馆发言框→填入 OOC 设定→发送。
-   全部带降级：找不到 API/发言框时给出可见提示并可复制文案。
+   桥（TavernHelper）：读取/切换消息 0 的开场白 swipe
+   ============================================================ */
+(function (global) {
+  'use strict';
+  function scope(name) {
+    const candidates = [global];
+    try { if (global.parent && global.parent !== global) { candidates.push(global.parent); } } catch (_) {}
+    try { if (global.top && candidates.indexOf(global.top) === -1) { candidates.push(global.top); } } catch (_) {}
+    for (const c of candidates) { try { if (c && c[name] !== undefined) { return c[name]; } } catch (_) {} }
+    return undefined;
+  }
+  function helperCall(name) {
+    const h = scope('TavernHelper');
+    if (h && typeof h[name] === 'function') { return h[name].bind(h); }
+    const d = scope(name);
+    return typeof d === 'function' ? d : null;
+  }
+  async function listGreetings() {
+    const getMessages = helperCall('getChatMessages');
+    if (!getMessages) { throw new Error('当前环境不支持读取开场白（无 TavernHelper）'); }
+    const messages = await getMessages('0', { include_swipes: true });
+    const first = messages && messages[0];
+    if (!first || !Array.isArray(first.swipes)) { return []; }
+    const out = [];
+    for (let i = 1; i < first.swipes.length; i++) {
+      if (first.swipes[i] == null) { continue; }
+      out.push({ index: i, text: String(first.swipes[i]) });
+    }
+    return out;
+  }
+  async function selectGreeting(swipeId) {
+    const index = Number(swipeId);
+    if (!Number.isInteger(index) || index < 1) { throw new Error('开场编号无效'); }
+    const getMessages = helperCall('getChatMessages');
+    const setMessage  = helperCall('setChatMessage');
+    if (!getMessages || !setMessage) { throw new Error('当前环境不支持切换开场（无 TavernHelper）'); }
+    const messages = await getMessages('0', { include_swipes: true });
+    const first = messages && messages[0];
+    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) {
+      throw new Error('所选开场不存在（swipe ' + index + '）');
+    }
+    return setMessage(String(first.swipes[index]), 0,
+      { swipe_id: index, refresh: 'display_and_render_current' });
+  }
+  global.MyCardBridgeV1 = Object.freeze({ version: 1, listGreetings, selectGreeting });
+})(globalThis);
+
+/* ============================================================
+   面板逻辑
    ============================================================ */
 (function () {
   'use strict';
+  function $id(x) { return document.getElementById(x); }
+  function clamp(n, a, b) { return Math.min(Math.max(n, a), b); }
+  function setLog(msg) { var el = $id('op-log'); if (el) { el.textContent = msg; } }
 
-  var $log = function (msg) {
-    var el = document.getElementById('op-log');
-    if (el) { el.textContent = msg; }
-  };
-  function $(id) { return document.getElementById(id); }
-  function clamp(n, lo, hi) { return Math.min(Math.max(n, lo), hi); }
+  function cleanPreview(text, max) {
+    var t = String(text || '')
+      .replace(/<content>|<\/content>|<UpdateVariable>[\s\S]*?<\/UpdateVariable>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/[#*`~【】《》_]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return t.length > max ? t.slice(0, max) + '…' : t;
+  }
+  function titleOf(text) {
+    var t = cleanPreview(text, 30);
+    return t.split(/[，。！？：；,\n]/)[0] || t.slice(0, 12) || '未命名开局';
+  }
 
-  /* ---------- 全局解析：当前 window → 逐级 parent ---------- */
+  function renderDefs(list) {
+    var box = $id('op-defs');
+    if (!box) { return; }
+    box.innerHTML = '';
+    if (!list || list.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'op-def-empty';
+      empty.textContent = '未读取到内置开局：请把本卡自带开场白放入角色卡 alternate_greetings（与 first_mes 并列），数量不限。';
+      box.appendChild(empty);
+      return;
+    }
+    list.forEach(function (item) {
+      var card = document.createElement('div');
+      card.className = 'op-def';
+      card.setAttribute('data-swipe', item.index);
+
+      var badge = document.createElement('div');
+      badge.className = 'op-def-badge';
+      badge.textContent = String(item.index).padStart(2, '0');
+
+      var body = document.createElement('div');
+      body.className = 'op-def-body';
+      var nm = document.createElement('span');
+      nm.className = 'op-def-name';
+      nm.textContent = titleOf(item.text);
+      var pv = document.createElement('span');
+      pv.className = 'op-def-preview';
+      pv.textContent = cleanPreview(item.text, 96);
+      body.appendChild(nm); body.appendChild(pv);
+
+      var arrow = document.createElement('span');
+      arrow.className = 'op-def-arrow';
+      arrow.textContent = '进入 ›';
+
+      card.appendChild(badge); card.appendChild(body); card.appendChild(arrow);
+      card.addEventListener('click', function () { jumpTo(item.index); });
+      box.appendChild(card);
+    });
+  }
+
+  async function jumpTo(index) {
+    setLog('正在进入内置开局 ' + String(index).padStart(2, '0') + ' …');
+    try {
+      var bridge = globalThis.MyCardBridgeV1 || {};
+      if (typeof bridge.selectGreeting !== 'function') { throw new Error('开局桥接尚未就绪'); }
+      await bridge.selectGreeting(index);
+      setLog('✓ 已切换到该开局开场白（变量随开场楼层自动初始化）');
+    } catch (err) {
+      setLog('⚠ ' + (err && err.message ? err.message : '切换失败'));
+    }
+  }
+
+  function bootDefs() {
+    try {
+      var bridge = globalThis.MyCardBridgeV1 || {};
+      if (typeof bridge.listGreetings === 'function') {
+        bridge.listGreetings().then(renderDefs).catch(function (e) { renderDefs([]); });
+      } else {
+        renderDefs([]);
+      }
+    } catch (e) { renderDefs([]); }
+  }
+
+  /* ---------- 自定义开局：变量同步 + 发送 ---------- */
   function findWin(pred) {
-    var w = window;
-    var depth = 0;
+    var w = window, depth = 0;
     while (w && depth < 12) {
       try { if (pred(w)) { return w; } } catch (e) {}
       if (w === w.parent) { break; }
@@ -149,32 +257,26 @@ textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
     return null;
   }
   function gl(name) {
-    var w = findWin(function (x) {
-      try { return typeof x[name] !== 'undefined'; } catch (e) { return false; }
-    });
+    var w = findWin(function (x) { try { return typeof x[name] !== 'undefined'; } catch (e) { return false; } });
     return w ? w[name] : undefined;
   }
   function waitMvu(cb, tries) {
     var M = gl('Mvu');
-    if (M) { try { cb(M); return; } catch (e) { $log('变量写入失败：' + e.message); return; } }
+    if (M) { try { cb(M); return; } catch (e) { setLog('变量写入失败：' + e.message); return; } }
     if (tries > 0) { setTimeout(function () { waitMvu(cb, tries - 1); }, 500); }
-    else { $log('未检测到 MVU(MagVarUpdate)，仅发送设定、不覆盖变量'); }
+    else { setLog('未检测到 MVU(MagVarUpdate)，仅发送设定、不覆盖变量'); }
   }
-
-  /* ---------- 覆写本楼层/最新楼层变量 ---------- */
   function patchVars(name, energy, score) {
     waitMvu(function (M) {
       var ids = [];
-      try {
-        var cid = gl('getCurrentMessageId');
-        if (typeof cid === 'function') { try { var v = cid(); if (v !== undefined) { ids.push(v); } } catch (e) {} }
-      } catch (e) {}
-      ids.push('latest');
-      ids.push(0);
-
-      var done = 0, target = ids.length;
-      ids.forEach(function (mid, idx) {
-        if (idx > 0 && ids.indexOf(mid) < idx) { target--; return; }
+      try { var cid = gl('getCurrentMessageId'); if (typeof cid === 'function') { var v = cid(); if (v !== undefined) { ids.push(v); } } } catch (e) {}
+      ids.push('latest'); ids.push(0);
+      var done = 0;
+      var target = 0;
+      ids.forEach(function (mid) { if (ids.indexOf(mid) === 0 || ids.indexOf(mid) === ids.lastIndexOf(mid)) { target++; } });
+      ids.forEach(function (mid) {
+        var dup = ids.indexOf(mid) < ids.lastIndexOf(mid) && ids.indexOf(mid) !== ids.length - 1;
+        if (dup && ids.indexOf(mid) > 0) { return; }
         try {
           var data = M.getMvuData({ type: 'message', message_id: mid });
           if (data && data.stat_data && data.stat_data.user) {
@@ -188,44 +290,33 @@ textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
                 if (done >= target) {
                   try { window.dispatchEvent(new Event('mag_variable_update_ended')); } catch (e) {}
                   try { if (window.parent) { window.parent.dispatchEvent(new Event('mag_variable_update_ended')); } } catch (e) {}
-                  $log('变量已同步：姓名=' + (name || 'user') + '，精力=' + user['精力值'] + '，成绩=' + user['总成绩值']);
+                  setLog('变量已同步：姓名=' + (name || 'user') + '，精力=' + user['精力值'] + '，成绩=' + user['总成绩值']);
                 }
               })
-              .catch(function (e) { done++; if (done >= target) { $log('变量同步失败：' + (e && e.message ? e.message : e)); } });
+              .catch(function (e) { done++; if (done >= target) { setLog('变量同步失败：' + (e && e.message ? e.message : e)); } });
           } else { done++; }
         } catch (e) { done++; }
       });
     }, 12);
   }
 
-  /* ---------- 找到酒馆发言框并发送 ---------- */
   function sendText(text) {
     var host = findWin(function (w) {
       try { return w.document && w.document.getElementById('send_textarea'); } catch (e) { return false; }
     });
     var ta = null, btn = null;
     if (host) {
-      ta = host.document.getElementById('send_textarea')
-        || host.document.querySelector('#send_form textarea')
-        || host.document.querySelector('textarea#send_textarea');
-      btn = host.document.getElementById('send_but')
-        || host.document.querySelector('#send_form .send_button')
-        || host.document.querySelector('#send_form button[type=submit]')
-        || host.document.querySelector('#send_but');
+      ta = host.document.getElementById('send_textarea') || host.document.querySelector('#send_form textarea');
+      btn = host.document.getElementById('send_but') || host.document.querySelector('#send_form button[type=submit]') || host.document.querySelector('#send_but');
     }
     if (!ta) {
-      // 降级：把文案放出来复制
       var copied = false;
       try {
         var pre = document.createElement('textarea');
-        pre.value = text;
-        pre.style.cssText = 'width:100%;min-height:80px;margin-top:6px;font-size:11px;';
-        document.body.appendChild(pre);
-        pre.select();
-        copied = document.execCommand('copy');
-        document.body.removeChild(pre);
+        pre.value = text; pre.style.cssText = 'width:100%;min-height:80px;margin-top:6px;font-size:11px;';
+        document.body.appendChild(pre); pre.select(); copied = document.execCommand('copy'); document.body.removeChild(pre);
       } catch (e) {}
-      $log('未能连接发言框：' + (copied ? '设定已复制，粘贴到发言框发送即可' : '请手动复制下方文本发送'));
+      setLog('未能连接发言框：' + (copied ? '设定已复制，粘贴到发言框发送即可。' : '请手动复制下方设定文本发送。'));
       var box = document.createElement('div');
       box.style.cssText = 'margin-top:6px;padding:8px;border:1px dashed #c00;border-radius:6px;font-size:11px;white-space:pre-wrap;color:#7a3b3b;';
       box.textContent = text;
@@ -233,66 +324,52 @@ textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
       return false;
     }
     try {
-      ta.focus();
-      ta.value = text;
+      ta.focus(); ta.value = text;
       ta.dispatchEvent(new Event('input', { bubbles: true }));
       ta.dispatchEvent(new Event('change', { bubbles: true }));
       if (btn) { btn.click(); return true; }
       ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }));
       return true;
-    } catch (e) {
-      $log('发送失败：' + e.message + '（请复制设定手动发送）');
-      return false;
-    }
+    } catch (e) { setLog('发送失败：' + e.message + '（请复制设定手动发送）'); return false; }
   }
 
-  /* ---------- 组装 OOC 设定文本 ---------- */
   function compose() {
-    var g = function (id) { var el = $(id); return el ? el.value.trim() : ''; };
+    var g = function (id) { var el = $id(id); return el ? el.value.trim() : ''; };
     var name = g('op-name'), age = g('op-age'), look = g('op-look'), bg = g('op-bg'), scene = g('op-scene');
-    var energy = Number(g('op-energy-num') ? $( 'op-energy' ).value : 100);
-    var score = Number($('op-score') ? $('op-score').value : 230);
-    var lines = [];
-    lines.push('【自定义开局 · 设定指令】');
-    lines.push('请以母亲中岛美咲子（你）的视角，按以下设定立即展开一场全新开局剧情；「我」是下列设定的儿子，请用名字「' + (name || '我') + '」称呼他，全程遵守本卡的角色规则与行为铁律，从「开局场景」所述的这一刻开始演绎：');
-    lines.push('· 姓名：' + (name || '（未填）'));
-    if (age) { lines.push('· 年龄：' + age); }
-    if (look) { lines.push('· 外貌与性格：' + look); }
-    if (bg) { lines.push('· 人物背景：' + bg); }
-    if (scene) { lines.push('· 开局场景：' + scene); }
-    lines.push('· 初始状态：精力 ' + energy + '/100，总成绩 ' + score + '/750。');
-    lines.push('（开局选择面板已同步变量，请勿让角色在设定之外再询问我的名字。）');
-    return { text: lines.join('\n'), name: name, energy: energy, score: score };
+    var energy = Number($id('op-energy') ? $id('op-energy').value : 100);
+    var score = Number($id('op-score') ? $id('op-score').value : 230);
+    var L = [];
+    L.push('【自定义开局 · 设定指令】');
+    L.push('请以母亲中岛美咲子（你）的视角，按以下设定立即展开一场全新开局剧情；「我」是下列设定的儿子，请用名字「' + (name || '我') + '」称呼他，全程遵守本卡的角色规则与行为铁律，从「开局场景」所述的这一刻开始演绎：');
+    L.push('· 姓名：' + (name || '（未填）'));
+    if (age) { L.push('· 年龄：' + age); }
+    if (look) { L.push('· 外貌与性格：' + look); }
+    if (bg) { L.push('· 人物背景：' + bg); }
+    if (scene) { L.push('· 开局场景：' + scene); }
+    L.push('· 初始状态：精力 ' + energy + '/100，总成绩 ' + score + '/750。');
+    L.push('（开局选择面板已同步变量，请勿在设定之外再询问我的名字。）');
+    return { text: L.join('\n'), name: name, energy: energy, score: score };
   }
 
   function bind() {
-    var eb = $('op-energy'), sb = $('op-score');
-    if (eb) { eb.addEventListener('input', function () { $('op-energy-num').textContent = eb.value + ' / 100'; }); }
-    if (sb) { sb.addEventListener('input', function () { $('op-score-num').textContent = sb.value + ' / 750'; }); }
-
-    var fixedBtn = $('op-fixed-btn');
-    if (fixedBtn) {
-      fixedBtn.addEventListener('click', function () {
-        $log('已采用固定开局：直接回到聊天输入框开始即可（默认变量 精力100/总成绩230）。');
-      });
-    }
-
-    var resetBtn = $('op-reset');
+    var eb = $id('op-energy'), sb = $id('op-score');
+    if (eb) { eb.addEventListener('input', function () { $id('op-energy-num').textContent = eb.value + ' / 100'; }); }
+    if (sb) { sb.addEventListener('input', function () { $id('op-score-num').textContent = sb.value + ' / 750'; }); }
+    var resetBtn = $id('op-reset');
     if (resetBtn) {
       resetBtn.addEventListener('click', function () {
-        ['op-name', 'op-age', 'op-look', 'op-bg', 'op-scene'].forEach(function (id) { var e = $(id); if (e) { e.value = ''; } });
-        if (eb) { eb.value = 100; $('op-energy-num').textContent = '100 / 100'; }
-        if (sb) { sb.value = 230; $('op-score-num').textContent = '230 / 750'; }
-        $log('已清空。');
+        ['op-name', 'op-age', 'op-look', 'op-bg', 'op-scene'].forEach(function (id) { var e = $id(id); if (e) { e.value = ''; } });
+        if (eb) { eb.value = 100; $id('op-energy-num').textContent = '100 / 100'; }
+        if (sb) { sb.value = 230; $id('op-score-num').textContent = '230 / 750'; }
+        setLog('已清空。');
       });
     }
-
-    var sendBtn = $('op-send');
+    var sendBtn = $id('op-send');
     if (sendBtn) {
       sendBtn.addEventListener('click', function () {
         var c = compose();
-        if (!c.name) { $log('请至少填写“姓名”。'); return; }
-        $log('正在同步变量并发送…');
+        if (!c.name) { setLog('请至少填写「姓名」。'); return; }
+        setLog('正在同步变量并发送…');
         patchVars(c.name, c.energy, c.score);
         setTimeout(function () { sendText(c.text); }, 400);
       });
@@ -300,8 +377,9 @@ textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
   }
 
   function boot() {
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bind); }
-    else { bind(); }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { bind(); bootDefs(); });
+    } else { bind(); bootDefs(); }
   }
   boot();
 })();
