@@ -65,11 +65,15 @@
   .scr.in .pair>*:nth-child(1){ animation-delay:.14s; } .scr.in .pair>*:nth-child(2){ animation-delay:.22s; }
   .scr.in .chiprow>*{ animation:vu .4s ease both; }
 
-  .big{ font-family:var(--serif); font-size:34px; letter-spacing:.3em; line-height:1.7; text-align:center;
+  .big{ font-family:var(--serif); font-size:26px; letter-spacing:.16em; line-height:1.6; text-align:center;
     color:var(--ink); text-shadow:0 2px 30px rgba(0,0,0,.5); }
-  .big small{ display:block; font-family:"PingFang SC",sans-serif; font-size:12px; letter-spacing:.6em;
-    color:var(--accent2); margin-bottom:14px; }
-  .big small::before, .big small::after{ content:"❖"; font-size:8px; margin:0 10px; color:rgba(216,180,138,.6); }
+  .big small{ display:block; font-family:"PingFang SC",sans-serif; font-size:11px; letter-spacing:.5em;
+    color:var(--accent2); margin-bottom:16px; }
+  .big small::before, .big small::after{ content:"❖"; font-size:7px; margin:0 10px; color:rgba(216,180,138,.6); }
+  .stageline{ text-align:center; margin-top:16px; font-family:var(--serif); font-size:16px;
+    letter-spacing:.22em; color:var(--ink2); }
+  .stageline .hl{ color:var(--accent); }
+  .stageline .sep{ margin:0 10px; color:rgba(216,180,138,.45); font-size:12px; }
   .big .hl{ color:var(--accent); }
   .tagline{ text-align:center; margin-top:18px; font-size:11px; letter-spacing:.34em; color:var(--accent2);
     opacity:.85; text-shadow:0 0 16px rgba(224,122,127,.4); animation:vu .5s .1s ease both; }
@@ -198,7 +202,9 @@
     .seal{ width:28px; height:28px; font-size:12px; }
     .stepdot{ width:18px; height:18px; font-size:9px; } .stseg{ width:8px; }
     .stcap{ display:none; }
-    .big{ font-size:26px; }
+    .big{ font-size:22px; }
+    .stageline{ font-size:13px; letter-spacing:.14em; }
+    .stageline .sep{ margin:0 6px; }
     .pair{ grid-template-columns:1fr; max-width:520px; }
     .h2{ font-size:16px; }
     .field{ max-width:100%; }
@@ -206,7 +212,8 @@
     .scr.in>*{ animation:none; }
   }
   @media (max-width:480px){
-    .big{ font-size:20px; letter-spacing:.18em; }
+    .big{ font-size:17px; letter-spacing:.12em; }
+    .stageline{ font-size:11.5px; letter-spacing:.1em; }
     .startbtn{ padding:11px 26px; font-size:13px; }
     .chip{ padding:5px 11px; font-size:11px; }
     .logo b{ display:none; }
@@ -224,7 +231,8 @@
 
   <div class="screens">
     <section class="scr in">
-      <div class="big"><small>—— 開 局 選 択 ——</small>分数越高，能<span class="hl"> 索求 </span>的就越深——<br>从<span class="hl"> 手交 </span>，到<span class="hl"> 口交、乳交 </span>，再到 <span class="hl">完全接纳</span></div>
+      <div class="big"><small>—— 開 局 選 択 ——</small>分数越高，能<span class="hl">索求</span>的就越深——</div>
+      <div class="stageline">手交<span class="sep">·</span>口交<span class="sep">·</span>乳交<span class="sep">·</span><span class="hl">完全接纳</span></div>
       <div class="tagline">—— 只 要 成 绩 好 ， 就 能 跟 妈 妈 索 求 …… ——</div>
       <div class="cta"><button class="startbtn" id="begin">开 始</button></div>
     </section>
