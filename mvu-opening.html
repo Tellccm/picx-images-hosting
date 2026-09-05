@@ -351,6 +351,15 @@ function byId(x){ return document.getElementById(x); }
 function clamp(n,a,b){ return Math.min(Math.max(n,a),b); }
 function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function setNote(m){ byId('note').textContent = m || ''; }
+function notify(msg, isErr){
+  var w = window, d = 0;
+  while (w && d < 12) {
+    try { if (w.toastr) { (isErr ? w.toastr.error : w.toastr.success)(msg, '开局选择'); return; } } catch (e) {}
+    if (w === w.parent) { break; }
+    w = w.parent; d++;
+  }
+  try { console[(isErr ? 'error' : 'log')]('[开局] ' + msg); } catch (e) {}
+}
 
 /* ============ 渲染母亲卡（同一模板，保证排版一致） ============ */
 function renderMoms(){
@@ -524,7 +533,7 @@ function gl(name){
   var w = findWin(function (x) { try { return typeof x[name] !== 'undefined'; } catch (e) { return false; } });
   return w ? w[name] : undefined;
 }
-function patchMvu(name, score){
+function patchMvu(name, score, slot){
   var M = gl('Mvu');
   if (!M) { return; }
   var lastWrite = 0;
@@ -539,7 +548,13 @@ function patchMvu(name, score){
           var u = d.stat_data.user;
           if (name) { u['姓名'] = name; }
           u['总成绩值'] = clamp(Math.round(score) || 230, 0, 750);
-          M.replaceMvuData(d, { type: 'message', message_id: mid }).catch(function () {});
+          M.replaceMvuData(d, { type: 'message', message_id: mid }).then(function () {
+            try {
+              var chk = M.getMvuData({ type: 'message', message_id: mid });
+              var cv = chk && chk.stat_data && chk.stat_data.user ? chk.stat_data.user['总成绩值'] : null;
+              console.info('[开局] 已写入 楼层', mid, '总成绩=', cv, '(目标', score + ')');
+            } catch (e) {}
+          }).catch(function () {});
         }
       } catch (e) {}
     });
@@ -557,6 +572,25 @@ function patchMvu(name, score){
     var pw = window.parent || window;
     if (pw && pw.addEventListener) { pw.addEventListener('mag_variable_update_ended', writeOnce); }
   } catch (e) {}
+  /* 终验：等写入稳定后回读并提示结果（成功走 toastr，失败报差异） */
+  var guard = 0;
+  var finalTimer = setInterval(function () {
+    guard++;
+    var finalVal = null;
+    try {
+      var d0 = M.getMvuData({ type: 'message', message_id: 0 });
+      if (d0 && d0.stat_data && d0.stat_data.user) { finalVal = d0.stat_data.user['总成绩值']; }
+    } catch (e) {}
+    if (finalVal !== null) {
+      clearInterval(finalTimer);
+      var target = clamp(Math.round(score) || 230, 0, 750);
+      if (Number(finalVal) !== target) {
+        notify('⚠ 成绩写入不稳定：目标 ' + target + '，状态栏显示 ' + finalVal, true);
+      } else {
+        notify('✓ 已确认状态栏成绩 = ' + finalVal);
+      }
+    } else if (guard > 12) { clearInterval(finalTimer); }
+  }, 900);
 }
 
 /* ============ 二次确认浮层（A5） ============ */
@@ -580,10 +614,16 @@ function finish(){
     if (typeof bridge.selectGreeting === 'function') {
       bridge.selectGreeting(slot)
         .then(function(){
-          byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白'; setTimeout(closeOv, 1200);
-          try { patchMvu(byId('f-name').value.trim(), Number(byId('f-score').value)); } catch (e) {}
+          notify('✓ 已切换到槽位 ' + slot + ' 的开场白（正在同步成绩，稍后状态栏更新）');
+          byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白';
+          setTimeout(closeOv, 1200);
+          try { patchMvu(byId('f-name').value.trim(), Number(byId('f-score').value), slot); } catch (e) {}
         })
-        .catch(function(e){ byId('ov-msg').textContent = '⚠ ' + (e && e.message ? e.message : '切换失败'); });
+        .catch(function(e){
+          var em = e && e.message ? e.message : '切换失败';
+          byId('ov-msg').textContent = '⚠ ' + em;
+          notify('⚠ ' + em, true);
+        });
       return;
     }
   } catch(e){}
