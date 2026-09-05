@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>开局选择 · 本卡双开局（内置/自定义）</title>
+<title>开局选择 · 母型×角色×阶段</title>
 <style>
 html, body{ margin:0; padding:0; }
 body{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; -webkit-font-smoothing:antialiased; }
@@ -18,235 +18,247 @@ body{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
   font-size:12px; line-height:1.6;
 }
 .op-panel *, .op-panel *::before, .op-panel *::after{ box-sizing:border-box; }
-
-.op-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px;
-  border-bottom:1px solid var(--ln); padding-bottom:7px; margin-bottom:11px; }
-.op-title{ display:flex; align-items:center; gap:7px; margin:0; font-size:13px; font-weight:700;
-  letter-spacing:.3em; color:var(--ink); }
-.op-title::before{ content:""; flex:none; width:4px; height:13px; border-radius:2px; background:var(--mom); }
+.sec-title{ display:flex; align-items:center; gap:7px; margin:0 0 9px; font-size:12px; font-weight:700;
+  letter-spacing:.24em; color:var(--ink); }
+.sec-title::before{ content:""; flex:none; width:4px; height:12px; border-radius:2px; background:var(--mom); }
 .op-sub{ font-size:9.5px; letter-spacing:.2em; color:var(--ink3); }
 
-/* 内置开局卡列表 */
-.op-defs-title{ display:block; font-size:10px; letter-spacing:.22em; color:var(--mom); font-weight:700; margin:0 0 8px; }
-.op-defs{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
-.op-def{
-  display:flex; align-items:flex-start; gap:10px;
-  background:var(--bg2); border:1px solid var(--ln); border-radius:8px; padding:9px 11px; cursor:pointer;
-  transition:border-color .15s ease, box-shadow .15s ease;
-}
-.op-def:hover{ border-color:var(--mom); box-shadow:0 0 0 1px var(--mom); }
-.op-def-badge{ flex:none; width:34px; height:34px; border-radius:8px; display:flex; align-items:center;
-  justify-content:center; background:var(--mom); color:#fff; font-size:13px; font-weight:700; letter-spacing:.05em; }
-.op-def-body{ flex:1; min-width:0; }
-.op-def-name{ display:block; font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:2px; letter-spacing:.04em; }
-.op-def-preview{ display:block; font-size:10.5px; line-height:1.55; color:var(--ink2);
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.op-def-arrow{ flex:none; align-self:center; font-size:16px; color:var(--mom); line-height:1; }
-.op-def-empty{
-  background:var(--bg2); border:1px dashed var(--ln); border-radius:8px; padding:9px 11px;
-  font-size:11px; color:var(--ink2);
-}
-
-.op-sep{ display:flex; align-items:center; gap:10px; margin:12px 0; color:var(--ink3); font-size:9px; letter-spacing:.3em; }
-.op-sep::before, .op-sep::after{ content:""; flex:1; height:1px; background:var(--ln); }
-
-/* 自定义开局表 */
-.op-custom{ background:var(--bg2); border:1px solid var(--ln); border-radius:8px; padding:10px 11px; }
-.op-custom-name{ display:block; font-size:10px; letter-spacing:.22em; color:var(--you); font-weight:700; margin-bottom:8px; }
+/* 基础自定义 */
+.op-base{ background:var(--bg2); border:1px solid var(--ln); border-radius:8px; padding:10px 11px; margin-bottom:13px; }
 .op-row{ margin-bottom:7px; }
 .op-row label{ display:block; margin-bottom:2px; font-size:10px; letter-spacing:.14em; color:var(--ink3); }
 .op-row label b{ width:64px; font-weight:700; color:var(--ink2); letter-spacing:.1em; }
 .op-input{ width:100%; border:1px solid var(--ln); border-radius:6px; background:#fffdf8; color:var(--ink);
   padding:5px 8px; font-size:12px; font-family:inherit; outline:none; }
 .op-input:focus{ border-color:var(--mom); }
-textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
-.op-range{ display:flex; align-items:center; gap:10px; }
+textarea.op-input{ resize:vertical; min-height:38px; line-height:1.55; }
+.op-inline{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.op-range{ display:flex; align-items:center; gap:8px; }
 .op-range input[type=range]{ flex:1; accent-color:var(--you); }
-.op-range em{ flex:none; width:86px; font-style:normal; text-align:right; font-size:11px;
+.op-range em{ flex:none; width:96px; font-style:normal; text-align:right; font-size:10.5px;
   color:var(--ink2); font-weight:600; font-variant-numeric:tabular-nums; }
+.op-score-hint{ display:block; font-size:9.5px; color:var(--ink3); letter-spacing:.04em; margin-top:1px; }
 
-.op-actions{ display:flex; gap:8px; justify-content:flex-end; align-items:center; margin-top:10px; flex-wrap:wrap; }
+/* 阶段 chips */
+.op-stages{ display:flex; gap:6px; flex-wrap:wrap; margin:5px 0 3px; }
+.op-stage{ position:relative; cursor:pointer; }
+.op-stage input{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); }
+.op-stage-box{ display:inline-block; background:#fffdf8; border:1px solid var(--ln); border-radius:999px;
+  padding:3px 12px; font-size:11px; color:var(--ink2); letter-spacing:.06em; }
+.op-stage input:checked + .op-stage-box{ border-color:var(--mom); color:var(--mom); box-shadow:0 0 0 1px var(--mom); }
+.op-stage-desc{ display:block; font-size:9.5px; line-height:1.55; color:var(--ink3); letter-spacing:.03em; margin-bottom:2px; }
+
+/* 母型选择（二选一） */
+.op-moms{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:9px; }
+.op-mom{ position:relative; cursor:pointer; }
+.op-mom input{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); }
+.op-mom-box{ display:block; background:var(--bg2); border:1px solid var(--ln); border-radius:8px; padding:9px 11px 8px; }
+.op-mom-name{ display:block; font-size:12.5px; font-weight:700; color:var(--mom); letter-spacing:.04em; margin-bottom:4px; }
+.op-mom-box .op-mom-name::before{ content:""; display:inline-block; width:6px; height:6px; margin-right:6px;
+  border-radius:50%; border:2px solid var(--ink3); vertical-align:1px; }
+.op-mom input:checked + .op-mom-box{ border-color:var(--mom); box-shadow:0 0 0 1px var(--mom); background:#fffdfa; }
+.op-mom input:checked + .op-mom-box .op-mom-name::before{ background:var(--mom); border-color:var(--mom); }
+.op-mom-desc{ display:block; font-size:10.5px; line-height:1.6; color:var(--ink2); }
+
+/* 附加角色 */
+.op-extras{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.op-extra{ cursor:pointer; }
+.op-extra input{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); }
+.op-extra-box{ display:flex; align-items:center; gap:7px; background:var(--bg2); border:1px solid var(--ln);
+  border-radius:999px; padding:4px 13px; font-size:11px; color:var(--ink2); letter-spacing:.08em; }
+.op-extra-box::before{ content:""; width:12px; height:12px; border-radius:4px; border:1px solid var(--ink3); background:#fffdf8; }
+.op-extra input:checked + .op-extra-box{ border-color:var(--you); color:var(--you); }
+.op-extra input:checked + .op-extra-box::before{ background:var(--you); border-color:var(--you); }
+
+/* 汇总与开始 */
+.op-go{ background:var(--bg2); border:1px solid var(--ln); border-radius:8px; padding:9px 11px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.op-go-name{ flex:1; min-width:180px; font-size:12.5px; font-weight:700; color:var(--ink); letter-spacing:.06em; }
+.op-go-name small{ display:block; font-size:9.5px; font-weight:400; color:var(--ink3); letter-spacing:.12em; margin-top:1px; }
 .btn{ display:inline-block; border:1px solid var(--ln); background:#fffdf8; color:var(--ink);
-  border-radius:999px; padding:5px 16px; font-size:12px; letter-spacing:.12em; cursor:pointer; }
+  border-radius:999px; padding:6px 18px; font-size:12px; letter-spacing:.12em; cursor:pointer; }
 .btn:hover{ border-color:var(--mom); color:var(--mom); }
 .btn.primary{ background:var(--mom); border-color:var(--mom); color:#fff; }
 .btn.primary:hover{ opacity:.9; }
-.btn.ghost{ border-color:var(--ln); }
-.op-note{ margin-top:8px; font-size:10px; color:var(--ink3); letter-spacing:.06em; line-height:1.6; }
 .op-log{ margin-top:8px; font-size:10.5px; color:var(--mom); min-height:14px; white-space:pre-wrap; }
-.hidden{ display:none !important; }
+.op-tip{ margin-top:8px; font-size:10px; color:var(--ink3); letter-spacing:.05em; line-height:1.6; }
+@media (max-width:560px){ .op-moms{ grid-template-columns:1fr; } .op-inline{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 <div class="op-panel">
-  <div class="op-head">
-    <span class="op-title">开局选择</span>
-    <span class="op-sub">点击内置开局卡直接进入对应开场白 · 或自定义开局</span>
-  </div>
-
-  <!-- ===== 内置开局（读角色卡 alternate_greetings 动态生成，点击=切 swipe） ===== -->
-  <span class="op-defs-title">内置开局</span>
-  <div class="op-defs" id="op-defs"><div class="op-def-empty">正在读取本卡内置开局…</div></div>
-
-  <div class="op-sep">或 自定义你的开局</div>
-
-  <!-- ===== 自定义开局 ===== -->
-  <div class="op-custom">
-    <span class="op-custom-name">自定义开局 · 填写设定后发送</span>
-    <div class="op-row"><label><b>姓名</b></label><input class="op-input" id="op-name" placeholder="儿子的名字（必填）"></div>
-    <div class="op-row"><label><b>年龄</b></label><input class="op-input" id="op-age" placeholder="如 17 岁"></div>
-    <div class="op-row"><label><b>外貌性格</b></label><textarea class="op-input" id="op-look" placeholder="外貌特征、性格倾向…"></textarea></div>
-    <div class="op-row"><label><b>人物背景</b></label><textarea class="op-input" id="op-bg" placeholder="与妈妈的关系、家庭、经历…"></textarea></div>
-    <div class="op-row"><label><b>开局场景</b></label><textarea class="op-input" id="op-scene" placeholder="此刻正发生在哪、妈妈与你在做什么…"></textarea></div>
-    <div class="op-row op-range"><label><b>初始精力</b></label>
-      <span class="op-range"><input type="range" id="op-energy" min="0" max="100" value="100"><em id="op-energy-num">100 / 100</em></span></div>
-    <div class="op-row op-range"><label><b>初始成绩</b></label>
-      <span class="op-range"><input type="range" id="op-score" min="0" max="750" value="230"><em id="op-score-num">230 / 750</em></span></div>
-    <div class="op-actions">
-      <span class="op-note">汇总为设定指令发送，并同步覆盖楼层 user 姓名/精力/成绩。</span>
-      <button class="btn" id="op-reset">清空</button>
-      <button class="btn primary" id="op-send">生成自定义开局并发送</button>
+  <!-- ===== 前置基础自定义 ===== -->
+  <p class="sec-title">基础设定</p>
+  <div class="op-base">
+    <div class="op-inline">
+      <div class="op-row"><label><b>姓名</b></label><input class="op-input" id="op-name" placeholder="儿子的名字"></div>
+      <div class="op-row"><label><b>年龄</b></label><input class="op-input" id="op-age" placeholder="如 17 岁"></div>
     </div>
-    <div class="op-log" id="op-log"></div>
+    <div class="op-row"><label><b>外貌性格</b></label><textarea class="op-input" id="op-look" placeholder="外貌特征、性格倾向…"></textarea></div>
+
+    <!-- 初始阶段（审核机制：按阶段限制分数区间与行为） -->
+    <div class="op-row">
+      <label><b>初始阶段</b><span style="font-weight:400">选择后初始总成绩自动限定在该阶段区间，避免开局就超出阶段允许的行为。</span></label>
+      <span class="op-stages" id="op-stages">
+        <label class="op-stage"><input type="radio" name="op-stage" value="s1" checked><span class="op-stage-box">阶段一 · 手交</span></label>
+        <label class="op-stage"><input type="radio" name="op-stage" value="s2"><span class="op-stage-box">阶段二 · 口交</span></label>
+        <label class="op-stage"><input type="radio" name="op-stage" value="s3"><span class="op-stage-box">阶段三 · 乳交</span></label>
+        <label class="op-stage"><input type="radio" name="op-stage" value="s4"><span class="op-stage-box">阶段四 · 完全接纳</span></label>
+      </span>
+      <span class="op-stage-desc" id="op-stage-desc"></span>
+    </div>
+    <div class="op-row">
+      <label><b>初始总成绩</b></label>
+      <span class="op-range"><input type="range" id="op-score" min="0" max="299" value="230"><em id="op-score-num">230</em></span>
+      <span class="op-score-hint" id="op-score-hint"></span>
+    </div>
+    <div class="op-row">
+      <label><b>初始精力</b></label>
+      <span class="op-range"><input type="range" id="op-energy" min="0" max="100" value="100"><em id="op-energy-num">100</em></span>
+    </div>
   </div>
+
+  <!-- ===== 母型二选一 ===== -->
+  <p class="sec-title">母亲风格 <span class="op-sub">（必选其一）</span></p>
+  <div class="op-moms" id="op-moms">
+    <label class="op-mom">
+      <input type="radio" name="op-mom" value="A" checked>
+      <span class="op-mom-box">
+        <span class="op-mom-name">温柔腼腆 · 内心抗拒母亲</span>
+        <span class="op-mom-desc">少年温柔腼腆、心事深藏，被升学压力与失眠压得喘不过气；母亲美咲子心疼他，笨拙而羞怯地靠近——可这份暧昧总在母子名分前戛然而止。她想温柔，却不敢越界；他依赖，却本能抗拒。一对母子在温情、心软与克制之间反复拉扯的细腻开局。</span>
+      </span>
+    </label>
+    <label class="op-mom">
+      <input type="radio" name="op-mom" value="B">
+      <span class="op-mom-box">
+        <span class="op-mom-name">毒蛇傲娇母亲</span>
+        <span class="op-mom-desc">母亲美咲子收敛起所有温柔，用毒舌、轻蔑与高傲武装自己——嘴上刻薄嫌弃，眼神却总在他低落的角落停驻；每当他真的受伤退缩，她又会别扭地递上台阶，借口一套接一套，打死不肯承认心软。针锋相对、口嫌体正直的傲娇母子开局。</span>
+      </span>
+    </label>
+  </div>
+
+  <!-- ===== 附加角色（可多选/不选） ===== -->
+  <p class="sec-title">加入角色 <span class="op-sub">（可都不选）</span></p>
+  <div class="op-extras">
+    <label class="op-extra">
+      <input type="checkbox" id="op-bro">
+      <span class="op-extra-box">弟弟</span>
+    </label>
+    <label class="op-extra">
+      <input type="checkbox" id="op-dad">
+      <span class="op-extra-box">爸爸</span>
+    </label>
+  </div>
+
+  <!-- ===== 确认区 ===== -->
+  <div class="op-go">
+    <span class="op-go-name" id="op-summary"></span>
+    <button class="btn primary" id="op-start">进入本开局</button>
+  </div>
+  <div class="op-log" id="op-log"></div>
+  <div class="op-tip">跳转到本卡对应组合的 alternate_greetings 槽位（共 8 个，已按 母型×弟弟×爸爸 排好）。姓名/总成绩/精力会同步进楼层变量；初始总成绩按所选阶段限定，使开局行为与审核阶段一致；年龄与外貌性格请在你填写对应开场白文案时融入。</div>
 </div>
 
 <script>
 /* ============================================================
-   桥（TavernHelper）：读取/切换消息 0 的开场白 swipe
+   桥（TavernHelper）：切换消息 0 的开场白 swipe
    ============================================================ */
 (function (global) {
   'use strict';
   function scope(name) {
-    const candidates = [global];
+    var candidates = [global];
     try { if (global.parent && global.parent !== global) { candidates.push(global.parent); } } catch (_) {}
     try { if (global.top && candidates.indexOf(global.top) === -1) { candidates.push(global.top); } } catch (_) {}
-    for (const c of candidates) { try { if (c && c[name] !== undefined) { return c[name]; } } catch (_) {} }
+    for (var i = 0; i < candidates.length; i++) { try { if (candidates[i] && candidates[i][name] !== undefined) { return candidates[i][name]; } } catch (_) {} }
     return undefined;
   }
   function helperCall(name) {
-    const h = scope('TavernHelper');
+    var h = scope('TavernHelper');
     if (h && typeof h[name] === 'function') { return h[name].bind(h); }
-    const d = scope(name);
+    var d = scope(name);
     return typeof d === 'function' ? d : null;
   }
-  async function listGreetings() {
-    const getMessages = helperCall('getChatMessages');
-    if (!getMessages) { throw new Error('当前环境不支持读取开场白（无 TavernHelper）'); }
-    const messages = await getMessages('0', { include_swipes: true });
-    const first = messages && messages[0];
-    if (!first || !Array.isArray(first.swipes)) { return []; }
-    const out = [];
-    for (let i = 1; i < first.swipes.length; i++) {
-      if (first.swipes[i] == null) { continue; }
-      out.push({ index: i, text: String(first.swipes[i]) });
-    }
-    return out;
-  }
   async function selectGreeting(swipeId) {
-    const index = Number(swipeId);
+    var index = Number(swipeId);
     if (!Number.isInteger(index) || index < 1) { throw new Error('开场编号无效'); }
-    const getMessages = helperCall('getChatMessages');
-    const setMessage  = helperCall('setChatMessage');
+    var getMessages = helperCall('getChatMessages');
+    var setMessage  = helperCall('setChatMessage');
     if (!getMessages || !setMessage) { throw new Error('当前环境不支持切换开场（无 TavernHelper）'); }
-    const messages = await getMessages('0', { include_swipes: true });
-    const first = messages && messages[0];
-    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) {
-      throw new Error('所选开场不存在（swipe ' + index + '）');
-    }
-    return setMessage(String(first.swipes[index]), 0,
-      { swipe_id: index, refresh: 'display_and_render_current' });
+    var messages = await getMessages('0', { include_swipes: true });
+    var first = messages && messages[0];
+    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) { throw new Error('所选开场不存在（槽位 ' + index + '）'); }
+    return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
   }
-  global.MyCardBridgeV1 = Object.freeze({ version: 1, listGreetings, selectGreeting });
+  global.MyCardBridgeV1 = Object.freeze({ version: 1, selectGreeting: selectGreeting });
 })(globalThis);
 
 /* ============================================================
-   面板逻辑
+   槽位映射 + 阶段区间（审核机制）
    ============================================================ */
 (function () {
   'use strict';
+  var SLOTS = {
+    A: { none: 1, bro: 3, dad: 4, both: 5 },
+    B: { none: 2, bro: 6, dad: 7, both: 8 }
+  };
+  var MOM_LABEL = { A: '温柔腼腆 · 内心抗拒母亲', B: '毒蛇傲娇母亲' };
+  var EXTRA_LABEL = { none: '仅母子', bro: '+弟弟', dad: '+爸爸', both: '+弟弟+爸爸' };
+
+  /* 阶段边界（依据卡内审核机制：<300 手交 / 300-450 口交 / 450-600 乳交 / >=600 接纳） */
+  var STAGES = {
+    s1: { min: 0,   max: 299, name: '阶段一 · 手交期',
+      desc: '允许：手交；禁止：口交、乳交、吸奶、看光、脱衣、隔衣摸奶、插入。分数区间 0–299。' },
+    s2: { min: 300, max: 449, name: '阶段二 · 口交期',
+      desc: '允许：手交、口交、摸奶；禁止：乳交、看光、脱衣、隔衣摸奶、插入。分数区间 300–449。' },
+    s3: { min: 450, max: 599, name: '阶段三 · 乳交期',
+      desc: '允许：手交、口交、吸奶、看光、隔衣摸奶；禁止：实质插入。分数区间 450–599。' },
+    s4: { min: 600, max: 750, name: '阶段四 · 完全接纳期',
+      desc: '全面接纳，无禁止。分数区间 600–750。' }
+  };
+
   function $id(x) { return document.getElementById(x); }
   function clamp(n, a, b) { return Math.min(Math.max(n, a), b); }
-  function setLog(msg) { var el = $id('op-log'); if (el) { el.textContent = msg; } }
-
-  function cleanPreview(text, max) {
-    var t = String(text || '')
-      .replace(/<content>|<\/content>|<UpdateVariable>[\s\S]*?<\/UpdateVariable>/gi, ' ')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/[#*`~【】《》_]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return t.length > max ? t.slice(0, max) + '…' : t;
+  function setLog(m) { var el = $id('op-log'); if (el) { el.textContent = m; } }
+  function currentStage() {
+    var els = document.querySelectorAll('input[name=op-stage]');
+    for (var i = 0; i < els.length; i++) { if (els[i].checked) { return els[i].value; } }
+    return 's1';
   }
-  function titleOf(text) {
-    var t = cleanPreview(text, 30);
-    return t.split(/[，。！？：；,\n]/)[0] || t.slice(0, 12) || '未命名开局';
+  function currentMom() {
+    var els = document.querySelectorAll('input[name=op-mom]');
+    for (var i = 0; i < els.length; i++) { if (els[i].checked) { return els[i].value; } }
+    return 'A';
   }
+  function currentExtra() {
+    var bro = $id('op-bro').checked, dad = $id('op-dad').checked;
+    if (bro && dad) { return 'both'; }
+    if (bro) { return 'bro'; }
+    if (dad) { return 'dad'; }
+    return 'none';
+  }
+  function slotOf() { return SLOTS[currentMom()][currentExtra()]; }
 
-  function renderDefs(list) {
-    var box = $id('op-defs');
-    if (!box) { return; }
-    box.innerHTML = '';
-    if (!list || list.length === 0) {
-      var empty = document.createElement('div');
-      empty.className = 'op-def-empty';
-      empty.textContent = '未读取到内置开局：请把本卡自带开场白放入角色卡 alternate_greetings（与 first_mes 并列），数量不限。';
-      box.appendChild(empty);
-      return;
-    }
-    list.forEach(function (item) {
-      var card = document.createElement('div');
-      card.className = 'op-def';
-      card.setAttribute('data-swipe', item.index);
-
-      var badge = document.createElement('div');
-      badge.className = 'op-def-badge';
-      badge.textContent = String(item.index).padStart(2, '0');
-
-      var body = document.createElement('div');
-      body.className = 'op-def-body';
-      var nm = document.createElement('span');
-      nm.className = 'op-def-name';
-      nm.textContent = titleOf(item.text);
-      var pv = document.createElement('span');
-      pv.className = 'op-def-preview';
-      pv.textContent = cleanPreview(item.text, 96);
-      body.appendChild(nm); body.appendChild(pv);
-
-      var arrow = document.createElement('span');
-      arrow.className = 'op-def-arrow';
-      arrow.textContent = '进入 ›';
-
-      card.appendChild(badge); card.appendChild(body); card.appendChild(arrow);
-      card.addEventListener('click', function () { jumpTo(item.index); });
-      box.appendChild(card);
-    });
+  function refreshStage() {
+    var key = currentStage();
+    var st = STAGES[key];
+    var sld = $id('op-score');
+    sld.min = st.min;
+    sld.max = st.max;
+    var v = clamp(Number(sld.value) || st.min, st.min, st.max);
+    if (st.key === undefined) { /* keep */ }
+    /* 若分数原本低于该阶段下限，则抬到下界（保证能触发该阶段行为） */
+    sld.value = v;
+    $id('op-score-num').textContent = v + ' 分';
+    $id('op-stage-desc').textContent = st.name + '：' + st.desc;
+    $id('op-score-hint').textContent = '初始总成绩已被限定在 ' + st.name + ' 区间 ' + st.min + '–' + st.max + '，开局即按该阶段审核。';
+  }
+  function refreshSummary() {
+    var st = STAGES[currentStage()];
+    var s = MOM_LABEL[currentMom()] + ' · ' + EXTRA_LABEL[currentExtra()] + ' · ' + st.name;
+    $id('op-summary').innerHTML = s + '<small>槽位 ' + slotOf() + ' · 初始总成绩 ' + $id('op-score').value + ' 分</small>';
   }
 
-  async function jumpTo(index) {
-    setLog('正在进入内置开局 ' + String(index).padStart(2, '0') + ' …');
-    try {
-      var bridge = globalThis.MyCardBridgeV1 || {};
-      if (typeof bridge.selectGreeting !== 'function') { throw new Error('开局桥接尚未就绪'); }
-      await bridge.selectGreeting(index);
-      setLog('✓ 已切换到该开局开场白（变量随开场楼层自动初始化）');
-    } catch (err) {
-      setLog('⚠ ' + (err && err.message ? err.message : '切换失败'));
-    }
-  }
-
-  function bootDefs() {
-    try {
-      var bridge = globalThis.MyCardBridgeV1 || {};
-      if (typeof bridge.listGreetings === 'function') {
-        bridge.listGreetings().then(renderDefs).catch(function (e) { renderDefs([]); });
-      } else {
-        renderDefs([]);
-      }
-    } catch (e) { renderDefs([]); }
-  }
-
-  /* ---------- 自定义开局：变量同步 + 发送 ---------- */
+  /* ---------- MVU 变量（姓名/总成绩/精力） ---------- */
   function findWin(pred) {
     var w = window, depth = 0;
     while (w && depth < 12) {
@@ -264,122 +276,72 @@ textarea.op-input{ resize:vertical; min-height:44px; line-height:1.55; }
     var M = gl('Mvu');
     if (M) { try { cb(M); return; } catch (e) { setLog('变量写入失败：' + e.message); return; } }
     if (tries > 0) { setTimeout(function () { waitMvu(cb, tries - 1); }, 500); }
-    else { setLog('未检测到 MVU(MagVarUpdate)，仅发送设定、不覆盖变量'); }
   }
-  function patchVars(name, energy, score) {
+  function patchVars(name, score, energy) {
     waitMvu(function (M) {
-      var ids = [];
-      try { var cid = gl('getCurrentMessageId'); if (typeof cid === 'function') { var v = cid(); if (v !== undefined) { ids.push(v); } } } catch (e) {}
-      ids.push('latest'); ids.push(0);
+      var mids = ['latest', 0];
       var done = 0;
-      var target = 0;
-      ids.forEach(function (mid) { if (ids.indexOf(mid) === 0 || ids.indexOf(mid) === ids.lastIndexOf(mid)) { target++; } });
-      ids.forEach(function (mid) {
-        var dup = ids.indexOf(mid) < ids.lastIndexOf(mid) && ids.indexOf(mid) !== ids.length - 1;
-        if (dup && ids.indexOf(mid) > 0) { return; }
+      mids.forEach(function (mid) {
         try {
           var data = M.getMvuData({ type: 'message', message_id: mid });
           if (data && data.stat_data && data.stat_data.user) {
             var user = data.stat_data.user;
             if (name) { user['姓名'] = name; }
-            user['精力值'] = clamp(Math.round(energy) || 100, 0, 100);
             user['总成绩值'] = clamp(Math.round(score) || 230, 0, 750);
-            M.replaceMvuData(data, { type: 'message', message_id: mid })
-              .then(function () {
-                done++;
-                if (done >= target) {
-                  try { window.dispatchEvent(new Event('mag_variable_update_ended')); } catch (e) {}
-                  try { if (window.parent) { window.parent.dispatchEvent(new Event('mag_variable_update_ended')); } } catch (e) {}
-                  setLog('变量已同步：姓名=' + (name || 'user') + '，精力=' + user['精力值'] + '，成绩=' + user['总成绩值']);
-                }
-              })
-              .catch(function (e) { done++; if (done >= target) { setLog('变量同步失败：' + (e && e.message ? e.message : e)); } });
+            user['精力值'] = clamp(Math.round(energy) || 100, 0, 100);
+            M.replaceMvuData(data, { type: 'message', message_id: mid }).then(function () {
+              done++;
+              if (done >= 2) {
+                try { window.dispatchEvent(new Event('mag_variable_update_ended')); } catch (e) {}
+                try { if (window.parent) { window.parent.dispatchEvent(new Event('mag_variable_update_ended')); } } catch (e) {}
+              }
+            }).catch(function () { done++; });
           } else { done++; }
         } catch (e) { done++; }
       });
     }, 12);
   }
 
-  function sendText(text) {
-    var host = findWin(function (w) {
-      try { return w.document && w.document.getElementById('send_textarea'); } catch (e) { return false; }
-    });
-    var ta = null, btn = null;
-    if (host) {
-      ta = host.document.getElementById('send_textarea') || host.document.querySelector('#send_form textarea');
-      btn = host.document.getElementById('send_but') || host.document.querySelector('#send_form button[type=submit]') || host.document.querySelector('#send_but');
-    }
-    if (!ta) {
-      var copied = false;
-      try {
-        var pre = document.createElement('textarea');
-        pre.value = text; pre.style.cssText = 'width:100%;min-height:80px;margin-top:6px;font-size:11px;';
-        document.body.appendChild(pre); pre.select(); copied = document.execCommand('copy'); document.body.removeChild(pre);
-      } catch (e) {}
-      setLog('未能连接发言框：' + (copied ? '设定已复制，粘贴到发言框发送即可。' : '请手动复制下方设定文本发送。'));
-      var box = document.createElement('div');
-      box.style.cssText = 'margin-top:6px;padding:8px;border:1px dashed #c00;border-radius:6px;font-size:11px;white-space:pre-wrap;color:#7a3b3b;';
-      box.textContent = text;
-      document.body.appendChild(box);
-      return false;
-    }
+  /* ---------- 开始 ---------- */
+  async function start() {
+    var slot = slotOf();
+    var name = $id('op-name').value.trim();
+    var score = Number($id('op-score').value);
+    var energy = Number($id('op-energy').value);
+    var st = STAGES[currentStage()];
+    setLog('正在进入「' + MOM_LABEL[currentMom()] + ' · ' + EXTRA_LABEL[currentExtra()] + ' · ' + st.name + '」（槽位 ' + slot + '，初始总成绩 ' + score + '）…');
     try {
-      ta.focus(); ta.value = text;
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
-      ta.dispatchEvent(new Event('change', { bubbles: true }));
-      if (btn) { btn.click(); return true; }
-      ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }));
-      return true;
-    } catch (e) { setLog('发送失败：' + e.message + '（请复制设定手动发送）'); return false; }
-  }
-
-  function compose() {
-    var g = function (id) { var el = $id(id); return el ? el.value.trim() : ''; };
-    var name = g('op-name'), age = g('op-age'), look = g('op-look'), bg = g('op-bg'), scene = g('op-scene');
-    var energy = Number($id('op-energy') ? $id('op-energy').value : 100);
-    var score = Number($id('op-score') ? $id('op-score').value : 230);
-    var L = [];
-    L.push('【自定义开局 · 设定指令】');
-    L.push('请以母亲中岛美咲子（你）的视角，按以下设定立即展开一场全新开局剧情；「我」是下列设定的儿子，请用名字「' + (name || '我') + '」称呼他，全程遵守本卡的角色规则与行为铁律，从「开局场景」所述的这一刻开始演绎：');
-    L.push('· 姓名：' + (name || '（未填）'));
-    if (age) { L.push('· 年龄：' + age); }
-    if (look) { L.push('· 外貌与性格：' + look); }
-    if (bg) { L.push('· 人物背景：' + bg); }
-    if (scene) { L.push('· 开局场景：' + scene); }
-    L.push('· 初始状态：精力 ' + energy + '/100，总成绩 ' + score + '/750。');
-    L.push('（开局选择面板已同步变量，请勿在设定之外再询问我的名字。）');
-    return { text: L.join('\n'), name: name, energy: energy, score: score };
+      var bridge = globalThis.MyCardBridgeV1 || {};
+      if (typeof bridge.selectGreeting !== 'function') { throw new Error('开局桥接尚未就绪'); }
+      await bridge.selectGreeting(slot);
+      setLog('✓ 已切换到对应开场白，正在同步基础设定…');
+      setTimeout(function () {
+        patchVars(name, score, energy);
+        setLog('✓ 完成：' + MOM_LABEL[currentMom()] + EXTRA_LABEL[currentExtra()] + ' · ' + st.name + '（槽位 ' + slot + '，成绩 ' + score + '）');
+      }, 700);
+    } catch (err) {
+      setLog('⚠ ' + (err && err.message ? err.message : '切换失败'));
+    }
   }
 
   function bind() {
     var eb = $id('op-energy'), sb = $id('op-score');
-    if (eb) { eb.addEventListener('input', function () { $id('op-energy-num').textContent = eb.value + ' / 100'; }); }
-    if (sb) { sb.addEventListener('input', function () { $id('op-score-num').textContent = sb.value + ' / 750'; }); }
-    var resetBtn = $id('op-reset');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', function () {
-        ['op-name', 'op-age', 'op-look', 'op-bg', 'op-scene'].forEach(function (id) { var e = $id(id); if (e) { e.value = ''; } });
-        if (eb) { eb.value = 100; $id('op-energy-num').textContent = '100 / 100'; }
-        if (sb) { sb.value = 230; $id('op-score-num').textContent = '230 / 750'; }
-        setLog('已清空。');
-      });
-    }
-    var sendBtn = $id('op-send');
-    if (sendBtn) {
-      sendBtn.addEventListener('click', function () {
-        var c = compose();
-        if (!c.name) { setLog('请至少填写「姓名」。'); return; }
-        setLog('正在同步变量并发送…');
-        patchVars(c.name, c.energy, c.score);
-        setTimeout(function () { sendText(c.text); }, 400);
-      });
-    }
+    if (eb) { eb.addEventListener('input', function () { $id('op-energy-num').textContent = eb.value; }); }
+    if (sb) { sb.addEventListener('input', function () { $id('op-score-num').textContent = sb.value + ' 分'; refreshSummary(); }); }
+    document.querySelectorAll('input[name=op-stage]').forEach(function (el) {
+      el.addEventListener('change', function () { refreshStage(); refreshSummary(); });
+    });
+    document.querySelectorAll('input[name=op-mom], #op-bro, #op-dad').forEach(function (el) {
+      el.addEventListener('change', refreshSummary);
+    });
+    var btn = $id('op-start');
+    if (btn) { btn.addEventListener('click', start); }
+    refreshStage();
+    refreshSummary();
   }
-
   function boot() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function () { bind(); bootDefs(); });
-    } else { bind(); bootDefs(); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', bind); }
+    else { bind(); }
   }
   boot();
 })();
