@@ -734,8 +734,20 @@ function finish(){
       notify('✓ 已切换到槽位 ' + slot + ' 的开场白' + (prewritten ? '（已预写初始变量）' : '（正在同步成绩，稍后状态栏更新）'));
       byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白';
     }
-    runOnTop(function(){ reapplyMain(score, name); }, 400);
-    runOnTop(function(){ verifyMain(score); }, 1800);
+    /* 在 top 全局定义独立函数，并用 top.setTimeout(字符串) 调度——彻底摆脱楼层闭包 */
+    try {
+      var top = topWin();
+      if (!top.__dshApply) {
+        top.eval("window.__dshApply = function(score, name){ var target=Math.min(Math.max(Math.round(score)||230,0),750); var M=window.Mvu; var nm=String(name||'').replace(/['\\\\\"]/g,''); var cmd=\"_.set('user.总成绩值', \"+target+\");\"+(nm?\"_.set('user.姓名','\"+nm+\"');\":\"\"); if(M&&typeof M.parseMessage==='function'&&typeof M.getMvuData==='function'&&typeof M.replaceMvuData==='function'){ ['latest',0].forEach(function(mid){ try{ var old=M.getMvuData({type:'message',message_id:mid}); M.parseMessage(cmd,old).then(function(nw){ if(nw){ try{ M.replaceMvuData(nw,{type:'message',message_id:mid}); }catch(e){} } }).catch(function(){}); }catch(e){} }); return true; } var setter=window.updateVariablesWith; if(setter){ function mut(v){ v=v||{}; var root=(v.stat_data&&v.stat_data.user)?v.stat_data:(v.user?v:null); if(!root&&v.stat_data){root=v.stat_data;} if(root){ if(!root.user){root.user={};} if(nm)root.user['姓名']=nm; root.user['总成绩值']=target; } else { if(!v.stat_data){v.stat_data={};} if(!v.stat_data.user){v.stat_data.user={};} if(nm)v.stat_data.user['姓名']=nm; v.stat_data.user['总成绩值']=target; } return v; } try{ setter(mut,{type:'message',message_id:0}); }catch(e){} try{ setter(mut,{type:'message',message_id:'latest'}); }catch(e){} return true; } return false; };");
+        top.eval("window.__dshVerify = function(score){ var target=Math.min(Math.max(Math.round(score)||230,0),750); var M=window.Mvu; var guard=0; function rd(){ try{ if(M&&typeof M.getMvuData==='function'){ var ids=[0,'latest']; for(var i=0;i<ids.length;i++){ var d=M.getMvuData({type:'message',message_id:ids[i]}); if(d&&d.stat_data&&d.stat_data.user){ return d.stat_data.user['总成绩值']; } } } var g=window.getVariables; if(g){ var v=g({type:'message',message_id:0}); if(v&&v.stat_data&&v.stat_data.user){ return v.stat_data.user['总成绩值']; } if(v&&v.user){ return v.user['总成绩值']; } } }catch(e){} return null; } var fin=setInterval(function(){ guard++; var v=rd(); if(v!==null){ clearInterval(fin); var m=Number(v)===target; try{ window.console.info('[开局] 最终校验 target='+target+' 实际='+v+' → '+(m?'一致':'不一致')); }catch(e){} try{ if(window.toastr){ (m?window.toastr.success:window.toastr.error)('目标 '+target+'，状态栏显示 '+v, m?'✓ 已确认状态栏成绩':'⚠ 成绩未同步'); } }catch(e){} } else if(guard>12){ clearInterval(fin); try{ window.console.warn('[开局] 校验超时：未能读取楼层总成绩'); }catch(e){} } },800); try{ window.console.info('[开局] 校验开始 target='+target); }catch(e){} };");
+      }
+      var sc = clamp(Math.round(score) || 230, 0, 750);
+      var safeName = (name || '').replace(/["\\]/g, '');
+      [400, 1200, 2400, 3600].forEach(function (d) {
+        top.setTimeout("window.__dshApply && window.__dshApply(" + sc + ", " + JSON.stringify(safeName) + ")", d);
+      });
+      top.setTimeout("window.__dshVerify && window.__dshVerify(" + sc + ")", 1800);
+    } catch (e) {}
     setTimeout(closeOv, 1000);
   }
   function fail(e){
