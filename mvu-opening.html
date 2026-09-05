@@ -71,6 +71,9 @@
     color:var(--accent2); margin-bottom:14px; }
   .big small::before, .big small::after{ content:"❖"; font-size:8px; margin:0 10px; color:rgba(216,180,138,.6); }
   .big .hl{ color:var(--accent); }
+  .tagline{ text-align:center; margin-top:18px; font-size:11px; letter-spacing:.34em; color:var(--accent2);
+    opacity:.85; text-shadow:0 0 16px rgba(224,122,127,.4); animation:vu .5s .1s ease both; }
+  .tagline::before,.tagline::after{ content:"❖"; font-size:7px; color:rgba(216,180,138,.55); margin:0 10px; vertical-align:2px; }
   .cta{ text-align:center; margin-top:32px; }
   .startbtn{ font-family:var(--serif); font-size:15px; letter-spacing:.5em; color:#2a1c16;
     background:linear-gradient(180deg,#f2cdb0,#d8a07a); border:1px solid rgba(255,255,255,.25);
@@ -221,7 +224,8 @@
 
   <div class="screens">
     <section class="scr in">
-      <div class="big"><small>—— 開 局 選 択 ——</small>即将开始<br>一段<span class="hl"> 属于你们 </span>的故事</div>
+      <div class="big"><small>—— 開 局 選 択 ——</small>她的房门，今晚<span class="hl"> 没有上锁 </span>——<br>一段<span class="hl"> 湿润的防线 </span>，正等着你攻破</div>
+      <div class="tagline">—— 让 她 的 第 一 次 ， 从 你 开 始 。——</div>
       <div class="cta"><button class="startbtn" id="begin">开 始</button></div>
     </section>
 
