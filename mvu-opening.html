@@ -631,6 +631,10 @@ function openOv(){
 function closeOv(){ byId('ov').classList.remove('open'); }
 /* ---------- 主窗口变量写入/校验（不依赖楼层面板存活） ---------- */
 function topWin(){ var w = window; while (w && w.parent && w.parent !== w) { w = w.parent; } return w; }
+function runOnTop(fn, delay){
+  var top = topWin();
+  try { top.setTimeout(fn, delay || 0); } catch (e) { try { setTimeout(fn, delay || 0); } catch (e2) {} }
+}
 function applyMain(score, name){
   var top = topWin();
   var setter = top.updateVariablesWith || null;
@@ -657,6 +661,13 @@ function applyMain(score, name){
     try { setter(mutate, { type: 'message', message_id: 'latest' }); } catch (e) {}
   }
   return !!setter;
+}
+function reapplyMain(score, name){
+  /* 在主窗口调度，跨楼层切换仍存活；多次回写，最终一次生效 */
+  var delays = [400, 1000, 2000];
+  delays.forEach(function (d) {
+    runOnTop(function () { try { applyMain(score, name); } catch (e) {} }, d);
+  });
 }
 function verifyMain(score){
   var top = topWin();
@@ -702,7 +713,8 @@ function finish(){
       notify('✓ 已切换到槽位 ' + slot + ' 的开场白' + (prewritten ? '（已预写初始变量）' : '（正在同步成绩，稍后状态栏更新）'));
       byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白';
     }
-    setTimeout(function(){ verifyMain(score); }, 1200);
+    runOnTop(function(){ reapplyMain(score, name); }, 400);
+    runOnTop(function(){ verifyMain(score); }, 1800);
     setTimeout(closeOv, 1000);
   }
   function fail(e){
