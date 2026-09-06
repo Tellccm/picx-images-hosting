@@ -346,10 +346,14 @@ var MOMS = {
     desc: '美咲子的温柔总慢了半拍：半夜推门见你还醒着，红着脸把你按回被窝，轻声哄着“别熬了呀，妈心疼。”她记得你所有忌口，却从不敢多碰你一下——掖被角的指尖悬在半空又悄悄收回。守夜后她趴在床边睡着，手还搭在你手背上；醒来却红着脸别开头：“…妈只是顺手照顾你。”嘴上守着界线，眼神却骗不了人。她的心软与你的抗拒，在同一间屋檐下反复拉扯，谁都不敢先迈出那一步呢。'
   },
   B: {
-    nm: '毒蛇傲娇母亲',
-    tag: '毒 舌 · 口 嫌 体 正 直',
-    desc: '美咲子嘴上从不饶人，笑都带着刺：“别用那种眼神看我，恶心死了”“哭什么，废物一个，也配当我的儿子？”——就算被你逼到墙角、不得不伸手帮你纾解，她也一边伺候一边骂：“手别抖…呵，就这么点出息？”眉头皱得能夹死蚊子，心底也满满是嫌弃，嫌弃你、嫌弃自己这双手，却还是会把动作做完，再冷着脸甩下一句“滚去洗”。毒舌与嫌恶之下，藏着一点她死也不肯承认的在意。'
+    nm: '毒蛇傲娇 · 森川千寻',
+    tag: '冷 艳 · 毒 舌 · 高 贵',
+    desc: '森川千寻，森川家族大小姐。紫色长发总是披散着，清冷、冷艳，看人时带着居高临下的审视——包括她那个“不争气”的儿子。她从不夸你，毒舌张口就来：“就凭你这种脑子？”“别把森川家的脸丢光。”被妹妹当众炫耀儿子、又被长辈看扁之后，她把那口气全记在你头上，押上脸面也要把你逼出成绩。她极重尊严、说话算话——所以当你真敢拿成绩跟她谈条件时，她再屈辱、再恼羞，也会冷着脸把答应的事一样样做到底。毒舌之下，是拿捏不住脸面与羞恼的败北。'
   }
+};
+var MOM_META = {
+  A: { name: '中岛美咲子', type: '温柔腼腆', voice: '这孩子……成绩都这样了还硬撑，当妈的哪能真看着他垮掉……就、就仅限这一次……' },
+  B: { name: '森川千寻', type: '毒蛇傲娇', voice: '这个蠢东西……要不是他姓森川，我真想当没生过。妹妹那张得意的脸、奶奶那句“这才像森川家的人”，我全都记着。他最好真能考出来，否则我让他知道什么叫后悔。' }
 };
 var STAGES = [
   { key:'s1', short:'阶段一 · 手交', n:'阶段一 · 手交期', min:0,   max:299,
@@ -568,7 +572,7 @@ function patchMvu(name, score, slot){
           var u = d.stat_data.user;
           if (name) { u['姓名'] = name; }
           u['总成绩值'] = clamp(Math.round(score) || 230, 0, 750);
-          try { if (!d.stat_data['考试']) { d.stat_data['考试'] = {}; } var ii = STAGES.findIndex(function (s) { return s.key === state.st; }); d.stat_data['考试']['已通过阶段数'] = ii < 0 ? 0 : ii; d.stat_data['考试']['状态'] = '关闭'; d.stat_data['考试']['目标阶段'] = ''; d.stat_data['考试']['失败标记天'] = 0; } catch (e) {}
+          try { if (!d.stat_data['考试']) { d.stat_data['考试'] = {}; } var ii = STAGES.findIndex(function (s) { return s.key === state.st; }); d.stat_data['考试']['已通过阶段数'] = ii < 0 ? 0 : ii; d.stat_data['考试']['状态'] = '禁用'; d.stat_data['考试']['目标阶段'] = ''; d.stat_data['考试']['失败标记天'] = 0; } catch (e) {}
           M.replaceMvuData(d, { type: 'message', message_id: mid }).then(function () {
             try {
               var chk = M.getMvuData({ type: 'message', message_id: mid });
@@ -632,9 +636,16 @@ function applyMain(score, name){
   var target = clamp(Math.round(score) || 230, 0, 750);
   var nameEsc = (name || '').replace(/['"\\]/g, '');
   var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
+  var mm = MOM_META[state.mom] || MOM_META.A;
+  var mmName = mm.name.replace(/['"\\]/g, '');
+  var mmType = mm.type.replace(/['"\\]/g, '');
+  var mmVoice = mm.voice.replace(/['"\\]/g, '');
+  var fbro = state.bro ? '有' : '无';
+  var fdad = state.dad ? '有' : '无';
+  var preCmd = "_.set('妈妈.姓名','" + mmName + "');_.set('妈妈.类型','" + mmType + "');_.set('妈妈.心里话','" + mmVoice + "');_.set('家庭人物.弟弟','" + fbro + "');_.set('家庭人物.爸爸','" + fdad + "');_.set('答题状态','禁用');_.set('user.精力值',100);_.set('user.智商值',1);_.set('user.D加成',0.2);_.set('user.零花钱',0);_.set('user.最后领取日',0);_.set('user.奖励次数',0);_.set('奖励.存储',[]);";
   /* 首选：走真实 MVU 管道（parseMessage→replaceMvuData），该层不会被渲染校验覆盖 */
   if (M && typeof M.parseMessage === 'function' && typeof M.getMvuData === 'function' && typeof M.replaceMvuData === 'function') {
-    var cmd = "_.set('user.总成绩值', " + target + ");" + (nameEsc ? "_.set('user.姓名', '" + nameEsc + "');" : "") + "_.set('考试.已通过阶段数', " + stIdx + ");_.set('考试.状态','关闭');_.set('考试.目标阶段','');";
+    var cmd = preCmd + "_.set('user.总成绩值', " + target + ");" + (nameEsc ? "_.set('user.姓名', '" + nameEsc + "');" : "") + "_.set('考试.已通过阶段数', " + stIdx + ");_.set('考试.状态','禁用');_.set('考试.目标阶段','');_.set('考试.失败标记天',0);";
     ['latest', 0].forEach(function (mid) {
       try {
         var old = M.getMvuData({ type: 'message', message_id: mid });
@@ -654,7 +665,13 @@ function applyMain(score, name){
     if (!root && v.stat_data) { root = v.stat_data; }
     if (root) { if (!root.user) { root.user = {}; } var u = root.user; if (nameEsc) { u['姓名'] = nameEsc; } u['总成绩值'] = target; }
     else { if (!v.stat_data) { v.stat_data = {}; } if (!v.stat_data.user) { v.stat_data.user = {}; } if (nameEsc) { v.stat_data.user['姓名'] = nameEsc; } v.stat_data.user['总成绩值'] = target; }
-    try { var eo = v.stat_data ? v.stat_data : v; if (!eo['考试']) { eo['考试'] = {}; } eo['考试']['已通过阶段数'] = stIdx; eo['考试']['状态'] = '关闭'; eo['考试']['目标阶段'] = ''; eo['考试']['失败标记天'] = 0; } catch (e) {}
+    try { var eo = v.stat_data ? v.stat_data : v; if (!eo['考试']) { eo['考试'] = {}; } eo['考试']['已通过阶段数'] = stIdx; eo['考试']['状态'] = '禁用'; eo['考试']['目标阶段'] = ''; eo['考试']['失败标记天'] = 0;
+      eo['妈妈'] = { '姓名': mmName, '类型': mmType, '心里话': mmVoice };
+      eo['家庭人物'] = { '弟弟': fbro, '爸爸': fdad };
+      eo['答题状态'] = '禁用';
+      if (eo['user']) { eo['user']['精力值'] = 100; eo['user']['智商值'] = 1; eo['user']['D加成'] = 0.2; eo['user']['零花钱'] = 0; eo['user']['最后领取日'] = 0; eo['user']['奖励次数'] = 0; }
+      eo['奖励'] = { '存储': [] };
+    } catch (e) {}
     return v;
   }
   if (setter) {
