@@ -568,6 +568,7 @@ function patchMvu(name, score, slot){
           var u = d.stat_data.user;
           if (name) { u['姓名'] = name; }
           u['总成绩值'] = clamp(Math.round(score) || 230, 0, 750);
+          try { if (!d.stat_data['考试']) { d.stat_data['考试'] = {}; } var ii = STAGES.findIndex(function (s) { return s.key === state.st; }); d.stat_data['考试']['已通过阶段数'] = ii < 0 ? 0 : ii; d.stat_data['考试']['状态'] = '关闭'; d.stat_data['考试']['目标阶段'] = ''; d.stat_data['考试']['失败标记天'] = 0; } catch (e) {}
           M.replaceMvuData(d, { type: 'message', message_id: mid }).then(function () {
             try {
               var chk = M.getMvuData({ type: 'message', message_id: mid });
@@ -630,9 +631,10 @@ function applyMain(score, name){
   var M = gl('Mvu');
   var target = clamp(Math.round(score) || 230, 0, 750);
   var nameEsc = (name || '').replace(/['"\\]/g, '');
+  var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
   /* 首选：走真实 MVU 管道（parseMessage→replaceMvuData），该层不会被渲染校验覆盖 */
   if (M && typeof M.parseMessage === 'function' && typeof M.getMvuData === 'function' && typeof M.replaceMvuData === 'function') {
-    var cmd = "_.set('user.总成绩值', " + target + ");" + (nameEsc ? "_.set('user.姓名', '" + nameEsc + "');" : "");
+    var cmd = "_.set('user.总成绩值', " + target + ");" + (nameEsc ? "_.set('user.姓名', '" + nameEsc + "');" : "") + "_.set('考试.已通过阶段数', " + stIdx + ");_.set('考试.状态','关闭');_.set('考试.目标阶段','');";
     ['latest', 0].forEach(function (mid) {
       try {
         var old = M.getMvuData({ type: 'message', message_id: mid });
@@ -652,6 +654,7 @@ function applyMain(score, name){
     if (!root && v.stat_data) { root = v.stat_data; }
     if (root) { if (!root.user) { root.user = {}; } var u = root.user; if (nameEsc) { u['姓名'] = nameEsc; } u['总成绩值'] = target; }
     else { if (!v.stat_data) { v.stat_data = {}; } if (!v.stat_data.user) { v.stat_data.user = {}; } if (nameEsc) { v.stat_data.user['姓名'] = nameEsc; } v.stat_data.user['总成绩值'] = target; }
+    try { var eo = v.stat_data ? v.stat_data : v; if (!eo['考试']) { eo['考试'] = {}; } eo['考试']['已通过阶段数'] = stIdx; eo['考试']['状态'] = '关闭'; eo['考试']['目标阶段'] = ''; eo['考试']['失败标记天'] = 0; } catch (e) {}
     return v;
   }
   if (setter) {
