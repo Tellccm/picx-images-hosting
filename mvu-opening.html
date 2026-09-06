@@ -15,17 +15,13 @@
   body{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
     color:var(--ink); -webkit-font-smoothing:antialiased; }
 
-  .wrap{ position:relative; width:100%; height:680px; max-width:940px; margin:0 auto;
-    padding:22px 30px 20px; display:flex; flex-direction:column; overflow:hidden;
+  .wrap{ position:relative; z-index:2; width:100%; height:auto; max-width:940px; margin:0 auto;
+    padding:22px 30px 20px; display:flex; flex-direction:column; overflow:visible;
     background:
       radial-gradient(1200px 600px at 78% -8%, rgba(224,122,127,.18), transparent 60%),
       radial-gradient(900px 520px at 8% 110%, rgba(216,180,138,.12), transparent 55%),
       linear-gradient(160deg, var(--bg2), var(--bg1) 55%, #120d0b);
     border-radius:14px; box-shadow:0 0 0 1px rgba(255,255,255,.05), 0 24px 60px -24px rgba(0,0,0,.7); }
-  .wrap::after{ content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
-    background-image:linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
-    background-size:44px 44px; }
 
   /* 顶部：印章 + 标题 + 步骤 */
   .topline{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
@@ -49,12 +45,11 @@
     background:linear-gradient(90deg, transparent, rgba(216,180,138,.35), transparent); }
   .stcap{ margin-left:auto; font-size:9px; letter-spacing:.3em; color:var(--ink3); white-space:nowrap; }
 
-  .screens{ position:relative; flex:1; margin-top:12px; }
-  .scr{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
-    opacity:0; transform:translateY(26px) scale(.985); filter:blur(8px); pointer-events:none;
-    transition:opacity .5s cubic-bezier(.2,.7,.2,1), transform .5s cubic-bezier(.2,.7,.2,1), filter .5s ease; }
-  .scr.in{ opacity:1; transform:none; filter:none; pointer-events:auto; }
-  .scr.back{ transform:translateY(-22px) scale(.985); }
+  .screens{ position:relative; margin-top:12px; }
+  .scr{ position:relative; display:none; flex-direction:column; justify-content:flex-start;
+    margin:0 0 6px; animation:vu .5s ease both; }
+  .scr.in{ display:flex; }
+  .scr.back{ animation:none; }
   /* 入场错峰 */
   @keyframes vu{ from{ opacity:0; transform:translateY(16px);} to{ opacity:1; transform:none;} }
   .scr.in>*{ animation:vu .55s cubic-bezier(.2,.7,.2,1) both; }
