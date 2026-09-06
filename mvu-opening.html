@@ -576,23 +576,10 @@ function topWin(){ var w = window; while (w && w.parent && w.parent !== w) { w =
 function buildOpenCmd(target, nameEsc, stIdx){
   var mm = MOM_META[state.mom] || MOM_META.A;
   var mmName = mm.name.replace(/['"\\]/g, '');
-  var mmType = mm.type.replace(/['"\\]/g, '');
   var mmVoice = mm.voice.replace(/['"\\]/g, '');
-  var fbro = state.bro ? '有' : '无';
-  var fdad = state.dad ? '有' : '无';
-  if (typeof stIdx !== 'number') stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
   var c = "_.set('user.总成绩值', " + target + ");";
   if (nameEsc) c += "_.set('user.姓名', '" + nameEsc + "');";
-  c += "_.set('user.精力值', 100);_.set('user.智商值', 1);_.set('user.D加成', 0.2);_.set('user.零花钱', 0);_.set('user.最后领取日', 0);_.set('user.奖励次数', 0);";
-  c += "_.set('妈妈.姓名', '" + mmName + "');_.set('妈妈.类型', '" + mmType + "');_.set('妈妈.心里话', '" + mmVoice + "');";
-  c += "_.set('妈妈.小穴.状态', '紧闭干爽');_.set('妈妈.小穴.短描写', '被居家短裤包裹得严严实实，尚处于未开发的成熟人妻私密地带。');";
-  c += "_.set('妈妈.乳头.状态', '粉嫩微挺');_.set('妈妈.乳头.短描写', '平时被大号罩杯严实包裹，此刻在薄布下透着隐约轮廓与温度。');";
-  c += "_.set('妈妈.大腿.状态', '丰满紧致');_.set('妈妈.大腿.短描写', '白皙修长且富有肉感，蹲下时泛着成熟女性独有的圆润光泽。');";
-  c += "_.set('妈妈.足部.状态', '白皙纤细');_.set('妈妈.足部.短描写', '脚型优美，脚趾圆润，脚踝纤细，被居家拖鞋半掩着。');";
-  c += "_.set('时间.第几天', 1);_.set('时间.时刻', '晚上');_.set('地点', '家里客厅');";
-  c += "_.set('家庭人物.弟弟', '" + fbro + "');_.set('家庭人物.爸爸', '" + fdad + "');_.set('答题状态', '禁用');";
-  c += "_.set('考试.已通过阶段数', " + stIdx + ");_.set('考试.状态', '禁用');_.set('考试.目标阶段', '');_.set('考试.失败标记天', 0);";
-  c += "_.set('奖励.存储', []);";
+  c += "_.set('妈妈.姓名', '" + mmName + "');_.set('妈妈.心里话', '" + mmVoice + "');";
   return c;
 }
 /* 兜底写：走酒馆助手 updateVariablesWith（Mvu 未就绪时也可用） */
