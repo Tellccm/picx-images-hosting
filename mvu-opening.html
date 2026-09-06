@@ -45,7 +45,7 @@
     background:linear-gradient(90deg, transparent, rgba(216,180,138,.35), transparent); }
   .stcap{ margin-left:auto; font-size:9px; letter-spacing:.3em; color:var(--ink3); white-space:nowrap; }
 
-  .screens{ position:relative; margin-top:12px; max-height:clamp(320px, 48vh, 460px); overflow-y:auto;
+  .screens{ position:relative; margin-top:14px; min-height:320px; max-height:720px; overflow-y:auto;
     scrollbar-width:thin; scrollbar-color:rgba(216,180,138,.35) transparent; }
   .screens::-webkit-scrollbar{ width:6px; }
   .screens::-webkit-scrollbar-thumb{ background:rgba(216,180,138,.3); border-radius:3px; }
@@ -194,7 +194,7 @@
   @media (max-width:760px){
     .wrap{ height:auto; overflow:visible; padding:16px 16px 18px; }
     body{ overflow:auto; }
-    .screens{ position:relative; height:auto; }
+    .screens{ position:relative; height:auto; min-height:0; max-height:none; }
     .scr{ position:relative; inset:auto; opacity:1; transform:none; filter:none; display:none; pointer-events:none; margin:4px 0; }
     .scr.in{ display:flex; pointer-events:auto; }
     .logo{ font-size:12px; letter-spacing:.16em; }
