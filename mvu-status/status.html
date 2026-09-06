@@ -12,11 +12,11 @@
    ============================================================ */
 html, body { margin:0; padding:0; background:transparent; }
 body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; }
-#hsv2-root { padding:4px 2px; }
+#hsv2-root { padding:4px 2px; min-height:60px; color:#8d84a6; font-size:12px; }
 </style>
 </head>
 <body>
-<div id="hsv2-root" class="hsv2-slot"></div>
+<div id="hsv2-root" class="hsv2-slot">状态栏加载中…（若长时间停留此文字，说明脚本未执行，请按 F12 查看报错）</div>
 <script>
 /* ==== 引擎注入点 START ==== */
 
@@ -1479,6 +1479,13 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 })();
 
 /* ==== 引擎注入点 END ==== */
+
+
+/* 错误可见化：运行阶段出错直接显示在根容器，便于定位 */
+window.addEventListener('error', function (ev) {
+  try { var r = document.getElementById('hsv2-root'); if (r && !r.__showErr) { r.__showErr = true; r.style.padding='12px'; r.style.background='#2a1a14'; r.style.color='#ffb4b4'; r.style.border='1px solid #ff7b7b'; r.style.borderRadius='10px'; r.style.fontSize='12px'; r.innerHTML = '⚠ 状态栏脚本错误: ' + (ev && (ev.message || ev.error || 'unknown')); } } catch (e) {} });
+window.addEventListener('unhandledrejection', function (ev) {
+  try { var r = document.getElementById('hsv2-root'); if (r && !r.__showErr) { r.__showErr = true; r.style.padding='12px'; r.style.background='#2a1a14'; r.style.color='#ffb4b4'; r.style.border='1px solid #ff7b7b'; r.style.borderRadius='10px'; r.style.fontSize='12px'; r.innerHTML = '⚠ 状态栏异步错误: ' + (ev && ev.reason && (ev.reason.message || ev.reason) || 'unknown'); } } catch (e) {} });
 </script>
 </body>
 </html>
