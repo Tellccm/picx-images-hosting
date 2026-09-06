@@ -2,342 +2,1483 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>状态栏 · 商业级可切换版（整段替换 MVU状态栏 replaceString）</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>状态栏v2 · 玩法中心（做题/考试/商城）</title>
 <style>
 /* ============================================================
-   状态栏（基于工程已验证的 tk-status 布局 + 脚本）
-   - 布局/变量填充：与已验证版一致（等 MVU 就绪、1.2s 兜底、
-     VARIABLE_UPDATE_ENDED + window 事件双通道），保证不发肿、能更新
-   - 主题切换：纯 CSS 原生（隐藏 radio + :has 驱动四套主题变量），
-     不依赖脚本；脚本仅做「记忆 + 容器 data-theme 双保险」
+   状态栏v2 + 玩法中心（纯文档流，不锁高、不裁内容）
+   运行方式：正则 .load() 注入页面后，脚本读取楼层 stat_data
+   （getAllVariables / Mvu），交互实时写回并重绘本页。
    ============================================================ */
-
-/* ---------- 四套主题 token ---------- */
-.tk-status{ /* 默认 A 和纸·绯墨 */
-  --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
-  --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
-  --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a;
-  --tk-radius:10px; --tk-track:#ece5d8;
-}
-/* radio 勾选驱动（CSS 换肤主通道，无需脚本） */
-.tk-status:has(#tk-a:checked){ --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
-  --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
-  --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a; --tk-radius:10px; --tk-track:#ece5d8; }
-.tk-status:has(#tk-b:checked){ --tk-bg:#241f1a; --tk-bg-soft:#2f2822; --tk-line:#4a4035; --tk-line-strong:#6b5c47;
-  --tk-ink:#ece4d6; --tk-ink-2:#b8ab97; --tk-ink-3:#857766;
-  --tk-mom:#d8a95c; --tk-you:#9fb6c9; --tk-gold:#caa24f; --tk-radius:8px; --tk-track:#3a322a; }
-.tk-status:has(#tk-c:checked){ --tk-bg:#f3f5f7; --tk-bg-soft:#e9edf1; --tk-line:#d5dde3; --tk-line-strong:#b9c6cf;
-  --tk-ink:#33424f; --tk-ink-2:#5c6b78; --tk-ink-3:#8d9aa5;
-  --tk-mom:#b3545c; --tk-you:#3f6478; --tk-gold:#9a8c5f; --tk-radius:10px; --tk-track:#dfe6ea; }
-.tk-status:has(#tk-d:checked){ --tk-bg:#f4f2ea; --tk-bg-soft:#ebe7da; --tk-line:#dcd5c3; --tk-line-strong:#c2b896;
-  --tk-ink:#3a3a2e; --tk-ink-2:#6a6755; --tk-ink-3:#97917b;
-  --tk-mom:#8a6b3f; --tk-you:#4a6b57; --tk-gold:#a58a4b; --tk-radius:6px; --tk-track:#e2dccb; }
-/* 脚本同步的双保险：容器 data-theme 也会切主题 */
-html[data-theme="a"], .tk-status[data-theme="a"]{
-  --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
-  --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
-  --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a; --tk-radius:10px; --tk-track:#ece5d8; }
-html[data-theme="b"], .tk-status[data-theme="b"]{
-  --tk-bg:#241f1a; --tk-bg-soft:#2f2822; --tk-line:#4a4035; --tk-line-strong:#6b5c47;
-  --tk-ink:#ece4d6; --tk-ink-2:#b8ab97; --tk-ink-3:#857766;
-  --tk-mom:#d8a95c; --tk-you:#9fb6c9; --tk-gold:#caa24f; --tk-radius:8px; --tk-track:#3a322a; }
-html[data-theme="c"], .tk-status[data-theme="c"]{
-  --tk-bg:#f3f5f7; --tk-bg-soft:#e9edf1; --tk-line:#d5dde3; --tk-line-strong:#b9c6cf;
-  --tk-ink:#33424f; --tk-ink-2:#5c6b78; --tk-ink-3:#8d9aa5;
-  --tk-mom:#b3545c; --tk-you:#3f6478; --tk-gold:#9a8c5f; --tk-radius:10px; --tk-track:#dfe6ea; }
-html[data-theme="d"], .tk-status[data-theme="d"]{
-  --tk-bg:#f4f2ea; --tk-bg-soft:#ebe7da; --tk-line:#dcd5c3; --tk-line-strong:#c2b896;
-  --tk-ink:#3a3a2e; --tk-ink-2:#6a6755; --tk-ink-3:#97917b;
-  --tk-mom:#8a6b3f; --tk-you:#4a6b57; --tk-gold:#a58a4b; --tk-radius:6px; --tk-track:#e2dccb; }
-
-html, body{ margin:0; padding:0; }
-
-/* ---------- 容器（布局与已验证版一致，紧凑不发肿） ---------- */
-.tk-status { width:100%; box-sizing:border-box; font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; color:var(--tk-ink);
-  background:var(--tk-bg); border:1px solid var(--tk-line); border-radius:var(--tk-radius);
-  padding:14px 16px 12px; box-shadow:0 1px 0 rgba(64,56,44,.04) inset, 0 3px 10px rgba(64,56,44,.05); }
-.tk-status * { box-sizing:border-box; }
-.tk-radio{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
-  overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
-
-.tk-head { display:flex; align-items:center; gap:10px; padding-bottom:9px; margin-bottom:11px;
-  border-bottom:1px solid var(--tk-line); }
-.tk-title { font-family:"Songti SC","STSong","SimSun",serif; font-size:15px; font-weight:700; letter-spacing:.18em; color:var(--tk-mom); }
-.tk-head-name { margin-left:auto; font-size:11px; letter-spacing:.12em; color:var(--tk-ink-2); }
-
-/* 主题切换器：四个色点（label 包 radio，纯 CSS 可切换） */
-.tk-swatches { display:flex; gap:6px; margin-left:10px; align-items:center; }
-.tk-swatch { width:11px; height:11px; border-radius:50%; cursor:pointer; padding:0; border:1px solid rgba(0,0,0,.14);
-  background:var(--sw); opacity:.55; transition:transform .15s ease, opacity .15s ease; box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); }
-.tk-swatch:hover { transform:scale(1.18); opacity:.9; }
-.tk-swatch[data-theme="a"]{--sw:#a03a44}
-.tk-swatch[data-theme="b"]{--sw:#caa24f}
-.tk-swatch[data-theme="c"]{--sw:#3f6478}
-.tk-swatch[data-theme="d"]{--sw:#4a6b57}
-.tk-swatch.on, .tk-status:has(#tk-a:checked) .tk-swatch[data-theme="a"],
-.tk-status:has(#tk-b:checked) .tk-swatch[data-theme="b"],
-.tk-status:has(#tk-c:checked) .tk-swatch[data-theme="c"],
-.tk-status:has(#tk-d:checked) .tk-swatch[data-theme="d"]{ opacity:1;
-  box-shadow:0 0 0 1.5px var(--tk-bg), 0 0 0 3px var(--sw); transform:scale(1.05); }
-
-.tk-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:11px; }
-.tk-cell { background:var(--tk-bg-soft); border:1px solid var(--tk-line); border-radius:calc(var(--tk-radius) - 2px);
-  padding:8px 10px 9px; position:relative; }
-.tk-cell::before { content:""; position:absolute; left:0; top:8px; bottom:8px; width:2px;
-  background:var(--tk-mom); border-radius:1px; opacity:.55; }
-.tk-cell-tag { display:block; font-size:10px; letter-spacing:.2em; color:var(--tk-ink-3); margin-bottom:4px; }
-.tk-cell-status { display:block; font-size:13px; font-weight:600; color:var(--tk-ink); margin-bottom:4px; letter-spacing:.04em; }
-.tk-cell-desc { display:block; font-size:10.5px; line-height:1.5; color:var(--tk-ink-2); }
-
-.tk-thought { background:var(--tk-bg-soft); border-left:2px solid var(--tk-gold); border-radius:0 6px 6px 0;
-  padding:8px 12px; margin-bottom:13px; font-size:11.5px; line-height:1.6; color:var(--tk-ink-2); }
-.tk-thought b { font-family:"Songti SC","STSong","SimSun",serif; font-weight:700; color:var(--tk-mom); letter-spacing:.2em; font-size:10.5px; margin-right:8px; }
-
-.tk-divider { display:flex; align-items:center; gap:10px; margin:13px 0 11px; color:var(--tk-ink-3); font-size:10px; letter-spacing:.3em; }
-.tk-divider::before, .tk-divider::after { content:""; flex:1; height:1px; background:var(--tk-line); }
-
-.tk-you { background:var(--tk-bg-soft); border:1px solid var(--tk-line); border-radius:calc(var(--tk-radius) - 2px); padding:10px 14px 12px; }
-.tk-you-head { display:flex; align-items:baseline; gap:8px; margin-bottom:9px; }
-.tk-you-title { font-family:"Songti SC","STSong","SimSun",serif; font-size:13px; font-weight:700; letter-spacing:.2em; color:var(--tk-you); }
-.tk-you-name { margin-left:auto; font-size:11px; color:var(--tk-ink-2); letter-spacing:.1em; }
-.tk-bar { margin-bottom:8px; }
-.tk-bar:last-child { margin-bottom:0; }
-.tk-bar-info { display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px; }
-.tk-bar-info .n { color:var(--tk-ink-2); letter-spacing:.15em; }
-.tk-bar-info .v { color:var(--tk-ink); font-weight:600; font-variant-numeric:tabular-nums; }
-.tk-track { height:6px; background:var(--tk-track); border-radius:3px; overflow:hidden; }
-.tk-fill { height:100%; border-radius:3px; transition:width .45s ease; }
-.tk-fill-energy { background:var(--tk-mom); }
-.tk-fill-score { background:var(--tk-you); }
-
-/* ============================================================
-   ★ 黄游风覆盖（与开局面板同一套暗红幕布 / 衬线金边）
-   ============================================================ */
-html[data-theme="a"], .tk-status[data-theme="a"], .tk-status:has(#tk-a:checked){
-  --tk-bg:#1d1310; --tk-bg-soft:#2a1a14; --tk-line:#3a2a20; --tk-line-strong:#4d3428;
-  --tk-ink:#f3e9dc; --tk-ink-2:#cbb9a2; --tk-ink-3:#8f7a64;
-  --tk-mom:#e07a7f; --tk-you:#d8b48a; --tk-gold:#caa24f; --tk-radius:14px; --tk-track:#3a2a20; }
-html[data-theme="b"], .tk-status[data-theme="b"], .tk-status:has(#tk-b:checked){
-  --tk-bg:#1c1712; --tk-bg-soft:#271f16; --tk-line:#3a3125; --tk-line-strong:#4a3d2c;
-  --tk-ink:#efe6d4; --tk-ink-2:#c9b594; --tk-ink-3:#93846a;
-  --tk-mom:#d9a85c; --tk-you:#8fa3b5; --tk-gold:#caa24f; --tk-radius:14px; --tk-track:#33291d; }
-html[data-theme="c"], .tk-status[data-theme="c"], .tk-status:has(#tk-c:checked){
-  --tk-bg:#131a20; --tk-bg-soft:#1c242c; --tk-line:#2c3944; --tk-line-strong:#384856;
-  --tk-ink:#e6eef5; --tk-ink-2:#b7c6d2; --tk-ink-3:#8797a3;
-  --tk-mom:#d07a86; --tk-you:#7f9fb6; --tk-gold:#b7a06a; --tk-radius:14px; --tk-track:#25323b; }
-html[data-theme="d"], .tk-status[data-theme="d"], .tk-status:has(#tk-d:checked){
-  --tk-bg:#131a16; --tk-bg-soft:#1b241e; --tk-line:#2b3a30; --tk-line-strong:#3a4d40;
-  --tk-ink:#eaf2e9; --tk-ink-2:#bcc8ba; --tk-ink-3:#8a988a;
-  --tk-mom:#c98f7a; --tk-you:#a9c1a6; --tk-gold:#b7a06a; --tk-radius:14px; --tk-track:#24312a; }
-
-.tk-status{
-  background:
-    radial-gradient(900px 420px at 84% -6%, rgba(224,122,127,.16), transparent 60%),
-    radial-gradient(700px 380px at 6% 114%, rgba(216,180,138,.12), transparent 55%),
-    linear-gradient(160deg, rgba(36,24,19,.9), rgba(23,17,15,.94) 55%, #120d0b);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:16px;
-  box-shadow:0 0 0 1px rgba(255,255,255,.05), 0 18px 44px -22px rgba(0,0,0,.7);
-}
-.tk-title{ font-family:"Songti SC","STSong","SimSun",serif; letter-spacing:.3em; font-size:15px; }
-.tk-title::before{
-  content:"開"; display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
-  margin-right:9px; border-radius:4px; background:linear-gradient(150deg,#c74452,#8f1f2d);
-  color:#ffe9e2; font-size:12px; transform:rotate(-6deg);
-  box-shadow:0 0 0 1px rgba(255,255,255,.28); text-shadow:0 1px 2px rgba(0,0,0,.4);
-}
-.tk-head-name{ font-family:"Songti SC","STSong","SimSun",serif; letter-spacing:.14em; }
-.tk-cell{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.02); }
-.tk-cell::before{ opacity:.8; box-shadow:0 0 10px -2px var(--tk-mom); }
-.tk-swatch{ border:1px solid rgba(255,255,255,.18); }
-.tk-swatch[data-theme="a"]{ --sw:#e07a7f; }
-.tk-swatch[data-theme="b"]{ --sw:#d9a85c; }
-.tk-swatch[data-theme="c"]{ --sw:#7f9fb6; }
-.tk-swatch[data-theme="d"]{ --sw:#a9c1a6; }
-.tk-thought b{ color:var(--tk-gold); }
-.tk-divider{ gap:12px; }
-.tk-divider::before,.tk-divider::after{ height:1px; background:linear-gradient(90deg, transparent, rgba(216,180,138,.4), transparent); }
-.tk-track{ box-shadow:inset 0 1px 2px rgba(0,0,0,.5); }
-.tk-fill-energy{ background:linear-gradient(90deg, var(--tk-mom), rgba(224,122,127,.4)); }
-.tk-fill-score{ background:linear-gradient(90deg, var(--tk-you), rgba(216,180,138,.35)); }
+html, body { margin:0; padding:0; background:transparent; }
+body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; }
+#hsv2-root { padding:4px 2px; }
 </style>
 </head>
 <body>
-<!--@@MARKUP_START@@-->
-<div class="tk-status">
-  <input type="radio" name="tk-theme" id="tk-a" value="a" class="tk-radio" checked>
-  <input type="radio" name="tk-theme" id="tk-b" value="b" class="tk-radio">
-  <input type="radio" name="tk-theme" id="tk-c" value="c" class="tk-radio">
-  <input type="radio" name="tk-theme" id="tk-d" value="d" class="tk-radio">
-
-  <div class="tk-head">
-    <span class="tk-title">母亲状态</span>
-    <span class="tk-swatches" title="切换主题">
-      <label class="tk-swatch on" for="tk-a" data-theme="a" title="和纸·绯墨"></label>
-      <label class="tk-swatch" for="tk-b" data-theme="b" title="暮色金箔"></label>
-      <label class="tk-swatch" for="tk-c" data-theme="c" title="雾蓝晨光"></label>
-      <label class="tk-swatch" for="tk-d" data-theme="d" title="竹青茶烟"></label>
-    </span>
-    <span class="tk-head-name" id="val-mom-name">中岛美咲子</span>
-  </div>
-
-  <div class="tk-grid">
-    <div class="tk-cell">
-      <span class="tk-cell-tag">乳 頭</span>
-      <span class="tk-cell-status" id="val-nipple-status">粉嫩微挺</span>
-      <span class="tk-cell-desc" id="val-nipple-desc">平时被大号罩杯严实包裹，此刻在薄布下透着隐约轮廓与温度。</span>
-    </div>
-    <div class="tk-cell">
-      <span class="tk-cell-tag">秘 処</span>
-      <span class="tk-cell-status" id="val-pussy-status">紧闭干爽</span>
-      <span class="tk-cell-desc" id="val-pussy-desc">被居家短裤包裹得严严实实，尚处于未开发的成熟人妻私密地带。</span>
-    </div>
-    <div class="tk-cell">
-      <span class="tk-cell-tag">大 腿</span>
-      <span class="tk-cell-status" id="val-thigh-status">丰满紧致</span>
-      <span class="tk-cell-desc" id="val-thigh-desc">白皙修长且富有肉感，蹲下时泛着成熟女性独有的圆润光泽。</span>
-    </div>
-  </div>
-  <div class="tk-thought"><b>心 声</b><span id="val-mom-thought">这孩子……到底在胡思乱想些什么啊，真是拿他没办法。</span></div>
-
-  <div class="tk-divider">自身状态</div>
-
-  <div class="tk-you">
-    <div class="tk-you-head">
-      <span class="tk-you-title">自身状态</span>
-      <span class="tk-you-name" id="val-user-name">user</span>
-    </div>
-    <div class="tk-bar">
-      <div class="tk-bar-info">
-        <span class="n">精 力</span>
-        <span class="v" id="val-energy-num">100 / 100</span>
-      </div>
-      <div class="tk-track"><div class="tk-fill tk-fill-energy" id="bar-energy-fill" style="width:100%"></div></div>
-    </div>
-    <div class="tk-bar">
-      <div class="tk-bar-info">
-        <span class="n">总成绩</span>
-        <span class="v" id="val-score-num">320 / 750</span>
-      </div>
-      <div class="tk-track"><div class="tk-fill tk-fill-score" id="bar-score-fill" style="width:42.7%"></div></div>
-    </div>
-  </div>
-</div>
-<!--@@MARKUP_END@@-->
-
+<div id="hsv2-root" class="hsv2-slot"></div>
 <script>
+/* ==== 引擎注入点 START ==== */
+
 /* ============================================================
-   运行时（沿用已验证版：等 MVU 就绪、1.2s 兜底、双事件通道）
-   主题切换以 CSS 为主（radio 勾选），脚本只做记忆 + 双保险。
+   状态栏v2 · 玩法整合  (做题/考试/商城/奖励结算/奖励袋)
+   实现方式：MVU 变量穿透（参考 MagVarUpdate），全部脚本内联，
+   不依赖远程状态栏页面。
    ============================================================ */
-(function () {
+(async function () {
   'use strict';
-  var TK_KEY = 'tk_theme';
-  var TK_THEMES = ['a', 'b', 'c', 'd'];
-  var tkDoc = function () { return document; };
 
-  function tkScope() {
-    var d = tkDoc();
-    return d.documentElement || d.body || d;
-  }
-  function tkSet(t) {
-    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
-    var d = tkDoc();
-    try { tkScope().setAttribute('data-theme', t); } catch (e) {}
-    try { d.documentElement.setAttribute('data-theme', t); } catch (e) {}
-    var boxes = d.querySelectorAll('.tk-status');
-    for (var i = 0; i < boxes.length; i++) { try { boxes[i].setAttribute('data-theme', t); } catch (e) {} }
-    var rb = d.getElementById('tk-' + t);
-    if (rb && !rb.checked) { try { rb.checked = true; } catch (e) {} }
-    if (typeof setvar === 'function') { try { setvar(TK_KEY, t); } catch (e) {} }
-    try { localStorage.setItem(TK_KEY, t); } catch (e) {}
-    var sws = d.querySelectorAll('.tk-swatch');
-    for (var j = 0; j < sws.length; j++) {
-      var k = sws[j].getAttribute('data-theme');
-      try { sws[j].classList.toggle('on', k === t); } catch (e) {}
-    }
-  }
-  function tkRestore() {
-    var t = 'a';
-    try { if (typeof getvar === 'function') { var g = getvar(TK_KEY); if (g) { t = String(g); } } } catch (e) {}
-    if (TK_THEMES.indexOf(t) === -1) { try { t = localStorage.getItem(TK_KEY) || 'a'; } catch (e) { t = 'a'; } }
-    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
-    tkSet(t);
-  }
+  var P = 'hsv2';
 
-  function getPath(o, p, d) {
-    var r = o, ks, i;
-    try { ks = p.split('.'); for (i = 0; i < ks.length; i++) { r = (r == null) ? undefined : r[ks[i]]; } } catch (e) { r = undefined; }
-    return r === undefined ? d : r;
-  }
-  function populateCharacterData() {
-    var allVars = typeof getAllVariables === 'function' ? getAllVariables() : {};
-    var statData = getPath(allVars, 'stat_data', {});
-    var $id = function (x) { return tkDoc().getElementById(x); };
-    var set = function (id, v) { var el = $id(id); if (el) { el.textContent = v; } };
-
-    set('val-mom-name', getPath(statData, '妈妈.姓名', '中岛美咲子'));
-    set('val-nipple-status', getPath(statData, '妈妈.乳头.状态', '粉嫩微挺'));
-    set('val-nipple-desc', getPath(statData, '妈妈.乳头.短描写', '平时被大号罩杯严实包裹，此刻在薄布下透着隐约轮廓与温度。'));
-    set('val-pussy-status', getPath(statData, '妈妈.小穴.状态', '紧闭干爽'));
-    set('val-pussy-desc', getPath(statData, '妈妈.小穴.短描写', '被居家短裤包裹得严严实实，尚处于未开发的成熟人妻私密地带。'));
-    set('val-thigh-status', getPath(statData, '妈妈.大腿.状态', '丰满紧致'));
-    set('val-thigh-desc', getPath(statData, '妈妈.大腿.短描写', '白皙修长且富有肉感，蹲下时泛着成熟女性独有的圆润光泽。'));
-    set('val-mom-thought', getPath(statData, '妈妈.心里话', '这孩子……到底在胡思乱想些什么啊，真是拿他没办法。'));
-    set('val-user-name', getPath(statData, 'user.姓名', 'user'));
-
-    var energyVal = Number(getPath(statData, 'user.精力值', 100));
-    var scoreVal = Number(getPath(statData, 'user.总成绩值', 320));
-    if (isNaN(energyVal)) { energyVal = 100; }
-    if (isNaN(scoreVal)) { scoreVal = 320; }
-    set('val-energy-num', energyVal + ' / 100');
-    set('val-score-num', scoreVal + ' / 750');
-
-    var ef = $id('bar-energy-fill'), sf = $id('bar-score-fill');
-    var energyPercent = Math.min(Math.max(energyVal, 0), 100);
-    var scorePercent = Math.min(Math.max((scoreVal / 750) * 100, 0), 100);
-    if (ef) { ef.style.width = energyPercent + '%'; }
-    if (sf) { sf.style.width = scorePercent + '%'; }
-  }
-
-  async function init() {
-    var d = tkDoc();
-    var done = false;
-    var force = function () { if (!done) { done = true; try { populateCharacterData(); } catch (e) {} } };
-    setTimeout(force, 1200);
-    if (typeof waitGlobalInitialized === 'function') { try { await waitGlobalInitialized('Mvu'); } catch (e) {} }
-
-    /* 主题：radio 变化 + 点击色点双通道同步 */
-    d.addEventListener('change', function (ev) {
-      var t = ev.target;
-      if (t && t.type === 'radio' && t.className.indexOf('tk-radio') !== -1 && t.checked) { tkSet(t.value); }
-    });
-    d.addEventListener('click', function (ev) {
-      var sw = ev.target && ev.target.closest ? ev.target.closest('.tk-swatch[data-theme]') : null;
-      if (sw) { tkSet(sw.getAttribute('data-theme')); }
-    });
-
-    tkRestore();
-    force();
-
-    if (typeof eventOn === 'function' && typeof Mvu !== 'undefined' && Mvu.events && Mvu.events.VARIABLE_UPDATE_ENDED) {
-      try { eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, populateCharacterData); } catch (e) {}
-    }
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      try { window.addEventListener('VARIABLE_UPDATE_ENDED', populateCharacterData); } catch (e) {}
-    }
-  }
-
-  (function boot() {
-    var doc = tkDoc();
-    var go = function () {
-      try { init(); } catch (e) { try { populateCharacterData(); } catch (e2) {} }
-    };
-    if (typeof $ === 'function') { try { $(function () { go(); }); } catch (e) { go(); } }
-    else if (doc.readyState === 'loading') { doc.addEventListener('DOMContentLoaded', go); }
-    else { go(); }
+  /* ---------- 宿主定位（兼容 iframe 包裹） ---------- */
+  var HOST = (function () {
+    try { if (window.parent && window.parent !== window && window.parent.document && window.parent.document.body) return window.parent; } catch (e) {}
+    try { if (window.top && window.top !== window && window.top.document && window.top.document.body) return window.top; } catch (e) {}
+    return window;
   })();
+
+  function getDoc() { return HOST.document || document; }
+  function qs(s, c) { return (c || getDoc()).querySelector(s); }
+  function qa(s, c) { return Array.from((c || getDoc()).querySelectorAll(s)); }
+  function esc(s) {
+    if (s === undefined || s === null) return '';
+    var d = document.createElement('div');
+    d.textContent = String(s);
+    return d.innerHTML;
+  }
+
+  function toast(m, t) {
+    try {
+      var ref = HOST.toastr || window.toastr;
+      if (typeof ref !== 'undefined') {
+        if (t === 'err') ref.error(m);
+        else if (t === 'warn') ref.warning(m);
+        else ref.success(m);
+        return;
+      }
+    } catch (e) {}
+    try { console.log('[状态栏v2] ' + m); } catch (e) {}
+  }
+
+  function num(v, d) {
+    if (typeof v === 'number' && !isNaN(v)) return v;
+    if (typeof v === 'string') {
+      var m = v.replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+      if (m) { var n = parseFloat(m[0]); if (!isNaN(n)) return n; }
+    }
+    return d !== undefined ? d : 0;
+  }
+  function round2(n) { return Math.round(n * 100) / 100; }
+
+  /* ============================================================
+     题库
+     ============================================================ */
+  // NORMAL：日常做题池（含少量难度题混排）
+  var NORMAL_POOL = [
+    { s: '语文常识', c: '最先受到冲击或遭受灾害', w: ['首先应当争先恐后做的事情', '战场上第一个冲锋陷阵', '居于首要地位的核心人物'], t: '成语“首当其冲”常被误用为“冲在最前面或首要带头”，其真正的本义是：' },
+    { s: '语文常识', c: '有了洞穴才进风，比喻消息或传言并非完全无因', w: ['比喻言论完全凭空捏造、毫无事实证据', '形容自然界的大风刮过空旷的原野', '比喻事情发展得悄无声息、毫无征兆'], t: '成语“空穴来风”常被误用作“毫无根据的谣言”，其原本准确的真实含义是：' },
+    { s: '语文常识', c: '涂改、圈抹（形容文思敏捷，写作一气呵成无需修改）', w: ['标点符号（形容写文章不使用逗号句号）', '要点提纲（形容写文章缺少核心重点）', '点缀装饰（形容文字朴素无华没有任何修辞）'], t: '成语“文不加点”中，“点”的原本字义是：' },
+    { s: '语文常识', c: '大体上还能使人满意', w: ['非常差劲，让人极其不满意', '完全符合人们内心的极高期待', '形容两个人的意见差异非常巨大'], t: '成语“差强人意”在古代和规范现代汉语中的真实含义是：' },
+    { s: '语文常识', c: '形容权势大、气焰极盛（含贬义）', w: ['形容商品或演出极受欢迎、销量火爆（褒义）', '形容天气十分酷热、温度极高', '形容人热情洋溢、乐于助人'], t: '成语“炙手可热”原本在唐代杜甫诗中讽刺杨国忠权势，其确切含义与褒贬色彩是：' },
+    { s: '语文常识', c: '天气转凉，大火星向西方下落（预示秋天到来）', w: ['七月份天气炎热得像流淌的火焰', '夏季夜空中流星频繁划过夜幕', '夏至时分大地干旱爆发山林野火'], t: '“七月流火”出自《诗经》，常被误认为是天气炎热如火，它实际描述的气候现象是：' },
+    { s: '语文常识', c: '准则、遵循的法则（不值得作为遵循的准则）', w: ['训斥、批评（不值得去批评教育）', '教训（不值得作为惨痛教训吸取）', '训练（不需要进行额外训练）'], t: '成语“不足为训”中的“训”字，其原本的正确解释是：' },
+    { s: '语文常识', c: '砍削、古代删改文字（比喻言论确凿无可更改）', w: ['刊登、出版报刊书籍', '刊印、印刷刻板', '刊行、公开发行于世'], t: '成语“不刊之论”中，“刊”字的原本含义是：' },
+    { s: '语文常识', c: '口吃，说话吞吞吐吐结结巴巴', w: ['悲伤忧郁，终日哀叹哭泣', '期盼等待，内心十分焦虑不安', '年纪老迈，头发花白行动迟缓'], t: '成语“期期艾艾”常用来形容人的状态，它的准确含义是：' },
+    { s: '语文常识', c: '重阳节过后凋谢的菊花，比喻过时的事物', w: ['昨天的黄花，比喻昨天发生的美好事情', '明天才盛开的黄花，比喻未来的希望', '泛指金黄色的油菜花盛开的景象'], t: '成语“明日黄花”常被误写为“昨日黄花”，其原本典故是指：' },
+    { s: '语文常识', c: '读 cháng，指多余的物品（形容为人极其清贫俭朴）', w: ['读 cháng，指长处或特长（形容一个人没有任何长处技能）', '读 zhǎng，指长辈留下的财产文物', '读 zhǎng，指能够成长增值的珍贵物品'], t: '成语“身无长物”中，“长物”的正确读音与原意是：' },
+    { s: '语文常识', c: '借（比喻长期借用他人的东西而不归还）', w: ['放假、假期（长期请假在外不回单位）', '假装、虚假（长期作假而不回归真实）', '假如、设想（长期待在幻想中不归来）'], t: '成语“久假不归”中的“假”字，其原本含义是：' },
+    { s: '语文常识', c: '多含贬义或讽刺色彩，指坏人化装登上政治舞台', w: ['纯粹中性，仅指演员化好妆登上舞台演出', '纯褒义，形容杰出人才初露头角展示才华', '形容新商品隆重上市进行展示'], t: '成语“粉墨登场”在严格语言规范中，通常适用的语境和色彩是：' },
+    { s: '语文常识', c: '古代楚国的通俗民间普及歌曲，泛指通俗文艺', w: ['指乡下贫苦居住在乡里底层的贫民', '指道德修养极低、粗鄙无礼的人', '指来自南方边陲地区的土著居民'], t: '常与“阳春白雪”相对的成语“下里巴人”，其原意是指：' },
+    { s: '语文常识', c: '流言或谣言一再重复，就能让人信以为真', w: ['三个志同道合的人联合起来就能像老虎一样勇猛', '比喻团结一致力量巨大，众志成城', '比喻贪婪残暴的三个人结伙作恶危害社会'], t: '典出《战国策》的成语“三人成虎”，其真实比喻的含义是：' },
+    { s: '语文常识', c: '学问或技艺循序渐进，达到了高深造诣的境界', w: ['盗贼悄悄潜入屋中行窃', '客人礼貌地拜访主人并走进客厅', '新官员正式到衙门就职任事'], t: '成语“登堂入室”常被误用于形容进入房间，其真正比喻的是：' },
+    { s: '语文常识', c: '高大华美、雄伟壮观的建筑物或房屋', w: ['舞台上舞姿优美、妆容华丽的女性', '绚丽夺目的大自然风景与晚霞', '色彩斑斓的工艺品或精美服饰'], t: '成语“美轮美奂”在规范汉语用法中，其最初严格适用的描写对象是：' },
+    { s: '语文常识', c: '要求（苛求完美，对人对事要求完美无缺）', w: ['责怪、责备（批评责怪他人没有准备齐全）', '责任、职责（应当承担的全部责任）', '惩罚、严惩（对没有准备好的人施加惩罚）'], t: '成语“求全责备”中的“责”字，其原本的含义是：' },
+    { s: '语文常识', c: '贬义词，多用来形容盲目争相追逐不正当事物', w: ['褒义词，形容大家对真理和正义勇往直前', '中性词，形容春天群鸟迁徙繁盛景象', '褒义词，形容人们争先恐后参加慈善爱心活动'], t: '成语“趋之若鹜”中的“鹜”是指野鸭，该成语通用的感情色彩通常是：' },
+    { s: '语文常识', c: '为人坦率真诚，心中没有心机与防人之心（褒义）', w: ['胸中缺乏谋略，见识短浅无能（贬义）', '心胸狭隘不能容忍别人（贬义）', '性格怯懦胆小怕事（贬义）'], t: '成语“胸无城府”原本是指为人处世：' },
+    { s: '语文常识', c: '罪大恶极，即使处以死刑也抵偿不了其罪恶', w: ['罪过极其轻微，不应当判处死刑', '罪过虽大，但应当给予赦免免除死罪', '犯了罪但由于年代久远不再予以诛杀追究'], t: '成语“罪不容诛”常被望文生义误解，其准确的语义严重程度是：' },
+    { s: '语文常识', c: '颈的后部（能看到对方的颈项与后背，比喻赶得上）', w: ['头顶最高处', '衣服的领口', '肩膀的高度'], t: '成语“望其项背”通常在否定句中使用（如难以望其项背），其中“项”是指：' },
+    { s: '语文常识', c: '理直气壮、从容不迫地谈论阐述', w: ['口若悬河、自以为是不停吹嘘', '吞吞吐吐、心里发虚不敢大声说', '嬉皮笑脸、轻浮随便地开玩笑'], t: '成语“侃侃而谈”常被误用作夸夸其谈，它原本形容人说话的神态是：' },
+    { s: '语文常识', c: '家家户户的人都走出了里巷，前往某地聚会或观看庆典', w: ['居民因为畏惧灾害都躲在家中，街道空空荡荡', '瘟疫流行导致街道荒凉无人行走', '全城居民都撤离迁移到了其他城市'], t: '成语“万人空巷”常被误以为街巷空无一人，它实际描绘的热闹场面是：' },
+    { s: '语文常识', c: '细丝、细线', w: ['琴弦、乐器的弦', '丝织的衣服', '缕缕轻烟、炊烟'], t: '成语“不绝如缕”形容形势危急或声音微弱时，其中“缕”的意思是：' },
+    { s: '中国历史', c: '废井田、开阡陌，承认土地私有并奖励耕织', w: ['全面推行均田制与租庸调制', '实行盐铁官营垄断天下财富', '推行一条鞭法折算征收银两'], t: '战国时期秦孝公任用商鞅实行变法，其在经济上最重要的彻底变革是：' },
+    { s: '中国历史', c: '长平之战', w: ['桂陵之战', '马陵之战', '城濮之战'], t: '战国末期秦赵之间伤亡最惨烈、赵国四十万降卒被白起坑杀的决定性战役是：' },
+    { s: '中国历史', c: '巨鹿之战', w: ['彭城之战', '垓下之战', '长平之战'], t: '项羽率楚军“破釜沉舟”，以少胜多歼灭秦军主力的著名战役是：' },
+    { s: '中国历史', c: '张良', w: ['萧何', '韩信', '陈平'], t: '楚汉相争前夕的“鸿门宴”上，刘邦借故脱险离去，留在营帐中与项羽周旋的谋士是：' },
+    { s: '中国历史', c: '文景之治', w: ['贞观之治', '开元盛世', '光武中兴'], t: '西汉初年提倡“与民休息、轻徭薄赋”，开创中国历史上首个封建治世盛景的是：' },
+    { s: '中国历史', c: '汉光武帝刘秀', w: ['汉宣帝刘询', '汉景帝刘启', '汉哀帝刘欣'], t: '西汉末年王莽篡汉建立新朝，随后起兵推翻新莽、建立东汉并开创“光武中兴”的皇帝是：' },
+    { s: '中国历史', c: '淝水之战', w: ['官渡之战', '赤壁之战', '夷陵之战'], t: '东晋时期谢安指挥谢玄以八万北府兵击败前秦苻坚百万大军的著名战役是：' },
+    { s: '中国历史', c: '贞观之治', w: ['开元盛世', '文景之治', '开皇之治'], t: '唐太宗李世民在位期间虚心纳谏、选贤任能，开创的政治清明盛世被称为：' },
+    { s: '中国历史', c: '安史之乱', w: ['黄巢起义', '七国之乱', '八王之乱'], t: '公元755年爆发，成为唐朝由盛转衰、藩镇割据滥觞的重大动乱是：' },
+    { s: '中国历史', c: '陈桥兵变', w: ['玄武门之变', '靖难之役', '沙丘之变'], t: '公元960年，后周禁军大将赵匡胤在出征途中被部下黄袍加身发动兵变，史称：' },
+    { s: '中国历史', c: '澶渊之盟', w: ['绍兴和议', '海上之盟', '城濮之盟'], t: '北宋真宗时期与契丹辽国在澶州城下订立和议、约为兄弟之国的历史事件是：' },
+    { s: '中国历史', c: '靖难之役', w: ['三藩之乱', '八王之乱', '七国之乱'], t: '明成祖朱棣以“清君侧”为名起兵推翻侄子建文帝夺取帝位的战役被称为：' },
+    { s: '中国历史', c: '郑和', w: ['戚继光', '俞大猷', '王景弘'], t: '明朝永乐至宣德年间，率领庞大船队七下西洋、促进中外航海贸易交流的著名将领是：' },
+    { s: '中国历史', c: '土木堡之变', w: ['靖康之耻', '庚戌之变', '夺门之变'], t: '明正统十四年（1449年），明英宗朱祁镇轻信太监王振盲目亲征瓦剌被俘的历史事件是：' },
+    { s: '中国历史', c: '一条鞭法', w: ['两税法', '租庸调制', '摊丁入亩'], t: '明朝万历年间首辅张居正主持推行，将田赋、劳役合并折算为征银的重大赋役改革是：' },
+    { s: '世界历史', c: '公元前490年雅典军队在马拉松平原击败波斯军队', w: ['公元前480年萨拉米斯海战', '公元前431年伯罗奔尼撒战争爆发', '公元前338年喀罗尼亚战役'], t: '马拉松长跑比赛的起源，与下列哪一历史事件直接相关？' },
+    { s: '世界历史', c: '1688年英国议会推翻詹姆士二世的政变（光荣革命）', w: ['1640年长期议会召开', '1649年处死查理一世', '1701年《王位继承法》颁布'], t: '英国历史上的“光荣革命”是指：' },
+    { s: '世界历史', c: '1776年7月4日大陆会议通过《独立宣言》', w: ['1775年列克星敦枪声', '1781年约克镇投降', '1787年费城制宪会议'], t: '美国独立战争中，正式宣告北美十三个殖民地独立的标志性事件是：' },
+    { s: '世界历史', c: '1789年7月14日巴黎人民攻占巴士底狱', w: ['1792年法兰西第一共和国成立', '1793年处死路易十六', '1799年拿破仑发动雾月政变'], t: '法国大革命爆发的标志性事件是：' },
+    { s: '世界历史', c: '蒸汽机广泛应用于生产，机器生产取代手工工场', w: ['内燃机的发明与应用', '电力的广泛应用', '计算机网络技术的普及'], t: '第一次工业革命最核心的标志是：' },
+    { s: '地理常识', c: '亚洲', w: ['非洲', '北美洲', '欧洲'], t: '世界上面积最大的大洲是：' },
+    { s: '地理常识', c: '太平洋', w: ['大西洋', '印度洋', '北冰洋'], t: '世界上面积最大的大洋是：' },
+    { s: '地理常识', c: '青藏高原', w: ['巴西高原', '蒙古高原', '云贵高原'], t: '被称为“世界屋脊”的高原是：' },
+    { s: '地理常识', c: '刚果河（扎伊尔河）', w: ['尼罗河', '亚马孙河', '密西西比河'], t: '世界上水能资源最丰富的河流是：' },
+    { s: '地理常识', c: '日本', w: ['中国', '韩国', '菲律宾'], t: '位于环太平洋火山地震带，被称为“地震之国”的东亚岛国是：' },
+    { s: '科学常识', c: '水由氢元素和氧元素组成', w: ['水由氢元素和氮元素组成', '水由氧元素和碳元素组成', '水由氢元素和氯元素组成'], t: '从化学组成上看，水的化学式是 H₂O，这说明：' },
+    { s: '科学常识', c: '光在真空中的传播速度约为每秒30万公里', w: ['每秒3万公里', '每秒300公里', '每秒3千公里'], t: '下列关于光速的说法，正确的是：' },
+    { s: '科学常识', c: '导体容易导电是因为其内部存在大量自由电荷', w: ['导体内部没有任何原子', '导体内原子排列得特别整齐', '导体内部温度一定很低'], t: '金属等导体为什么容易导电？' },
+    { s: '科学常识', c: '铁生锈是铁与氧气、水共同作用发生的缓慢氧化', w: ['铁生锈是物理变化', '铁生锈只与氧气有关，与水无关', '铁锈的主要成分是四氧化三铁'], t: '关于铁生锈，下列说法正确的是：' },
+    { s: '科学常识', c: '影子是光沿直线传播时被不透明物体挡住形成的暗区', w: ['影子是物体发出的暗色光', '影子是光的反射形成的像', '影子是光的折射形成的像'], t: '日常生活中影子的形成，主要用光的什么性质解释？' },
+    { s: '生活常识', c: '剧烈运动后应少量多次补充温水并适当休息', w: ['立刻大量饮用冰水', '立即躺下大口狂喝饮料', '马上冲冷水澡降温'], t: '体育课后大汗淋漓，下列做法最健康的是：' },
+    { s: '生活常识', c: '着火时用湿毛巾捂住口鼻、弯腰低姿沿疏散通道撤离', w: ['乘坐电梯快速下楼', '躲进衣柜里等待救援', '打开窗户从高楼跳下'], t: '家中突发火灾，正确的逃生做法是：' },
+    { s: '生活常识', c: '先清洗伤口，再用碘伏等消毒，最后覆盖无菌纱布', w: ['直接贴创可贴不管不问', '用嘴吸吮伤口', '往伤口上撒泥土止血'], t: '手指被小刀划伤出血，正确的处理顺序是：' },
+    { s: '生活常识', c: '会伤害牙齿的珐琅质，应少吃并注意漱口', w: ['对牙齿有益，应多吃', '只影响体重不影响牙齿', '吃糖后刷牙反而会损坏牙齿，所以不用刷牙'], t: '关于甜食与口腔健康，正确的说法是：' },
+    { s: '生活常识', c: '油锅起火应立即关闭火源并用锅盖盖住隔绝空气', w: ['往油锅里倒水灭火', '端起来往外跑', '用嘴吹气灭火'], t: '炒菜时油锅突然起火，最正确的处理方法是：' },
+    { s: '文学常识', c: '我国第一部诗歌总集', w: ['《楚辞》', '《乐府诗集》', '《全唐诗》'], t: '《诗经》在文学史上的地位是：' },
+    { s: '文学常识', c: '《红楼梦》', w: ['《三国演义》', '《水浒传》', '《西游记》'], t: '被公认为中国古典小说巅峰之作的是：' },
+    { s: '文学常识', c: '李白', w: ['杜甫', '白居易', '王维'], t: '被称为“诗仙”的唐代诗人是：' },
+    { s: '文学常识', c: '《呐喊》', w: ['《家》', '《骆驼祥子》', '《边城》'], t: '鲁迅先生的第一部白话短篇小说集是：' },
+    { s: '文学常识', c: '司马迁', w: ['司马光', '班固', '左丘明'], t: '纪传体通史《史记》的作者是：' }
+  ];
+
+  // HARD：考试专用较难题（取自原库提炼 + 扩展，10选1）
+  var HARD_POOL = [
+    { s: '语文常识·进阶', c: '褒义，指某人或某事在当时的众多同类中非常突出，值得人们学习效仿', w: ['贬义，指贪官污吏聚集一地互相包庇', '中性，形容夜晚星辰众多', '贬义，指不合群的人'], t: '成语“一时之秀”的准确含义与感情色彩是：' },
+    { s: '语文常识·进阶', c: '“惟”，古义为“思考、想念”，此处意为“思念”', w: ['“惟”通“唯”，表示仅仅、只有', '“惟”是语气助词，无实义', '“惟”指帷幕，泛指卧室'], t: '《诗经》中“惟桑与梓，必恭敬止”一句里，“惟”的古义是：' },
+    { s: '语文常识·进阶', c: '战国策·魏策：三人谎报市上有虎，使魏王信以为真', w: ['出自《左传》，讲三兄弟猎虎的故事', '出自《史记》，讲三将守城的故事', '出自《论语》，讲三人行必有我师'], t: '“三人成虎”的典故最早出自哪部典籍、故事大意是：' },
+    { s: '语文常识·进阶', c: '病入膏肓，比喻事情到了无法挽救的地步', w: ['形容医术高明，药到病除', '形容病人心态乐观', '形容药品名贵稀有'], t: '“膏肓”指心膈之间，成语“病入膏肓”的比喻义是：' },
+    { s: '语文常识·进阶', c: '把“三顾茅庐”中的“顾”解释为“拜访、探望”是正确的', w: ['“顾”是“照顾、庇护”的意思', '“顾”是“回头看”的意思，指回头看茅庐三次', '“顾”通“雇”，指雇佣车马'], t: '关于“三顾茅庐”中“顾”字的释义，正确的说法是：' },
+    { s: '中国历史·进阶', c: '商鞅变法触犯旧贵族利益，秦孝公死后被车裂（五马分尸）', w: ['在战场上战死沙场', '告老还乡，寿终正寝', '被秦惠文王流放边地'], t: '商鞅变法的推动者商鞅最终结局是：' },
+    { s: '中国历史·进阶', c: '汉武帝采纳主父偃建议颁布“推恩令”，削弱诸侯王实力', w: ['汉武帝颁布“削藩令”直接废黜诸侯', '汉武帝实行“郡国并行”加强诸侯', '汉武帝将诸侯迁往岭南'], t: '汉武帝为加强中央集权、解决王国问题，采纳的著名措施是：' },
+    { s: '中国历史·进阶', c: '官渡之战奠定了曹操统一北方的基础', w: ['官渡之战是孙权与刘备的联军大败曹操', '官渡之战后曹操南下统一全国', '官渡之战发生在唐朝'], t: '关于官渡之战的历史意义，说法正确的是：' },
+    { s: '中国历史·进阶', c: '科举制正式创立于隋朝，唐朝完善，清末废除', w: ['科举制创立于汉朝', '科举制创立于秦朝', '科举制沿用至今'], t: '关于科举制的沿革，正确的是：' },
+    { s: '中国历史·进阶', c: '赵匡胤“杯酒释兵权”解除了石守信等禁军将领兵权', w: ['赵匡胤用鸿门宴除掉韩信', '赵匡胤杯酒释放了被俘的辽国将领', '赵匡胤设宴款待文人墨客'], t: '北宋“杯酒释兵权”的具体内容是：' },
+    { s: '中国历史·进阶', c: '“靖康之变”中被金军掳走的北宋皇帝是宋徽宗和宋钦宗', w: ['宋太祖和宋太宗', '宋真宗和宋仁宗', '宋高宗和宋孝宗'], t: '靖康之变中，被金军俘虏北上的两位北宋皇帝是：' },
+    { s: '中国历史·进阶', c: '戚继光组建“戚家军”，创鸳鸯阵，荡平东南沿海倭患', w: ['戚继光在北方修筑长城抵御蒙古', '戚继光率军收复台湾', '戚继光发动了土木堡之战'], t: '明代抗倭名将戚继光的主要事迹是：' },
+    { s: '中国历史·进阶', c: '《南京条约》割让香港岛、赔款2100万银元、开放五口通商', w: ['割让九龙半岛', '赔偿白银九亿两', '将台湾割让给日本'], t: '鸦片战争后清政府与英国签订的第一个不平等条约《南京条约》，内容包括：' },
+    { s: '世界历史·进阶', c: '哥伦布四次横渡大西洋，到达美洲（误认为印度）', w: ['哥伦布绕过好望角到达印度', '哥伦布完成了人类首次环球航行', '哥伦布到达的是澳大利亚'], t: '关于哥伦布航海，下列说法正确的是：' },
+    { s: '世界历史·进阶', c: '麦哲伦船队完成人类首次环球航行，麦哲伦本人死于菲律宾', w: ['麦哲伦本人完成了全程环球航行', '麦哲伦到达了北极点', '麦哲伦发现了好望角'], t: '关于麦哲伦船队，正确的是：' },
+    { s: '世界历史·进阶', c: '《马关条约》签订于1895年，标志着甲午战争结束，台湾被割让', w: ['《马关条约》签订于1842年', '《马关条约》割让了香港', '《马关条约》是中国近代第一个不平等条约'], t: '关于《马关条约》，说法正确的是：' },
+    { s: '地理常识·进阶', c: '我国地势呈三级阶梯分布，第一级阶梯是青藏高原', w: ['我国地势东高西低', '我国第一级阶梯是华北平原', '我国没有高原'], t: '关于中国的地势特征，正确的是：' },
+    { s: '地理常识·进阶', c: '长江发源于唐古拉山脉，注入东海，是我国第一长河', w: ['长江发源于巴颜喀拉山，注入渤海', '长江是我国第二长河', '长江冬季会整体结冰'], t: '关于长江，正确的是：' },
+    { s: '地理常识·进阶', c: '黄河下游形成“地上河”，泥沙主要来自中游黄土高原', w: ['黄河泥沙来自上游冰川融水', '黄河发源于天山山脉', '黄河最终注入南海'], t: '黄河“地上河”成因的关键是：' },
+    { s: '科学常识·进阶', c: '大气压随海拔升高而降低，所以高原上水的沸点低于100℃', w: ['大气压随海拔升高而增大', '高原上水的沸点高于100℃', '高原上根本无法烧水'], t: '在高海拔地区（如青藏高原）烧水，下列现象与原因正确的是：' },
+    { s: '科学常识·进阶', c: '声音在固体中传播最快，其次液体，再次气体', w: ['声音在真空中传播最快', '声音在气体中传播最快', '声音在固体中最慢'], t: '声音在不同介质中的传播速度排序正确的是：' },
+    { s: '科学常识·进阶', c: '近视眼成像在视网膜前，应佩戴凹透镜矫正', w: ['近视眼应佩戴凸透镜', '近视眼成像在视网膜后', '远视眼应佩戴凹透镜'], t: '关于近视眼的成因与矫正，正确的是：' },
+    { s: '科学常识·进阶', c: '细胞是生物体结构和功能的基本单位（病毒除外）', w: ['病毒也有细胞结构', '细胞只存在于动物体内', '植物没有细胞壁'], t: '关于生物体结构层次，正确的是：' },
+    { s: '科学常识·进阶', c: '质量守恒定律：化学反应前后元素种类与原子数目不变', w: ['化学反应前后物质总质量一定改变', '化学变化中分子种类不变', '物理变化中也遵守质量守恒定律的表述错误'], t: '关于质量守恒定律，正确的是：' }
+  ];
+
+
+  /* ============================================================
+     数值配置
+     ============================================================ */
+  var CONF = {
+    energyPerQ: 10,      // 每做一题固定扣 10 精力（对错都扣）
+    examEnergy: 30,      // 考试一次消耗精力
+    examNeed: 10,        // 考试题量
+    examPass: 7,         // 及格线：10 道答对 ≥7
+    quizPoolMax: 15,     // 做题一场最大题量
+    maxStorage: 12,      // 奖励袋容量上限
+  };
+
+  // 亲密阶段（与 <核心玩法>成绩阶段 对齐）
+  // 临界点 = 每一档的上限，达到后必须先通过考试解锁下一阶段
+  var STAGE_BOUNDS = [300, 450, 600];           // 解锁进阶考试的三道门槛
+  var STAGES = [
+    { i: 1, name: '阶段一·手交期', range: '0-300分' },
+    { i: 2, name: '阶段二·口交期', range: '300-450分' },
+    { i: 3, name: '阶段三·乳交期', range: '450-600分' },
+    { i: 4, name: '阶段四·完全接纳期', range: '600-750分' },
+  ];
+
+  function stageByScore(score) {
+    var s = Math.max(0, num(score, 0));
+    if (s >= 600) return 3;      // STAGES[3]
+    if (s >= 450) return 2;
+    if (s >= 300) return 1;
+    return 0;
+  }
+  function stageNameOf(score) { return STAGES[stageByScore(score)].name; }
+
+  // 各阶段奖励券池（券名 + 一段“使用引导文字”，点击使用时发进正文）
+  var REWARD_TOKENS = [
+    { // 阶段一
+      list: [
+        { k: 'tui', name: '摸腿券', guide: '把【摸腿券】递到妈妈面前，红着脸小声请求：「妈妈…我用掉这张券好不好…」引导她红着脸、别开视线地满足你——让你隔着衣物或亲手抚摸她的大腿。' },
+        { k: 'jiao', name: '摸脚券', guide: '拿出【摸脚券】递给妈妈。她犹豫片刻后红着脸把脚搭到你膝上，让你握着她的脚……从脚踝到足尖都归你。' },
+        { k: 'xiong_ge', name: '隔衣揉胸券', guide: '晃了晃【隔衣揉胸券】，妈妈瞪了你一眼又无可奈何地挪近，隔着宽松居家T恤让开一条缝——你可以隔衣感受她柔软丰满的胸部。' },
+        { k: 'mai', name: '埋胸券（隔衣）', guide: '亮出【埋胸券】，妈妈羞恼地别过脸，却还是把你搂进怀里，让你隔着薄薄衣料把脸埋进她柔软饱满的胸口。' },
+        { k: 'kiss', name: '亲嘴券', guide: '递上【亲嘴券】。妈妈抿了抿嘴，轻声嘟囔着“就…就一下…”，随后俯身蜻蜓点水般贴上你的嘴唇。' },
+      ]
+    },
+    { // 阶段二
+      list: [
+        { k: 'shou', name: '手交券', guide: '把【手交券】塞进妈妈手心。她满脸通红地握住你，从生涩到熟练地缓缓动作，一边别开视线一边低声抱怨。' },
+        { k: 'kou', name: '口交券', guide: '递出【口交券】时妈妈瞪圆了眼，良久才红着脸跪坐下去……她笨拙而温柔地含住你，努力兑现这张券的约定。' },
+        { k: 'tui', name: '摸腿券', guide: '把【摸腿券】递到妈妈面前，红着脸小声请求：「妈妈…我用掉这张券好不好…」引导她红着脸、别开视线地满足你。' },
+        { k: 'kiss', name: '亲嘴券', guide: '递上【亲嘴券】。妈妈抿了抿嘴，轻声嘟囔着“就…就一下…”，随后俯身蜻蜓点水般贴上你的嘴唇。' },
+      ]
+    },
+    { // 阶段三
+      list: [
+        { k: 'xi', name: '吸奶券', guide: '递出【吸奶券】。妈妈身体一颤，红着脸解开衣襟，声音发颤：「…只、只准这一次…」把饱满的胸部送到你面前。' },
+        { k: 'kan', name: '看光券', guide: '拿出【看光券】。妈妈呼吸急促地瞪着你，最终还是背过身，一件件褪下衣物，让你看光她成熟丰腴的身体。' },
+        { k: 'zhi', name: '直触摸胸券', guide: '【直触摸胸券】一亮出来，妈妈脸颊滚烫，别开眼默认了你的手——隔着衣料的手终于可以直接贴上那柔软弹滑的胸部。' },
+        { k: 'shou', name: '手交券', guide: '把【手交券】塞进妈妈手心。她满脸通红地握住你，从生涩到熟练地缓缓动作，一边别开视线一边低声抱怨。' },
+        { k: 'kou', name: '口交券', guide: '递出【口交券】时妈妈瞪圆了眼，良久才红着脸跪坐下去……她笨拙而温柔地含住你，努力兑现这张券的约定。' },
+      ]
+    },
+    { // 阶段四
+      list: [
+        { k: 'ru', name: '乳交券', guide: '把【乳交券】递给妈妈。她嗔怪地看你一眼，解开衣襟用那对丰润的乳房将你裹住……柔软温热的感觉从四面八方涌来。' },
+        { k: 'cha', name: '插入券', guide: '交出【插入券】时，妈妈红着脸深吸一口气，分开双腿环住你的腰，低声说：「既然…是约定好的…那就…进来吧…」' },
+        { k: 'quan', name: '全身侍奉券', guide: '拿出【全身侍奉券】，妈妈眼神湿润而迷离，从额头一路亲吻下去，第一次主动而温柔地侍奉你身上的每一处。' },
+        { k: 'xi', name: '吸奶券', guide: '递出【吸奶券】。妈妈身体一颤，红着脸解开衣襟，声音发颤：「…只、只准这一次…」把饱满的胸部送到你面前。' },
+        { k: 'kan', name: '看光券', guide: '拿出【看光券】。妈妈呼吸急促地瞪着你，最终还是背过身，一件件褪下衣物，让你看光她成熟丰腴的身体。' },
+      ]
+    }
+  ];
+  function tokenListByScore(score) { return REWARD_TOKENS[stageByScore(score)].list; }
+  function tokenNameToStage(name) {
+    for (var i = 0; i < REWARD_TOKENS.length; i++) {
+      for (var j = 0; j < REWARD_TOKENS[i].list.length; j++) {
+        if (REWARD_TOKENS[i].list[j].name === name) return REWARD_TOKENS[i].list[j];
+      }
+    }
+    return null;
+  }
+
+  /* ============================================================
+     商城
+     ============================================================ */
+  // 每日零花钱：10 + 阶段系数(每阶段+5)
+  function dailyAllowance(score) {
+    var st = stageByScore(score) + 1; // 1..4
+    return 10 + (st - 1) * 5;
+  }
+  var SHOP_IQ = [
+    { k: 'tea', name: '提神醒脑茶', price: 10, gain: 0.05, desc: '智力值A +0.05', guide: '你买了杯【提神醒脑茶】一口闷下。妈妈瞥见空罐愣了一下：「…那是复习用的？别乱买这种东西。」（A：智商提升）' },
+    { k: 'milk', name: '聪明牛奶', price: 30, gain: 0.15, desc: '智力值A +0.15', guide: '你拆开【聪明牛奶】喝掉，妈妈皱眉：“哪来的零花钱？”却也没多问。（A：智商提升）' },
+    { k: 'energy', name: '学霸能量饮', price: 80, gain: 0.35, desc: '智力值A +0.35', guide: '你灌下【学霸能量饮】，感觉脑子一下子清明了。妈妈狐疑地看着包装：「别是乱七八糟的功能饮料…」（A：智商提升）' },
+    { k: 'pill', name: '过目不忘丸', price: 200, gain: 0.7, desc: '智力值A +0.7', guide: '你吞下【过目不忘丸】，书页上的字仿佛自己往脑子里钻。妈妈盯着你空空的掌心，总觉得哪里不对。（A：智商提升）' },
+    { k: 'elixir', name: '天才药剂', price: 450, gain: 1.5, desc: '智力值A +1.5', guide: '你喝下泛着微光的【天才药剂】，连空气里的公式都变得清晰。妈妈忍不住多看了你两眼——儿子好像突然开窍了？（A：智商大幅提升）' },
+  ];
+  var SHOP_D = [
+    { k: 'note', name: '小抄纸条', price: 20, gain: 0.05, desc: '作弊加成D +0.05', guide: '你往袖口塞了张【小抄纸条】。妈妈要是知道儿子在打这种主意，怕不是要气红脸…（D：作答加成提升）' },
+    { k: 'eraser', name: '答案橡皮擦', price: 50, gain: 0.1, desc: '作弊加成D +0.1', guide: '你偷偷换上了那块【答案橡皮擦】。做题时仿佛有只手在帮你修正答案……（D：作答加成提升）' },
+    { k: 'ear', name: '无线耳麦', price: 120, gain: 0.25, desc: '作弊加成D +0.25', guide: '你戴好【无线耳麦】，考场里微弱的提示声若隐若现。妈妈如果在场一定会揪住你的耳朵。（D：作答加成提升）' },
+    { k: 'doll', name: '考场替身娃娃', price: 300, gain: 0.5, desc: '作弊加成D +0.5', guide: '你小心收好【考场替身娃娃】，仿佛多了一个会悄悄帮你答题的影子。（D：作答加成大幅提升）' },
+  ];
+  function findShop(k) {
+    var i;
+    for (i = 0; i < SHOP_IQ.length; i++) if (SHOP_IQ[i].k === k) return SHOP_IQ[i];
+    for (i = 0; i < SHOP_D.length; i++) if (SHOP_D[i].k === k) return SHOP_D[i];
+    return null;
+  }
+
+  /* ============================================================
+     MVU 变量读写（参考异录状态栏的权威穿透写法）
+     ============================================================ */
+  function mvuWin() {
+    if (typeof window.Mvu !== 'undefined') return window;
+    try { if (HOST.Mvu) return HOST; } catch (e) {}
+    try { if (window.top && window.top.Mvu) return window.top; } catch (e) {}
+    return null;
+  }
+  function deepGetProperty(obj, keys) {
+    if (!obj || typeof obj !== 'object') return undefined;
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+      var oks = Object.keys(obj);
+      for (var j = 0; j < oks.length; j++) {
+        if (String(oks[j]).replace(/[\s\uFEFF\xA0]/g, '') === k) return obj[oks[j]];
+      }
+    }
+    return undefined;
+  }
+
+  // 读取最新变量快照（只读层 + 兜底链）
+  function readStatRaw() {
+    var win = mvuWin();
+    if (win && win.Mvu) {
+      try {
+        if (win.Mvu.getMvuData && typeof win.Mvu.getMvuData === 'function') {
+          var r = win.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+          var sd = r && r.stat_data ? r.stat_data : r;
+          if (sd && typeof sd === 'object' && Object.keys(sd).length > 0) return sd;
+        }
+      } catch (e) {}
+      try {
+        if (win.Mvu.data_service && win.Mvu.data_service.vars && Object.keys(win.Mvu.data_service.vars).length) {
+          var sv = win.Mvu.data_service.vars;
+          if (sv.stat_data) return sv.stat_data;
+          return sv;
+        }
+      } catch (e) {}
+      try {
+        if (win.Mvu.data && typeof win.Mvu.data === 'object' && Object.keys(win.Mvu.data).length) return win.Mvu.data;
+      } catch (e) {}
+    }
+    try {
+      var av = typeof getAllVariables === 'function' ? getAllVariables() : (typeof HOST.getAllVariables === 'function' ? HOST.getAllVariables() : null);
+      if (av) {
+        if (av.stat_data) return av.stat_data;
+        if (av.user) return av;
+      }
+    } catch (e) {}
+    try {
+      var gv = (win && win.variables) || HOST.variables || window.variables;
+      if (gv && gv.stat_data) return gv.stat_data;
+    } catch (e) {}
+    return null;
+  }
+
+  // 把原始快照归一化成 UI 可直接使用的 S
+  function normalizeS(raw) {
+    raw = raw || {};
+    var d = {
+      妈妈: raw.妈妈 || {},
+      用户: raw.user || {},
+      时间: raw.时间 || {},
+      地点: raw.地点 || '',
+      家庭人物: raw.家庭人物 || {},
+      答题状态: raw.答题状态 || '禁用',
+      考试: raw.考试 || {},
+      奖励: raw.奖励 || {}
+    };
+    var m = d.妈妈, u = d.用户, tm = d.时间, fa = d.家庭人物, ex = d.考试, rw = d.奖励;
+    return {
+      userName: String(u.姓名 || 'user'),
+      mamaName: String(m.姓名 || '中岛美咲子'),
+      mamaType: String(m.类型 || '温柔腼腆'),
+      innerVoice: String(m.心里话 || ''),
+      body: {
+        小穴: (m.小穴 && m.小穴.状态) ? String(m.小穴.状态) : '',
+        乳头: (m.乳头 && m.乳头.状态) ? String(m.乳头.状态) : '',
+        大腿: (m.大腿 && m.大腿.状态) ? String(m.大腿.状态) : '',
+        足部: (m.足部 && m.足部.状态) ? String(m.足部.状态) : ''
+      },
+      bodyDesc: {
+        小穴: (m.小穴 && m.小穴.短描写) ? String(m.小穴.短描写) : '',
+        乳头: (m.乳头 && m.乳头.短描写) ? String(m.乳头.短描写) : '',
+        大腿: (m.大腿 && m.大腿.短描写) ? String(m.大腿.短描写) : '',
+        足部: (m.足部 && m.足部.短描写) ? String(m.足部.短描写) : ''
+      },
+      energy: _.clamp ? _.clamp(num(u.精力值, 100), 0, 100) : Math.max(0, Math.min(100, num(u.精力值, 100))),
+      score: Math.max(0, Math.min(750, num(u.总成绩值, 230))),
+      iq: round2(Math.max(0.1, Math.min(5, num(u.智商值, 1)))),
+      dVal: round2(Math.max(0, Math.min(2, num(u.D加成, 0.2)))),
+      coins: Math.max(0, Math.floor(num(u.零花钱, 0))),
+      lastClaimDay: Math.floor(num(u.最后领取日, 0)),
+      rewardCount: Math.max(0, Math.floor(num(u.奖励次数, 0))),
+      day: Math.max(1, Math.floor(num(tm.第几天, 1))),
+      clock: String(tm.时刻 || ''),
+      place: String(raw.地点 || '家里'),
+      bro: fa.弟弟 === '有' ? '有' : '无',
+      dad: fa.爸爸 === '有' ? '有' : '无',
+      quizState: (raw.答题状态 === '允许') ? '允许' : '禁用',
+      examState: String(ex.状态 || '关闭'),
+      examTarget: String(ex.目标阶段 || ''),
+      examPassed: Math.max(0, Math.min(3, Math.floor(num(ex.已通过阶段数, 0)))),
+      examFailDay: Math.floor(num(ex.失败标记天, 0)),
+      storage: Array.isArray(rw.存储) ? rw.存储.map(function (it) {
+        return {
+          名称: String(it.名称 || ''),
+          阶段: String(it.阶段 || ''),
+          提示: String(it.提示 || ''),
+          数量: Math.max(1, Math.floor(num(it.数量, 1)))
+        };
+      }) : []
+    };
+    d.raw = raw;
+    return d;
+  }
+
+  var CACHE = { S: null, raw: null, invite: false };
+  function refresh(force) {
+    var raw = readStatRaw();
+    // 若消息级无数据则尝试读全局 message 变量
+    if (!raw) {
+      try {
+        if (typeof getMessageVariable === 'function') {
+          var mv = getMessageVariable('stat_data');
+          if (mv) raw = mv;
+        }
+      } catch (e) {}
+    }
+    if (!raw && CACHE.raw) raw = CACHE.raw;
+    if (raw) {
+      CACHE.raw = raw;
+      CACHE.S = normalizeS(raw);
+      try { CACHE.S.invite = (typeof detectInvite === 'function') ? !!detectInvite() : false; } catch (e) { CACHE.S.invite = false; }
+    }
+    if (!CACHE.S) { CACHE.S = normalizeS(null); CACHE.S.invite = false; }
+    return CACHE.S;
+  }
+  function getS() {
+    if (!CACHE.S) refresh(true);
+    return CACHE.S;
+  }
+
+  /* 同步写：多处镜像一起更新（旧值防反噬思路：只写目标路径） */
+  function writePath(parts, value) {
+    if (!Array.isArray(parts) || !parts.length) return;
+    var win = mvuWin();
+    var dotPath = parts.join('.');
+    try {
+      if (win && win.Mvu) {
+        if (typeof win.Mvu.set === 'function') win.Mvu.set(dotPath, value);
+        if (typeof win.Mvu.update === 'function') {
+          var obj = null, cur = null;
+          for (var i = parts.length - 1; i >= 0; i--) {
+            var wrap = {};
+            if (obj === null) obj = value;
+            wrap[parts[i]] = obj;
+            obj = wrap;
+          }
+          win.Mvu.update(obj);
+        }
+        // data 树
+        if (win.Mvu.data) {
+          var d = win.Mvu.data;
+          for (var j = 0; j < parts.length - 1; j++) {
+            if (!d[parts[j]] || typeof d[parts[j]] !== 'object') d[parts[j]] = {};
+            d = d[parts[j]];
+          }
+          d[parts[parts.length - 1]] = value;
+        }
+        if (win.Mvu.data_service && win.Mvu.data_service.vars) {
+          var v = win.Mvu.data_service.vars;
+          for (var k = 0; k < parts.length - 1; k++) {
+            if (!v[parts[k]] || typeof v[parts[k]] !== 'object') v[parts[k]] = {};
+            v = v[parts[k]];
+          }
+          v[parts[parts.length - 1]] = value;
+        }
+        if (typeof win.Mvu.save === 'function') { try { win.Mvu.save(); } catch (e) {} }
+      }
+    } catch (e) {}
+    try {
+      if (typeof win.setVariable === 'function') win.setVariable(dotPath, value);
+    } catch (e) {}
+  }
+  function writePathMany(list) {
+    for (var i = 0; i < list.length; i++) writePath(list[i][0], list[i][1]);
+  }
+
+  /* 发送文本到输入框并自动发送 */
+  function sendToInput(text, autoSend) {
+    var doc = getDoc();
+    var ta = doc.querySelector('#send_textarea') || doc.querySelector('textarea#send_textarea');
+    if (!ta) { try { HOST.navigator.clipboard.writeText(text); toast('未找到输入框，已复制到剪贴板'); } catch (e) {} return; }
+    ta.value = text;
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.dispatchEvent(new Event('change', { bubbles: true }));
+    if (autoSend !== false) {
+      setTimeout(function () {
+        var btn = doc.querySelector('#send_button') || doc.querySelector('#send_but');
+        if (btn) { try { btn.click(); } catch (e) {} }
+      }, 160);
+    }
+    return true;
+  }
+
+
+  /* ============================================================
+     UI：图标 / 样式 / 状态栏卡片
+     ============================================================ */
+  var IC = {
+    quiz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    exam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+    shop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 11v9h14v-9"/><path d="M10 20v-5h4v5"/></svg>',
+    menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>',
+    bolt: '<svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M13 2 3 14h7l-1 8 11-13h-7l1-7z"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44A2.5 2.5 0 0 1 4 17.5v-11A2.5 2.5 0 0 1 6.5 4h3z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44A2.5 2.5 0 0 0 20 17.5v-11A2.5 2.5 0 0 0 17.5 4h-3z"/></svg>',
+    coin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M16 8.5c-.8-.9-2.2-1.5-4-1.5s-3.2.6-4 1.5c-.8.9-.8 2.3 0 3.2.8.9 2.2 1.5 4 1.5s3.2.6 4 1.5c.8.9.8 2.3 0 3.2-.8.9-2.2 1.5-4 1.5s-3.2-.6-4-1.5"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>',
+    checkx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="15 18 9 12 15 6"/></svg>',
+    gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>'
+  };
+
+  var CSS = '<style id="' + P + '-css">' +
+    '.' + P + '-slot { box-sizing: border-box; margin: 14px auto; width: 100%; max-width: 560px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; color: #2d3648; }' +
+    '.' + P + '-slot *, .' + P + '-win *, .' + P + '-win2 * { box-sizing: border-box; }' +
+    '.' + P + '-card { background: linear-gradient(160deg, #ffffff 0%, #f6f3fb 100%); border: 1px solid #e3d9f2; border-radius: 16px; box-shadow: 0 10px 26px rgba(120,90,200,0.10); overflow: hidden; }' +
+    '.' + P + '-hd { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: linear-gradient(120deg, #7c5cff 0%, #b16cff 60%, #f278c4 100%); color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .5px; }' +
+    '.' + P + '-hd i { font-style: normal; opacity: .85; font-weight: 600; }' +
+    '.' + P + '-row1 { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 14px; background: rgba(124,92,255,.06); font-size: 12px; color: #5a4d8f; border-bottom: 1px dashed #e2d9f4; }' +
+    '.' + P + '-sec { padding: 8px 14px; }' +
+    '.' + P + '-sec-t { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: #6b4fd8; letter-spacing: 1px; }' +
+    '.' + P + '-sec-t small { font-weight: 600; color: #a08fc9; font-size: 10px; letter-spacing: 0; }' +
+    '.' + P + '-g { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; margin-top: 7px; }' +
+    '.' + P + '-cell { background: #faf8ff; border: 1px solid #ece5fb; border-radius: 10px; padding: 5px 8px; cursor: default; }' +
+    '.' + P + '-cell b { display: block; font-size: 10px; color: #9b8ac2; font-weight: 700; margin-bottom: 2px; }' +
+    '.' + P + '-cell span { display: block; font-size: 11.5px; color: #3c3357; line-height: 1.35; word-break: break-all; }' +
+    '.' + P + '-cell.voice { grid-column: 1 / -1; }' +
+    '.' + P + '-fam { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 12px; background: #f4f0ff; border: 1px solid #e3d9f8; border-radius: 10px; cursor: pointer; user-select: none; }' +
+    '.' + P + '-fam:hover { border-color: #b79dff; }' +
+    '.' + P + '-chip { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; }' +
+    '.' + P + '-chip.on { background: #7c5cff; color: #fff; border-color: #a98bff; }' +
+    '.' + P + '-chip.off { background: #eee; color: #9aa; border-color: #ddd; }' +
+    '.' + P + '-chip:hover { filter: brightness(1.05); }' +
+    '.' + P + '-urow { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 11px; }' +
+    '.' + P + '-lbl { width: 34px; color: #8a7bb0; font-weight: 700; flex: 0 0 auto; }' +
+    '.' + P + '-bar { flex: 1; height: 9px; background: #efeafc; border-radius: 6px; overflow: hidden; }' +
+    '.' + P + '-bar > div { height: 100%; border-radius: 6px; transition: width .4s ease; }' +
+    '.' + P + '-val { min-width: 58px; text-align: right; font-weight: 800; color: #4a3f73; }' +
+    '.' + P + '-bchip { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 11px; font-size: 11px; font-weight: 800; }' +
+    '.' + P + '-bchip.ok { background: #e5f9ef; color: #0e9f6e; border: 1px solid #9fe8c8; }' +
+    '.' + P + '-bchip.no { background: #fdeeee; color: #d64545; border: 1px solid #f7c1c1; }' +
+    '.' + P + '-bchip.hold { background: #fff3e0; color: #c77b0c; border: 1px solid #f5d9a8; }' +
+    '.' + P + '-bchip.done { background: #e9f2ff; color: #3d7bd6; border: 1px solid #bcd4f5; }' +
+    '.' + P + '-rchip { display: inline-flex; align-items: center; gap: 4px; margin: 3px 5px 0 0; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; cursor: pointer; background: linear-gradient(120deg,#fff6df,#ffe9c7); color: #a05f0a; border: 1px solid #f6d394; }' +
+    '.' + P + '-rchip:hover { filter: brightness(1.06); transform: translateY(-1px); }' +
+    '.' + P + '-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-family: inherit; }' +
+    '.' + P + '-menu-btn { width: 100%; padding: 11px; font-size: 14px; color: #fff; background: linear-gradient(120deg, #7c5cff 0%, #f278c4 100%); box-shadow: 0 6px 16px rgba(124,92,255,.35); letter-spacing: 2px; }' +
+    '.' + P + '-menu-btn:hover { filter: brightness(1.06); }' +
+    '.' + P + '-dotrow { display: flex; gap: 8px; margin-top: 8px; }' +
+    '.' + P + '-dot { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 4px; border-radius: 9px; font-size: 11px; font-weight: 800; }' +
+    '.' + P + '-dot.go { background: #7c5cff22; color: #6b46e0; border: 1px solid #cfbfff; }' +
+    '.' + P + '-dot.stop { background: #f3f1f6; color: #a8a2b5; border: 1px solid #e5e2ea; }' +
+    '.' + P + '-dot.hot { background: #ffe9d6; color: #d85b00; border: 1px solid #ffca9a; }' +
+    '.' + P + '-ft { padding: 10px 14px 12px; }' +
+    '.' + P + '-tip { font-size: 10px; color: #a79ac6; margin-top: 6px; line-height: 1.5; }' +
+    /* 窗口 */
+    '.' + P + '-ov { position: fixed; inset: 0; z-index: 2147483600; background: rgba(20,12,40,.55); backdrop-filter: blur(4px); display: none; }' +
+    '.' + P + '-ov.on { display: flex; align-items: center; justify-content: center; }' +
+    '.' + P + '-win { width: 640px; max-width: 94vw; max-height: 88vh; display: flex; flex-direction: column; background: #15102a; border: 1px solid #4a3f8a; border-radius: 18px; box-shadow: 0 24px 70px rgba(0,0,0,.6); color: #efeaff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; overflow: hidden; }' +
+    '.' + P + '-wbar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #241b45; border-bottom: 1px solid #4a3f8a; flex: 0 0 auto; }' +
+    '.' + P + '-wbtn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; border: none; background: transparent; color: #cfc3ff; cursor: pointer; }' +
+    '.' + P + '-wbtn:hover { background: rgba(255,255,255,.12); color: #fff; }' +
+    '.' + P + '-wtitle { flex: 1; text-align: center; font-weight: 900; letter-spacing: 2px; font-size: 14px; background: linear-gradient(90deg,#b39dff,#ff9ad5); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }' +
+    '.' + P + '-wbody { flex: 1; overflow-y: auto; padding: 14px 16px; }' +
+    '.' + P + '-entry { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 14px; cursor: pointer; margin-bottom: 10px; border: 1.5px solid transparent; transition: all .15s; }' +
+    '.' + P + '-entry:hover { transform: translateY(-1px); }' +
+    '.' + P + '-entry .ei { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; flex: 0 0 auto; }' +
+    '.' + P + '-entry .et { flex: 1; }' +
+    '.' + P + '-entry .et b { display: block; font-size: 15px; letter-spacing: 1px; }' +
+    '.' + P + '-entry .et span { font-size: 11px; opacity: .75; line-height: 1.5; display: block; margin-top: 2px; }' +
+    '.' + P + '-entry .lockic { opacity: .45; }' +
+    '.' + P + '-card2 { background: #1e1638; border: 1px solid #43397c; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }' +
+    '.' + P + '-card2 h4 { margin: 0 0 8px; font-size: 12.5px; color: #b7a6ff; display: flex; align-items: center; gap: 6px; }' +
+    '.' + P + '-opt { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 8px; padding: 10px 12px; margin-top: 8px; border-radius: 10px; border: 1.5px solid #4a4186; background: #231b45; color: #f2eeff; font-size: 12.5px; line-height: 1.5; cursor: pointer; font-family: inherit; }' +
+    '.' + P + '-opt:hover:not(:disabled) { border-color: #9b8bff; }' +
+    '.' + P + '-opt.correct { border-color: #37d69b !important; background: rgba(55,214,155,.2) !important; }' +
+    '.' + P + '-opt.wrong { border-color: #ff6b81 !important; background: rgba(255,107,129,.18) !important; }' +
+    '.' + P + '-bigbtn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 16px; border-radius: 12px; border: none; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; color: #fff; }' +
+    '.' + P + '-bigbtn:disabled { opacity: .45; cursor: not-allowed; }' +
+    '.' + P + '-qr { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; background: #241b45; border: 1px solid #4a3f8a; border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; }' +
+    '.' + P + '-qr span { font-size: 11px; font-weight: 700; color: #cfc3ff; }' +
+    '.' + P + '-qr b { color: #fff; font-size: 12px; }' +
+    '.' + P + '-sep2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }' +
+    '.' + P + '-settle { background: linear-gradient(160deg,#2a2052,#1b1436); border: 1px solid #7a5fd8; border-radius: 16px; padding: 14px; text-align: center; }' +
+    '.' + P + '-mini { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; background: #2b2250; color: #c6baff; border: 1px solid #4a3f8a; padding: 3px 8px; border-radius: 999px; margin: 2px 4px 2px 0; }' +
+    '.' + P + '-giftrow { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; }' +
+    '</style>';
+
+  // 状态栏卡片（一个挂载点一个）
+  function barHtml(S) {
+    if (!S) S = getS();
+    var examOpen = S.examState === '开放';
+    var qzGo = S.quizState === '允许' || S.invite;
+    var pieces = [];
+    pieces.push('<div class="' + P + '-card">');
+    pieces.push('<div class="' + P + '-hd"><span>' + (S.mamaType === '毒蛇傲娇' ? '🐍' : '🌸') + '</span><span>' + esc(S.mamaName) + '</span><i>状态栏</i></div>');
+    // ④ 时间/地点
+    pieces.push('<div class="' + P + '-row1"><span>📅 第 ' + S.day + ' 天</span>' + (S.clock ? '<span>🕐 ' + esc(S.clock) + '</span>' : '') + '<span>📍 ' + esc(S.place) + '</span></div>');
+    // ① 妈妈
+    pieces.push('<div class="' + P + '-sec"><div class="' + P + '-sec-t"><span>' + IC.heart + '</span>妈妈<small>身体与心声估值</small></div><div class="' + P + '-g">');
+    var parts = [['小穴', S.body.小穴, S.bodyDesc.小穴], ['乳头', S.body.乳头, S.bodyDesc.乳头], ['大腿', S.body.大腿, S.bodyDesc.大腿], ['足部', S.body.足部, S.bodyDesc.足部]];
+    for (var i = 0; i < parts.length; i++) {
+      pieces.push('<div class="' + P + '-cell" title="' + esc(parts[i][2]) + '"><b>' + parts[i][0] + '</b><span>' + esc(parts[i][1] || '—') + '</span></div>');
+    }
+    pieces.push('<div class="' + P + '-cell voice" title="' + esc(S.innerVoice) + '"><b>心声</b><span>' + esc(S.innerVoice || '……') + '</span></div>');
+    pieces.push('</div></div>');
+    // ⑤ 家庭人物（可折叠）
+    pieces.push('<div class="' + P + '-sec"><div class="' + P + '-fam" data-a="famfold"><span style="font-weight:800;color:#6b4fd8;">[家庭人物]</span><span style="display:flex;gap:5px;">' +
+      (S.bro === '有' ? '<span class="' + P + '-bchip ok">弟</span>' : '') + (S.dad === '有' ? '<span class="' + P + '-bchip ok">爸</span>' : '') +
+      ((S.bro === '无' && S.dad === '无') ? '<span class="' + P + '-bchip no">无</span>' : '') +
+      '<span id="' + P + '-famarr" style="color:#8a7bb0;">▶</span></span></div><div id="' + P + '-fambox" style="display:none;margin-top:7px;">' +
+      '<div style="display:flex;gap:7px;">' +
+      '<span class="' + P + '-chip ' + (S.bro === '有' ? 'on' : 'off') + '" data-a="famset" data-x="bro">弟弟' + (S.bro === '有' ? ' ✓' : '') + '</span>' +
+      '<span class="' + P + '-chip ' + (S.dad === '有' ? 'on' : 'off') + '" data-a="famset" data-x="dad">爸爸' + (S.dad === '有' ? ' ✓' : '') + '</span>' +
+      '<span class="' + P + '-chip ' + (S.bro === '无' && S.dad === '无' ? 'on' : 'off') + '" data-a="famset" data-x="none">无</span>' +
+      '</div><div class="' + P + '-tip">展开/收起：点击条；点「弟弟/爸爸」切换在场，点「无」将两人都移出当前场景（脚本会同步给正文）。</div></div></div>');
+    // ② user
+    pieces.push('<div class="' + P + '-sec"><div class="' + P + '-sec-t"><span>' + IC.bolt + '</span>' + esc(S.userName || 'user') + '<small>状态估值</small></div>');
+    pieces.push(barRowHtml('精力', S.energy, 100, S.energy <= 20 ? '#f5587c' : '#37c690', 14));
+    pieces.push(barRowHtml('总成绩', S.score, 750, '#b16cff', 16));
+    pieces.push('<div class="' + P + '-urow"><span class="' + P + '-lbl">智商</span><span style="color:#ffcf6e;font-weight:900;">' + S.iq + '</span><span style="color:#8a7bb0;font-size:10px;">(每题基础 +作弊D ' + S.dVal + ' = ' + round2(S.iq + S.dVal) + '分/对)</span></div>');
+    pieces.push('<div class="' + P + '-urow"><span class="' + P + '-lbl">奖励袋</span><span style="font-weight:900;color:#ff9ad5;">' + S.rewardCount + ' 张</span><span style="color:#8a7bb0;font-size:10px;">可点击使用</span></div>');
+    pieces.push('</div>');
+    // ③ 答题状态 / 考试状态
+    pieces.push('<div class="' + P + '-sec"><div style="display:flex;gap:8px;flex-wrap:wrap;">');
+    pieces.push('<span class="' + P + '-bchip ' + (S.quizState === '允许' ? 'ok' : 'no') + '">答题：' + S.quizState + '</span>');
+    var ec = 'hold';
+    var et = '考试：' + S.examState;
+    if (examOpen) { ec = 'hot'; et = '考试：开放（临界点已到！）'; }
+    else if (S.examPassed >= 3) { ec = 'done'; et = '考试：已全部通过'; }
+    pieces.push('<span class="' + P + '-bchip ' + ec + '">' + et + '</span>');
+    pieces.push('</div>');
+    if (examOpen) pieces.push('<div class="' + P + '-tip">成绩已卡死在临界点 ' + esc(S.examTarget || '下一阶段') + ' —— 请从下方菜单进入「考试入口」。</div>');
+    if (S.energy <= 0) pieces.push('<div class="' + P + '-tip" style="color:#e0557b;">⚠ 精力为 0，先休息恢复精力再做/考试。</div>');
+    pieces.push('</div>');
+    // 奖励袋内容
+    if (S.storage && S.storage.length) {
+      pieces.push('<div class="' + P + '-sec"><div class="' + P + '-sec-t"><span>' + IC.gift + '</span>奖励袋<small>点击券即使用并发送正文</small></div><div>');
+      for (var s2 = 0; s2 < S.storage.length; s2++) {
+        var it = S.storage[s2];
+        pieces.push('<span class="' + P + '-rchip" data-a="usetoken" data-x="' + s2 + '" title="' + esc(it.阶段) + '：' + esc(it.提示) + '">' + esc(it.名称) + ' ×' + it.数量 + '</span>');
+      }
+      pieces.push('</div></div>');
+    }
+    // 玩法入口按钮
+    pieces.push('<div class="' + P + '-ft"><button type="button" class="' + P + '-btn ' + P + '-menu-btn" data-a="menu">🎮 打开玩法菜单</button>');
+    pieces.push('<div class="' + P + '-dotrow">' +
+      '<span class="' + P + '-dot ' + (qzGo ? 'go' : 'stop') + '">做题</span>' +
+      '<span class="' + P + '-dot ' + (examOpen ? 'hot' : (S.examPassed >= 3 ? 'go' : 'stop')) + '">考试</span>' +
+      '<span class="' + P + '-dot go">商城</span>' +
+      '</div></div>');
+    pieces.push('</div>');
+    return pieces.join('');
+  }
+
+  function barRowHtml(label, val, max, color, barPx) {
+    var pct = max > 0 ? Math.max(0, Math.min(100, val / max * 100)) : 0;
+    return '<div class="' + P + '-urow"><span class="' + P + '-lbl">' + label + '</span><div class="' + P + '-bar"><div style="width:' + pct + '%;background:' + color + ';"></div></div><span class="' + P + '-val">' + val + '/' + max + '</span></div>';
+  }
+
+
+  /* ============================================================
+     UI：玩法窗口内部视图（菜单/做题/考试/商城/结算）
+     依赖运行时状态对象：SES / QZ / EZ（在 app 段声明）
+     ============================================================ */
+
+  function qHTML(q) {
+    var L = ['A', 'B', 'C', 'D'];
+    var out = [];
+    for (var i = 0; i < q.opts.length; i++) {
+      out.push('<button type="button" class="' + P + '-opt' +
+        (SES.locked && i === q.correctIndex ? ' correct' : '') +
+        (SES.locked && i === SES.pick ? ' wrong' : '') +
+        '" data-a="opt" data-x="' + i + '" ' + (SES.locked ? 'disabled' : '') + '>' +
+        '<span>' + L[i] + '. ' + esc(q.opts[i]) + '</span>' +
+        (SES.locked && i === q.correctIndex ? '<span>✔</span>' : '') + '</button>');
+    }
+    return out.join('');
+  }
+
+  function pickQuestion(pool) {
+    var list = [];
+    for (var n = 0; n < pool.length; n++) {
+      var raw = pool[n];
+      var opts = [raw.c, raw.w[0], raw.w[1], raw.w[2]];
+      var order = [0, 1, 2, 3];
+      for (var m = order.length - 1; m > 0; m--) {
+        var j = Math.floor(Math.random() * (m + 1));
+        var t = order[m]; order[m] = order[j]; order[j] = t;
+      }
+      var ci = order.indexOf(0);
+      list.push({
+        s: raw.s, t: raw.t,
+        opts: order.map(function (o) { return opts[o]; }),
+        correctIndex: ci,
+        ctext: String.fromCharCode(65 + ci) + '. ' + raw.c
+      });
+    }
+    return list;
+  }
+
+  function statsStripHtml(S) {
+    return '<div class="' + P + '-qr">' +
+      '<span>精力 ' + IC.heart + ' <b style="color:' + (S.energy <= 20 ? '#ff6b81' : '#58e0a0') + '">' + S.energy + '</b>/100</span>' +
+      '<span>得分 ' + IC.star + ' <b style="color:#ffcf6e;">' + SES.gain + '</b></span>' +
+      '<span>对 ' + IC.checkx + ' <b style="color:#58e0a0;">' + SES.correct + '</b></span>' +
+      '<span>错 <b style="color:#ff6b81;">' + SES.wrong + '</b></span>' +
+      '<span>剩题 <b>' + SES.left + '</b></span>' +
+      '</div>';
+  }
+
+  // 菜单页：三个入口
+  function htmlHub() {
+    var S = getS();
+    var qzOk = (S.quizState === '允许') || !!S.invite;
+    var qzWhy = qzOk ? '可以进入做题' : '妈妈还没有邀请你做题（当前正文无做题邀请）。';
+    if (S.quizState === '禁用' && !S.invite) qzWhy = '答题状态为「禁用」，需等妈妈开口邀请。';
+
+    var exOk = S.examState === '开放' && S.energy >= CONF.examEnergy && S.examFailDay !== S.day;
+    var exWhy;
+    if (S.examState !== '开放') {
+      if (S.examPassed >= 3) exWhy = '四个亲密阶段已全部通过，无需再考。';
+      else if (S.score >= nextBoundNum(S.examPassed)) exWhy = '成绩已到临界点，但今天考试已失败（或入口暂闭），第 ' + (S.day + 1) + ' 天再来挑战。';
+      else exWhy = '未到临界点：成绩到达 ' + nextBoundStr(S.examPassed) + ' 分后考试才会开放。';
+    }
+    else if (S.energy < CONF.examEnergy) exWhy = '精力不足 ' + CONF.examEnergy + ' 点，先恢复精力。';
+    else if (S.examFailDay === S.day) exWhy = '今天考试失败过，明天（第 ' + (S.day + 1) + ' 天）才能再考。';
+    else exWhy = '成绩已达临界点，通过考试解锁下一亲密阶段！';
+
+    var html = [];
+    html.push(entryHtml('quiz', IC.quiz, '#7c5cff', '做题入口', qzOk ? '去妈妈陪同下做题（每题消耗10精力）' : qzWhy, qzOk));
+    html.push(entryHtml('exam', IC.exam, '#ff7ab0', '考试入口', exOk ? '10 题答对 ≥7 即通过，进入下一亲密阶段' : exWhy, exOk, S.examState === '开放'));
+    html.push(entryHtml('shop', IC.shop, '#ffb74d', '商城入口', '智商药水 · 作弊道具 · 每日零花钱', true));
+    html.push('<div class="' + P + '-card2" style="text-align:center;color:#a99add;font-size:11px;">当前：第 ' + S.day + ' 天 · ' + esc(S.place) + ' ｜ 智商A=' + S.iq + ' ｜ 作弊D=' + S.dVal + ' ｜ 每题答对=' + round2(S.iq + S.dVal) + '分 ｜ 零花钱：' + S.coins + ' 元</div>');
+    return html.join('');
+  }
+  function entryHtml(kind, ic, color, title, sub, ok, hot) {
+    var bg = color;
+    var boxBorder = ok ? '3px solid ' + color : '1.5px solid #4a4186';
+    var boxBg = ok ? 'linear-gradient(120deg,' + color + '22,#241b45 70%)' : '#191334';
+    return '<div class="' + P + '-entry" data-a="nav" data-x="' + kind + '" style="background:' + boxBg + ';border:' + boxBorder + (hot ? ';box-shadow:0 0 18px ' + color + '66' : '') + '">' +
+      '<div class="ei" style="background:' + bg + ';">' + (ok ? ic : IC.lock) + '</div>' +
+      '<div class="et"><b style="color:' + (ok ? '#fff' : '#8d86a8') + ';">' + title + '</b><span style="color:#c3b8ea;">' + esc(sub) + '</span></div>' +
+      (ok ? '<span style="color:' + color + ';font-size:18px;">›</span>' : '<span class="' + P + '-lockic" style="color:#6a6288;">' + IC.lock + '</span>') +
+      '</div>';
+  }
+  function nextBoundNum(passed) { return STAGE_BOUNDS[Math.min(passed, 2)]; }
+  function nextBoundStr(passed) {
+    var arr = ['300（阶段二·口交期）', '450（阶段三·乳交期）', '600（阶段四·完全接纳期）'];
+    return passed < 3 ? arr[passed] : '—';
+  }
+
+  // 做题视图
+  function htmlQuiz() {
+    var S = getS();
+    var out = [];
+    out.push(statsStripHtml(S));
+    var q = QZ.list[QZ.i];
+    if (QZ.done) {
+      out.push('<div class="' + P + '-settle">');
+      out.push('<div style="font-size:18px;font-weight:900;">🏁 本轮做题结束</div>');
+      out.push('<div style="font-size:12px;color:#c9bdff;margin-top:6px;">作答 <b>' + QZ.answered + '</b> 题 ｜ 答对 <b style="color:#58e0a0;">' + QZ.correct + '</b> ｜ 答错 <b style="color:#ff6b81;">' + QZ.wrong + '</b> ｜ 本场得分 <b style="color:#ffcf6e;">' + QZ.gain + '</b></div>');
+      out.push('<div style="font-size:11px;color:#9d8fd0;margin-top:4px;">公式：成绩 = A×答对数 + (答对数×D)，即每答对 1 题得 ' + round2(QZ.A + QZ.D) + ' 分（每题扣 10 精力）</div>');
+      out.push('<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">' +
+        '<button type="button" class="' + P + '-bigbtn" style="background:#ff9ad5;" data-a="qz-settle">🎁 奖励结算</button>' +
+        '<button type="button" class="' + P + '-bigbtn" style="background:#3d3570;" data-a="qz-restart">再来一轮</button>' +
+        '<button type="button" class="' + P + '-bigbtn" style="background:#2a2350;" data-a="nav" data-x="hub">返回菜单</button>' +
+        '</div></div>');
+      if (S.examState === '开放' && QZ.correct > 0) {
+        out.push('<div class="' + P + '-card2" style="border-color:#ffb74d;"><h4>⚠ 临界点提示</h4><div style="font-size:11.5px;line-height:1.7;color:#e8ddff;">总成绩已卡死在临界点 <b style="color:#ffcf6e;">' + esc(S.examTarget || '下一阶段') + '</b>，本轮所得分数暂不计入（要先通过考试解锁）。精力照常消耗，答对的奖励照常结算。</div></div>');
+      }
+      return out.join('');
+    }
+    if (!q) { QZ.done = true; return htmlQuiz(); }
+    out.push('<div class="' + P + '-card2"><h4>【' + q.s + '】第 ' + (QZ.i + 1) + ' / ' + QZ.list.length + ' 题</h4>');
+    out.push('<div style="font-size:14px;line-height:1.7;font-weight:800;color:#fff;">' + esc(q.t) + '</div>');
+    out.push(qHTML(q));
+    out.push('</div>');
+    if (SES.feedback) {
+      out.push('<div class="' + P + '-card2" style="border-color:' + (SES.feedOk ? '#37d69b' : '#ff6b81') + ';background:' + (SES.feedOk ? '#123c2c' : '#3d1a26') + ';">');
+      out.push('<div style="font-size:12px;line-height:1.7;">' + (SES.feedOk ? '✅ 回答正确！+' + round2(QZ.A + QZ.D) + ' 分（得分累计）' : '❌ 回答错误，正确答案：<b>' + esc(q.ctext) + '</b>') + '</div>');
+      out.push('<div style="font-size:11px;color:#b9aee0;margin-top:2px;">每答一题 -10 精力</div></div>');
+    }
+    var bottom = [];
+    if (SES.locked) {
+      bottom.push('<div style="display:flex;gap:8px;margin-top:10px;">');
+      if (QZ.i + 1 < QZ.list.length) bottom.push('<button type="button" class="' + P + '-bigbtn" style="flex:1;background:#7c5cff;" data-a="qz-next">下一题 →</button>');
+      else bottom.push('<button type="button" class="' + P + '-bigbtn" style="flex:1;background:#7c5cff;" data-a="qz-end">查看本轮结果</button>');
+      bottom.push('</div>');
+    } else {
+      bottom.push('<div style="display:flex;gap:8px;margin-top:10px;">');
+      bottom.push('<button type="button" class="' + P + '-bigbtn" style="flex:1;background:#2a2350;" data-a="qz-quit">提前结束</button>');
+      bottom.push('</div>');
+    }
+    bottom.push('<div style="margin-top:10px;"><button type="button" class="' + P + '-bigbtn" style="width:100%;background:linear-gradient(120deg,#ffb74d,#ff7ab0);' + (QZ.answered === 0 ? 'opacity:.45;' : '') + '" data-a="qz-settle" ' + (QZ.answered === 0 ? 'disabled' : '') + '>🎁 随时结算奖励（已作答可点）</button>');
+    bottom.push('<div style="font-size:10px;color:#8d7fb8;text-align:center;margin-top:6px;">做完 1 题后即可随时结算：索求奖励 = 立刻把战报与奖励清单发进正文；存储奖励 = 存进奖励袋。</div></div>');
+    out.push(bottom.join(''));
+    return out.join('');
+  }
+
+  // 考试视图
+  function htmlExam() {
+    var S = getS();
+    var out = [];
+    out.push('<div class="' + P + '-qr"><span>目标 ' + IC.exam + ' <b style="color:#ff9ad5;">' + esc(S.examTarget || '下一亲密阶段') + '</b></span><span>及格线 <b style="color:#58e0a0;">' + CONF.examPass + '/' + CONF.examNeed + '</b></span><span>消耗精力 <b style="color:#ff6b81;">' + CONF.examEnergy + '</b></span></div>');
+    var q = EZ.list[EZ.i];
+    if (EZ.done) {
+      var pass = EZ.correct >= CONF.examPass;
+      out.push('<div class="' + P + '-settle" style="border-color:' + (pass ? '#37d69b' : '#ff6b81') + ';">');
+      out.push('<div style="font-size:18px;font-weight:900;color:' + (pass ? '#58e0a0' : '#ff6b81') + ';">' + (pass ? '🏆 考试通过！' : '❌ 未达及格线') + '</div>');
+      out.push('<div style="font-size:12px;color:#c9bdff;margin-top:6px;">答对 <b>' + EZ.correct + '</b> / ' + CONF.examNeed + ' 题（及格 ' + CONF.examPass + ' 题）</div>');
+      if (pass) out.push('<div style="font-size:12px;color:#e8ddff;margin-top:6px;">已顺利解锁 <b style="color:#ffcf6e;">' + esc(S.examTarget || '下一阶段') + '</b>，之后做题可获取该阶段奖励。</div>');
+      else out.push('<div style="font-size:12px;color:#e8ddff;margin-top:6px;">今天考试入口已关闭，第 ' + (S.day + 1) + ' 天才会重新开放。</div>');
+      out.push('<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;"><button type="button" class="' + P + '-bigbtn" style="background:#3d3570;" data-a="nav" data-x="hub">返回菜单</button></div>');
+      out.push('</div>');
+      return out.join('');
+    }
+    if (!q) { EZ.done = true; return htmlExam(); }
+    out.push('<div class="' + P + '-card2"><h4>【' + q.s + '】第 ' + (EZ.i + 1) + ' / ' + EZ.list.length + ' 题</h4>');
+    out.push('<div style="font-size:14px;line-height:1.7;font-weight:800;color:#fff;">' + esc(q.t) + '</div>');
+    out.push(qHTML(q));
+    out.push('</div>');
+    if (SES.feedback) {
+      out.push('<div class="' + P + '-card2" style="border-color:' + (SES.feedOk ? '#37d69b' : '#ff6b81') + ';background:' + (SES.feedOk ? '#123c2c' : '#3d1a26') + ';">' +
+        '<div style="font-size:12px;">' + (SES.feedOk ? '✅ 正确！' : '❌ 错误，正确答案：<b>' + esc(q.ctext) + '</b>') + '</div></div>');
+    }
+    if (SES.locked) {
+      out.push('<div style="display:flex;gap:8px;margin-top:10px;">');
+      if (EZ.i + 1 < EZ.list.length) out.push('<button type="button" class="' + P + '-bigbtn" style="flex:1;background:#ff7ab0;" data-a="ex-next">下一题 →</button>');
+      else out.push('<button type="button" class="' + P + '-bigbtn" style="flex:1;background:#ff7ab0;" data-a="ex-finish">交卷</button>');
+      out.push('</div>');
+    }
+    return out.join('');
+  }
+
+  // 商城视图
+  function htmlShop() {
+    var S = getS();
+    var allowance = dailyAllowance(S.score);
+    var canClaim = S.lastClaimDay < S.day;
+    var out = [];
+    out.push('<div class="' + P + '-card2"><h4>' + IC.coin + ' 钱包</h4><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+      '<div style="font-size:15px;">零花钱：<b style="color:#ffcf6e;">' + S.coins + ' 元</b></div>' +
+      '<div style="font-size:11px;color:#b9aee0;">今日可领：' + allowance + ' 元（10 + 阶段×5，阶段越高越多）</div>' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:' + (canClaim ? '#37c690' : '#3d3570') + ';font-size:12px;padding:8px 12px;" data-a="claim" ' + (canClaim ? '' : 'disabled') + '>' + (canClaim ? '领取今日零花钱' : '今日已领取，明天再来') + '</button>' +
+      '</div></div>');
+    out.push('<div class="' + P + '-card2"><h4>' + IC.brain + ' 智商药水（提升 A）</h4>');
+    for (var i = 0; i < SHOP_IQ.length; i++) out.push(shopRowHtml(SHOP_IQ[i], S));
+    out.push('</div>');
+    out.push('<div class="' + P + '-card2"><h4>' + IC.lock + ' 作弊道具（提升 D，妈妈看见会起疑…）</h4>');
+    for (var j = 0; j < SHOP_D.length; j++) out.push(shopRowHtml(SHOP_D[j], S));
+    out.push('</div>');
+    out.push('<div class="' + P + '-card2"><h4>公式说明</h4><div style="font-size:11.5px;line-height:1.8;color:#c9bdff;">成绩结算 = A × 答对数 + (答对数 × D)<br>每答对 1 题得分 = A + D = <b style="color:#ffcf6e;">' + round2(S.iq + S.dVal) + '</b> 分（当前）<br>每做 1 题（对错都）扣 <b>10</b> 精力；考试一次消耗 <b>30</b> 精力。</div></div>');
+    return out.join('');
+  }
+  function shopRowHtml(it, S) {
+    var own = it.gain > 0 && it.desc.indexOf('A') >= 0 ? S.iq : S.dVal;
+    var cap = it.desc.indexOf('A') >= 0 ? 5 : 2;
+    var afford = S.coins >= it.price && own < cap;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed #43397c;">' +
+      '<div style="flex:1;"><div style="font-weight:800;font-size:13px;">' + esc(it.name) + '</div>' +
+      '<div style="font-size:10.5px;color:#9d8fd0;margin-top:2px;">' + esc(it.desc) + '</div></div>' +
+      '<div style="font-size:13px;color:#ffcf6e;font-weight:900;">' + it.price + ' 元</div>' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:' + (afford ? '#7c5cff' : '#3d3570') + ';font-size:12px;padding:8px 13px;" data-a="buy" data-x="' + it.k + '" ' + (afford ? '' : 'disabled') + '>购买</button>' +
+      '</div>';
+  }
+
+  // 结算分栏（索求 / 存储）
+  function htmlSettle() {
+    var S = getS();
+    var tokens = SES.rewards;      // [{name,guide,stage}]
+    var rows = [];
+    for (var i = 0; i < tokens.length; i++) {
+      rows.push('<span class="' + P + '-mini">' + esc(tokens[i].name) + '</span>');
+    }
+    return '<div class="' + P + '-settle">' +
+      '<div style="font-size:15px;font-weight:900;color:#ffcf6e;">🎁 本轮奖励结算</div>' +
+      '<div style="font-size:11px;color:#b9aee0;margin-top:4px;">本轮答对 ' + QZ.correct + ' 题 → 获得 ' + tokens.length + ' 张奖励券（' + esc(stageNameOf(getS().score)) + '奖励池）</div>' +
+      '<div class="' + P + '-giftrow">' + rows.join('') + '</div>' +
+      '<div class="' + P + '-sep2" style="margin-top:12px;">' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:linear-gradient(120deg,#ffb74d,#ff7ab0);min-height:84px;flex-direction:column;" data-a="settle-claim"><span style="font-size:15px;">📤 索求奖励</span><span style="font-size:11px;opacity:.85;">' + tokens.length + ' 张 → 立即写入正文发送（妈妈现场兑现）</span></button>' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:linear-gradient(120deg,#7c5cff,#b16cff);min-height:84px;flex-direction:column;" data-a="settle-store"><span style="font-size:15px;">🗂 存储奖励</span><span style="font-size:11px;opacity:.85;">' + tokens.length + ' 张 → 存入奖励袋（可在状态栏随时点券使用）</span></button>' +
+      '</div>' +
+      '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:#3d3570;" data-a="qz-restart">继续做题</button>' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:#2a2350;" data-a="nav" data-x="hub">返回菜单</button>' +
+      '</div>' +
+      '</div>';
+  }
+
+
+  /* ============================================================
+     App：会话状态 / 动作 / 窗口 / 事件 / 启动
+     ============================================================ */
+  var SES = { view: 'hub', locked: false, pick: -1, feedback: '', feedOk: true, gain: 0, correct: 0, wrong: 0, left: 0, rewards: [], settleNote: '' };
+  var QZ = { list: [], i: 0, answered: 0, correct: 0, wrong: 0, gain: 0, done: false, A: 1, D: 0.2, frozen: false };
+  var EZ = { list: [], i: 0, answered: 0, correct: 0, wrong: 0, done: false };
+  var win = { open: false, title: '' };
+  var foldState = {};   // 家庭人物折叠：按元素存
+  var qzBusy = false, exBusy = false;
+  var boundCrossed = false;
+
+  function clone(v) { return JSON.parse(JSON.stringify(v)); }
+  function shuffleArray(a) {
+    var r = a.slice();
+    for (var i = r.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = r[i]; r[i] = r[j]; r[j] = t; }
+    return r;
+  }
+  function setDeep(obj, parts, val) {
+    if (!obj || !Array.isArray(parts) || !parts.length) return;
+    var o = obj;
+    for (var i = 0; i < parts.length - 1; i++) {
+      if (!o[parts[i]] || typeof o[parts[i]] !== 'object') o[parts[i]] = {};
+      o = o[parts[i]];
+    }
+    o[parts[parts.length - 1]] = val;
+  }
+  function applyVar(parts, val) {
+    writePath(parts, val);
+    if (CACHE.raw) { setDeep(CACHE.raw, parts, val); CACHE.S = normalizeS(CACHE.raw); }
+    else refresh(true);
+  }
+  function applyVars(list) { for (var i = 0; i < list.length; i++) applyVar(list[i][0], list[i][1]); }
+
+  /* 做题入口判断：最新正文中妈妈是否邀请/要求做题 */
+  function latestAiText() {
+    var out = '';
+    try {
+      var ctx = (HOST.SillyTavern && HOST.SillyTavern.getContext) ? HOST.SillyTavern.getContext() : null;
+      if (ctx && Array.isArray(ctx.chat) && ctx.chat.length) {
+        for (var i = ctx.chat.length - 1; i >= 0; i--) {
+          var m = ctx.chat[i];
+          if (m && !m.is_user) { out = m.mes || (m.extra && m.extra.display_text) || ''; break; }
+        }
+      }
+    } catch (e) {}
+    if (!out) {
+      try {
+        var el = qs('#chat .mes:last-child .mes_text');
+        if (el) out = el.textContent || '';
+      } catch (e) {}
+    }
+    return out;
+  }
+  var INVITE_RE = /<学习脚本>|考考你|来做题|做几道题|陪你做题|辅导你|练习题|测验|抽你背|出几道题|问你几道|试卷/;
+  function detectInvite() {
+    try {
+      var txt = latestAiText();
+      if (!txt) return false;
+      if (INVITE_RE.test(txt)) return true;
+    } catch (e) {}
+    return false;
+  }
+  function canQuizNow(S) { return (S.quizState === '允许' || !!S.invite); }
+  function canExamNow(S) {
+    if (S.examState !== '开放') return false;
+    if (S.energy < CONF.examEnergy) return false;
+    if (S.examFailDay === S.day) return false;
+    return true;
+  }
+
+  /* ================= 做题会话 ================= */
+  function startQuiz() {
+    var S = getS();
+    if (!canQuizNow(S)) { toast('妈妈还没有邀请你做题哦', 'warn'); return false; }
+    if (S.energy <= 0) { toast('精力为 0，无法做题，先休息恢复吧', 'err'); return false; }
+    QZ.list = shuffleArray(NORMAL_POOL).slice(0, CONF.quizPoolMax).map(function (r) { return pickOne(r); });
+    QZ.i = 0; QZ.answered = 0; QZ.correct = 0; QZ.wrong = 0; QZ.gain = 0; QZ.done = false;
+    QZ.A = S.iq; QZ.D = S.dVal;
+    QZ.frozen = S.examState === '开放';
+    SES.gain = 0; SES.correct = 0; SES.wrong = 0; SES.left = QZ.list.length; SES.rewards = [];
+    return true;
+  }
+  function pickOne(raw) {
+    var opts = [raw.c, raw.w[0], raw.w[1], raw.w[2]];
+    var o = shuffleArray([0, 1, 2, 3]);
+    return { s: raw.s, t: raw.t, opts: o.map(function (i) { return opts[i]; }), correctIndex: o.indexOf(0), ctext: String.fromCharCode(65 + o.indexOf(0)) + '. ' + raw.c };
+  }
+
+  function answerQuiz(idx) {
+    if (SES.locked || QZ.done) return;
+    var q = QZ.list[QZ.i];
+    if (!q) return;
+    SES.locked = true; SES.pick = idx;
+    var S = getS();
+    var right = idx === q.correctIndex;
+    SES.feedOk = right;
+    // 扣精力（对错都扣 10）
+    var nrg = Math.max(0, S.energy - CONF.energyPerQ);
+    applyVar(['user', '精力值'], nrg);
+    QZ.answered++;
+    if (right) {
+      var add = round2(QZ.A + QZ.D);
+      QZ.correct++; SES.correct = QZ.correct;
+      if (!QZ.frozen) { QZ.gain = round2(QZ.gain + add); }
+      SES.gain = round2(QZ.gain);
+      SES.feedback = '回答正确 +' + add + ' 分';
+      SES.feedOk = true;
+    } else {
+      QZ.wrong++; SES.wrong = QZ.wrong;
+      SES.feedback = '回答错误';
+      SES.feedOk = false;
+    }
+    SES.left = Math.max(0, Math.min(QZ.list.length - QZ.answered, Math.floor(nrg / CONF.energyPerQ)));
+    if (nrg <= 0) {
+      QZ.done = true;
+      SES.left = 0;
+    }
+    redrawView();
+  }
+  function quizNext() {
+    if (QZ.i + 1 >= QZ.list.length) { QZ.done = true; redrawView(); return; }
+    QZ.i++;
+    SES.locked = false; SES.pick = -1; SES.feedback = '';
+    var S = getS();
+    SES.left = Math.max(0, Math.min(QZ.list.length - QZ.answered, Math.floor(S.energy / CONF.energyPerQ)));
+    redrawView();
+  }
+  function quitQuiz() {
+    QZ.done = true;
+    SES.left = 0;
+    if (QZ.answered === 0) { toast('一题都还没做，先做一道题才能结算奖励', 'warn'); SES.view = 'quiz'; if (!startQuiz()) { closeWin(); setView('hub'); } redrawView(); return; }
+    redrawView();
+  }
+  // 结算时生成奖励券
+  function buildRewards() {
+    var S = getS();
+    var p = S.examPassed;
+    var stIdx = (S.examState === '开放') ? Math.max(0, Math.min(p, 3)) : Math.max(stageByScore(S.score), p);
+    if (stIdx > 3) stIdx = 3;
+    var pool = REWARD_TOKENS[stIdx].list;
+    var stageLabel = STAGES[stIdx].name;
+    var tokens = [];
+    for (var i = 0; i < QZ.correct; i++) {
+      var tk = pool[Math.floor(Math.random() * pool.length)];
+      tokens.push({ name: tk.name, stage: stageLabel, guide: tk.guide });
+    }
+    SES.rewards = tokens;
+    return tokens;
+  }
+  function settleView() {
+    if (QZ.answered === 0) { toast('至少做完 1 道题才能结算', 'warn'); return; }
+    if (!SES.rewards.length && QZ.correct > 0) buildRewards();
+    SES.view = 'settle';
+    redrawView();
+  }
+  // 当前得分（结算时应写入的总成绩增量；考试开放/临界点时冻结为 0）
+  function realGain() { return QZ.frozen ? 0 : QZ.gain; }
+  // 写入成绩：接近/越过亲密阶段临界点时封顶并自动开放考试
+  function applyScoreGain() {
+    var S = getS();
+    var g = Math.round(realGain());
+    if (g === 0) return;
+    var p = S.examPassed;
+    var b = p < 3 ? STAGE_BOUNDS[p] : 750;
+    var ns = S.score + g;
+    if (ns >= b) {
+      ns = b;
+      if (p < 3 && S.examState !== '开放') {
+        boundCrossed = true;
+        QZ.frozen = true;
+        applyVar(['考试', '状态'], '开放');
+        applyVar(['考试', '目标阶段'], STAGES[p + 1].name);
+      }
+    }
+    applyVar(['user', '总成绩值'], ns);
+  }
+  // 心跳兜底：模型或他处让成绩越过临界点时，同样冻结并开放考试
+  function autoExamGate() {
+    var S = refresh(true);
+    if (!S) return;
+    var p = S.examPassed;
+    if (p >= 3) return;
+    var b = STAGE_BOUNDS[p];
+    if (S.score >= b) {
+      // 当天考试失败过 → 保持关闭，次日再自动开放
+      if (S.examFailDay !== S.day && S.examState !== '开放') {
+        applyVar(['考试', '状态'], '开放');
+        applyVar(['考试', '目标阶段'], STAGES[p + 1].name);
+      }
+      if (S.score > b) applyVar(['user', '总成绩值'], b);
+    }
+  }
+  function rewardLinesHtml(tokens) {
+    var map = {};
+    for (var i = 0; i < tokens.length; i++) map[tokens[i].name] = (map[tokens[i].name] || 0) + 1;
+    var lines = [];
+    var names = Object.keys(map);
+    for (var j = 0; j < names.length; j++) lines.push('【' + names[j] + '】×' + map[names[j]] + '（' + tokens[0].stage + '）');
+    return lines;
+  }
+  function composeQuizReport(store) {
+    var S = getS();
+    var lines = [];
+    lines.push('【学业答题结算】');
+    lines.push('- 答题统计：作答 ' + QZ.answered + ' 题，答对 ' + QZ.correct + ' 题，答错 ' + QZ.wrong + ' 题');
+    lines.push('- 结算参数：智商A=' + QZ.A + '，作弊加成D=' + QZ.D + '（每答对 1 题 = A+D = ' + round2(QZ.A + QZ.D) + ' 分）');
+    var gainApplied = realGain();
+    lines.push('- 本场得分：' + round2(gainApplied) + (QZ.frozen ? '（当前处于亲密阶段临界点，成绩已冻结，通过考试后方可累计）' : ''));
+    lines.push('- 当前精力：' + getS().energy);
+    if (QZ.correct > 0) {
+      var toks = SES.rewards.length ? SES.rewards : buildRewards();
+      var rl = rewardLinesHtml(toks);
+      lines.push('- 本轮奖励（' + (toks.length ? toks[0].stage : '') + '，共 ' + toks.length + ' 张）：');
+      for (var i = 0; i < rl.length; i++) lines.push('   ' + rl[i]);
+    }
+    var finalScore = getS().score;
+    lines.push('<学习系统结果>最新精力值：' + getS().energy + '，最新总成绩值：' + finalScore + '</学习系统结果>');
+    if (boundCrossed) {
+      var S2 = getS();
+      lines.push('<考试结果>状态：开放，目标阶段：' + STAGES[S2.examPassed + 1].name + '，已通过阶段数：' + S2.examPassed + '，失败标记天：0，最新精力值：' + S2.energy + '，最新总成绩值：' + S2.score + '</考试结果>');
+      lines.push('【提示】成绩已达亲密阶段临界点并被冻结，请自然地安排「妈妈出题考试」的剧情（状态栏的考试状态已变为“开放”）。');
+      boundCrossed = false;
+    }
+    if (store) {
+      var st = cloneStorageAfterAdd();
+      lines.push('<奖励存储同步>{"列表":' + JSON.stringify(st.list) + ',"总数":' + st.total + '}</奖励存储同步>');
+    }
+    return lines.join('\n');
+  }
+  function cloneStorageAfterAdd() {
+    var S = getS();
+    var tokens = SES.rewards;
+    var arr = clone(S.storage);
+    for (var i = 0; i < tokens.length; i++) {
+      var found = -1;
+      for (var j = 0; j < arr.length; j++) if (arr[j].名称 === tokens[i].name && arr[j].阶段 === tokens[i].stage) { found = j; break; }
+      if (found >= 0) arr[found].数量 += 1;
+      else arr.push({ 名称: tokens[i].name, 阶段: tokens[i].stage, 提示: tokens[i].guide, 数量: 1 });
+    }
+    return { list: arr, total: arr.reduce(function (a, it) { return a + it.数量; }, 0) };
+  }
+  function storageTotal(arr) { return arr.reduce(function (a, it) { return a + it.数量; }, 0); }
+
+  function doClaim() {
+    applyScoreGain();
+    var txt = composeQuizReport(false);
+    sendToInput(txt, true);
+    toast('📤 战报与奖励清单已发送，等待妈妈兑现！');
+    endSessionUI();
+  }
+  function doStore() {
+    var next = cloneStorageAfterAdd();
+    if (next.total > CONF.maxStorage) { toast('奖励袋已满（上限 ' + CONF.maxStorage + ' 张），先使用一些再存储', 'err'); return; }
+    applyScoreGain();
+    applyVar(['奖励', '存储'], next.list);
+    applyVar(['user', '奖励次数'], next.total);
+    var txt = composeQuizReport(true);
+    sendToInput(txt, true);
+    toast('🗂 已存入奖励袋 ' + (SES.rewards.length || QZ.correct) + ' 张，可在状态栏点击使用');
+    endSessionUI();
+  }
+  function endSessionUI() {
+    SES.rewards = [];
+    closeWin();
+    setView('hub');
+    redrawView();
+  }
+
+  /* ================= 考试 ================= */
+  function startExam() {
+    var S = getS();
+    if (!canExamNow(S)) { toast('考试入口当前未开放', 'warn'); return false; }
+    EZ.list = shuffleArray(HARD_POOL).slice(0, CONF.examNeed);
+    EZ.i = 0; EZ.answered = 0; EZ.correct = 0; EZ.wrong = 0; EZ.done = false;
+    return true;
+  }
+  function answerExam(idx) {
+    if (SES.locked || EZ.done) return;
+    var q = EZ.list[EZ.i];
+    if (!q) return;
+    SES.locked = true; SES.pick = idx;
+    var right = idx === q.correctIndex;
+    SES.feedOk = right; SES.feedback = right ? '回答正确' : '回答错误';
+    EZ.answered++;
+    if (right) EZ.correct++; else EZ.wrong++;
+    redrawView();
+  }
+  function examNext() {
+    if (EZ.i + 1 >= EZ.list.length) { finishExam(); return; }
+    EZ.i++; SES.locked = false; SES.pick = -1; SES.feedback = '';
+    redrawView();
+  }
+  function finishExam() {
+    if (EZ.done) return;
+    EZ.done = true;
+    // 交卷时扣除考试消耗的 30 精力（无论是否通过）
+    applyVar(['user', '精力值'], Math.max(0, getS().energy - CONF.examEnergy));
+    var S = getS();
+    var pass = EZ.correct >= CONF.examPass;
+    var lines = [];
+    lines.push('【亲密阶段考试结果】');
+    lines.push('- 考试题量：' + CONF.examNeed + ' 题，答对：' + EZ.correct + ' 题（及格线：' + CONF.examPass + ' 题）');
+    if (pass) {
+      lines.push('- 结果：✅ 考试通过！已解锁下一亲密阶段 ' + (S.examTarget || ''));
+      lines.push('- 后续做题将可获得 ' + (S.examTarget || '下一阶段') + ' 的奖励券。');
+    } else {
+      lines.push('- 结果：❌ 未通过。今日考试入口已关闭，明天（第 ' + (S.day + 1) + ' 天）可再次挑战。');
+    }
+    lines.push('<考试结果>状态：' + (pass ? '已通过' : '关闭') + '，目标阶段：' + (pass ? '' : (S.examTarget || '')) + '，已通过阶段数：' + (pass ? (S.examPassed + 1) : S.examPassed) + '，失败标记天：' + (pass ? 0 : S.day) + '，最新精力值：' + getS().energy + '，最新总成绩值：' + S.score + '</考试结果>');
+    var finalScore = S.score;
+    lines.push('<学习系统结果>最新精力值：' + getS().energy + '，最新总成绩值：' + finalScore + '</学习系统结果>');
+    sendToInput(lines.join('\n'), true);
+    toast(pass ? '🏆 考试通过，进入下一亲密阶段！' : '❌ 未及格，明日再来');
+    // 本地即时生效
+    if (pass) {
+      applyVar(['考试', '状态'], '已通过');
+      applyVar(['考试', '目标阶段'], '');
+      applyVar(['考试', '已通过阶段数'], S.examPassed + 1);
+      applyVar(['考试', '失败标记天'], 0);
+    } else {
+      applyVar(['考试', '状态'], '关闭');
+      applyVar(['考试', '失败标记天'], S.day);
+    }
+    redrawView();
+  }
+
+  /* ================= 商城 ================= */
+  function doClaimAllowance() {
+    var S = getS();
+    if (S.lastClaimDay >= S.day) { toast('今天已经领过了', 'warn'); return; }
+    var money = dailyAllowance(S.score);
+    applyVar(['user', '零花钱'], S.coins + money);
+    applyVar(['user', '最后领取日'], S.day);
+    var lines = [];
+    lines.push('【每日零花钱】你领到了今天的 ' + money + ' 元零花钱（成绩越高每日越多）。');
+    lines.push('<商城结算结果>智商值：' + getS().iq + '，作弊加成D：' + getS().dVal + '，零花钱：' + (S.coins + money) + '，最后领取日：' + S.day + '</商城结算结果>');
+    sendToInput(lines.join('\n'), true);
+    toast('💰 领取成功 +' + money + ' 元');
+    redrawView();
+  }
+  function buyItem(key) {
+    var S = getS();
+    var it = findShop(key);
+    if (!it) return;
+    var isIQ = it.desc.indexOf('A') >= 0;
+    var cur = isIQ ? S.iq : S.dVal;
+    var cap = isIQ ? 5 : 2;
+    if (S.coins < it.price) { toast('零花钱不足', 'err'); return; }
+    if (cur >= cap) { toast((isIQ ? '智商' : '作弊D') + '已到上限，无法继续提升', 'warn'); return; }
+    var nv = round2(Math.min(cap, cur + it.gain));
+    applyVar(['user', '零花钱'], S.coins - it.price);
+    if (isIQ) applyVar(['user', '智商值'], nv); else applyVar(['user', 'D加成'], nv);
+    var lines = [];
+    lines.push(it.guide);
+    lines.push('<商城结算结果>智商值：' + (isIQ ? nv : getS().iq) + '，作弊加成D：' + (isIQ ? getS().dVal : nv) + '，零花钱：' + (S.coins - it.price) + '，最后领取日：' + S.lastClaimDay + '</商城结算结果>');
+    sendToInput(lines.join('\n'), true);
+    toast('购买成功：' + it.name + '（' + it.desc + '）');
+    redrawView();
+  }
+
+  /* ================= 家庭人物 / 奖励使用 ================= */
+  function setFamily(mode) {
+    var S = getS();
+    var bro = S.bro, dad = S.dad;
+    if (mode === 'bro') bro = bro === '有' ? '无' : '有';
+    else if (mode === 'dad') dad = dad === '有' ? '无' : '有';
+    else { bro = '无'; dad = '无'; }
+    applyVar(['家庭人物', '弟弟'], bro);
+    applyVar(['家庭人物', '爸爸'], dad);
+    var lines = ['【状态栏操作】我把家庭人物调整为：弟弟=' + bro + '，爸爸=' + dad + '。请让剧情自然衔接（若有家人，请让他们在该出现时出场；若为“无”，请把对应家人安排得暂时不在家/不在场），并按以上值输出变量更新。'];
+    sendToInput(lines.join('\n'), true);
+    toast('家庭人物已调整为 弟弟=' + bro + ' 爸爸=' + dad);
+    renderAllBars();
+  }
+  function useToken(idx) {
+    var S = getS();
+    if (!S.storage || idx < 0 || idx >= S.storage.length) return;
+    var it = S.storage[idx];
+    var arr = clone(S.storage);
+    var found = -1;
+    for (var j = 0; j < arr.length; j++) if (arr[j].名称 === it.名称 && arr[j].阶段 === it.阶段) { found = j; break; }
+    if (found < 0) return;
+    if (arr[found].数量 <= 1) arr.splice(found, 1); else arr[found].数量 -= 1;
+    var total = storageTotal(arr);
+    applyVar(['奖励', '存储'], arr);
+    applyVar(['user', '奖励次数'], total);
+    var lines = [];
+    lines.push('【奖励使用】' + it.提示);
+    lines.push('<奖励存储同步>{"列表":' + JSON.stringify(arr) + ',"总数":' + total + '}</奖励存储同步>');
+    sendToInput(lines.join('\n'), true);
+    toast('已使用：' + it.名称);
+    renderAllBars();
+  }
+
+  /* ================= 视图/窗口 ================= */
+  function winHtml() {
+    return '<div id="' + P + '-ov" class="' + P + '-ov">' +
+      '<div class="' + P + '-win">' +
+      '<div class="' + P + '-wbar">' +
+      '<button type="button" class="' + P + '-wbtn" id="' + P + '-back" title="返回">' + IC.back + '</button>' +
+      '<div class="' + P + '-wtitle" id="' + P + '-wtitle">状态栏·玩法中心</div>' +
+      '<button type="button" class="' + P + '-wbtn" id="' + P + '-close" title="关闭">' + IC.x + '</button>' +
+      '</div><div class="' + P + '-wbody" id="' + P + '-wbody"></div></div></div>';
+  }
+  function titles() {
+    return { hub: '状态栏 · 玩法中心', quiz: '做题 · 妈妈陪同学习', exam: '考试 · 亲密阶段晋升', shop: '商城 · 用零花钱变强', settle: '奖励结算' };
+  }
+  function setView(kind) {
+    SES.view = kind;
+    SES.locked = false; SES.pick = -1; SES.feedback = '';
+  }
+  function redrawView() {
+    var body = qs('#' + P + '-wbody');
+    if (!body) return;
+    var t = qs('#' + P + '-wtitle');
+    if (t) t.textContent = titles()[SES.view] || '状态栏';
+    var S = getS();
+    if (SES.view === 'hub') body.innerHTML = htmlHub();
+    else if (SES.view === 'quiz') body.innerHTML = htmlQuiz();
+    else if (SES.view === 'exam') body.innerHTML = htmlExam();
+    else if (SES.view === 'shop') body.innerHTML = htmlShop();
+    else if (SES.view === 'settle') body.innerHTML = htmlSettle();
+  }
+  function openWin() { var ov = qs('#' + P + '-ov'); if (ov) ov.classList.add('on'); win.open = true; }
+  function closeWin() { var ov = qs('#' + P + '-ov'); if (ov) ov.classList.remove('on'); win.open = false; }
+  function goMenu() { setView('hub'); openWin(); redrawView(); }
+  function navTo(kind) {
+    var S = getS();
+    if (kind === 'hub') { setView('hub'); redrawView(); return; }
+    if (kind === 'quiz') {
+      if (!canQuizNow(S)) { toast('妈妈还没有邀请你做题', 'warn'); return; }
+      if (S.energy <= 0) { toast('精力为 0，无法做题', 'err'); return; }
+      if (!QZ.done || !QZ.list.length) { if (!startQuiz()) return; }
+      setView('quiz'); redrawView(); return;
+    }
+    if (kind === 'exam') {
+      if (!canExamNow(S)) { toast('考试入口未开放', 'warn'); return; }
+      if (!EZ.done || !EZ.list.length) { if (!startExam()) return; }
+      setView('exam'); redrawView(); return;
+    }
+    if (kind === 'shop') { setView('shop'); redrawView(); }
+  }
+
+  /* ================= 状态栏挂载渲染 ================= */
+  function renderOne(el) {
+    if (!el) return;
+    el.innerHTML = barHtml(getS());
+  }
+  function renderAllBars() {
+    refresh(true);
+    var slots = qa('.' + P + '-slot');
+    for (var i = 0; i < slots.length; i++) {
+      renderOne(slots[i]);
+    }
+    if (win.open) redrawView();
+  }
+
+  /* ================= 事件 ================= */
+  function onClick(e) {
+    var el = e.target && e.target.closest ? e.target.closest('[data-a]') : null;
+    if (!el) return;
+    var a = el.getAttribute('data-a');
+    var x = el.getAttribute('data-x');
+    try {
+      switch (a) {
+        case 'menu': goMenu(); break;
+        case 'famfold': {
+          var slot = el.closest('.' + P + '-slot');
+          if (slot) {
+            var box = slot.querySelector('#' + P + '-fambox');
+            var arr = slot.querySelector('#' + P + '-famarr');
+            if (box) {
+              var show = box.style.display !== 'block';
+              box.style.display = show ? 'block' : 'none';
+              if (arr) arr.textContent = show ? '▼' : '▶';
+            }
+          }
+          break;
+        }
+        case 'famset': setFamily(x); break;
+        case 'usetoken': useToken(parseInt(x, 10)); break;
+        case 'nav': navTo(x); break;
+        case 'opt': {
+          if (SES.view === 'quiz') answerQuiz(parseInt(x, 10));
+          else if (SES.view === 'exam') answerExam(parseInt(x, 10));
+          break;
+        }
+        case 'qz-next': quizNext(); break;
+        case 'qz-quit': quitQuiz(); break;
+        case 'qz-end': QZ.done = true; redrawView(); break;
+        case 'qz-settle': settleView(); break;
+        case 'qz-restart': {
+          SES.rewards = []; buildRewardsLocalReset();
+          if (startQuiz()) { setView('quiz'); redrawView(); }
+          break;
+        }
+        case 'settle-claim': doClaim(); break;
+        case 'settle-store': doStore(); break;
+        case 'ex-next': examNext(); break;
+        case 'ex-finish': finishExam(); break;
+        case 'buy': buyItem(x); break;
+        case 'claim': doClaimAllowance(); break;
+      }
+    } catch (err) { try { console.error('[hsv2]', err); } catch (e2) {} }
+  }
+  function buildRewardsLocalReset() { SES.rewards = []; QZ.list = []; }
+
+  function syncTick() {
+    refresh(true);
+    autoExamGate();
+    renderAllBars();
+  }
+
+  /* ================= 启动 ================= */
+  function cleanup() {
+    var doc = getDoc();
+    qa('#' + P + '-css, #' + P + '-ov', doc).forEach(function (el2) { el2 && el2.remove(); });
+    // 清掉旧版做题悬浮球等历史元素
+    qa('#st_quiz_v27-trigger, #st_quiz_v27-overlay, #st_quiz_v27-reward-modal, #st_quiz_v27-styles', doc).forEach(function (el3) { el3 && el3.remove(); });
+  }
+  function initHooksObserver() {
+    var doc = getDoc();
+    var applyNew = function () {
+      var slots = qa('.' + P + '-slot');
+      for (var i = 0; i < slots.length; i++) {
+        if (!slots[i].__hsv2) { slots[i].__hsv2 = true; renderOne(slots[i]); }
+      }
+    };
+    applyNew();
+    try {
+      var obs = new MutationObserver(function () {
+        applyNew();
+        // 检测最新楼变化（邀请状态可能改变）
+        scheduleSync();
+      });
+      obs.observe(qs('#chat') || doc.body, { childList: true, subtree: true });
+    } catch (e) {}
+  }
+  var syncTimer = null;
+  function scheduleSync() {
+    if (syncTimer) return;
+    syncTimer = setTimeout(function () { syncTimer = null; syncTick(); }, 350);
+  }
+  function bindHostEvents() {
+    var doc = getDoc();
+    doc.addEventListener('click', onClick);
+    try {
+      var hostWin = mvuWin() || HOST;
+      var fire = function () { scheduleSync(); };
+      if (typeof HOST.eventOn === 'function') {
+        var hostWin2 = mvuWin() || HOST;
+        if (hostWin2 && hostWin2.Mvu && hostWin2.Mvu.events && hostWin2.Mvu.events.VARIABLE_UPDATE_ENDED) {
+          HOST.eventOn(hostWin2.Mvu.events.VARIABLE_UPDATE_ENDED, fire);
+        }
+        if (typeof HOST.tavern_events !== 'undefined') {
+          if (HOST.tavern_events.MESSAGE_RECEIVED) HOST.eventOn(HOST.tavern_events.MESSAGE_RECEIVED, fire);
+          if (HOST.tavern_events.CHAT_CHANGED) HOST.eventOn(HOST.tavern_events.CHAT_CHANGED, function () { refresh(true); });
+          if (HOST.tavern_events.MESSAGE_SENT) HOST.eventOn(HOST.tavern_events.MESSAGE_SENT, fire);
+        }
+      }
+    } catch (e) {}
+    setInterval(function () { refresh(true); renderAllBars(); }, 2500);
+    try { setTimeout(function () { scheduleSync(); }, 900); } catch (e) {}
+    try {
+      if (typeof waitGlobalInitialized === 'function') {
+        var wp = waitGlobalInitialized('Mvu');
+        if (wp && typeof wp.then === 'function') { wp.then(function () { scheduleSync(); }).catch(function () {}); }
+      }
+    } catch (e) {}
+    try { window.addEventListener('VARIABLE_UPDATE_ENDED', function () { scheduleSync(); }); } catch (e) {}
+    window.addEventListener('pagehide', function () { try { clearInterval(window.__hsv2iv); } catch (e) {} });
+  }
+
+  function boot() {
+    var doc = getDoc();
+    cleanup();
+    doc.head.insertAdjacentHTML('beforeend', CSS);
+    doc.body.insertAdjacentHTML('beforeend', winHtml());
+    var closeBtn = qs('#' + P + '-close');
+    var backBtn = qs('#' + P + '-back');
+    if (closeBtn) closeBtn.addEventListener('click', function () { closeWin(); });
+    if (backBtn) backBtn.addEventListener('click', function () { navTo('hub'); });
+    refresh(true);
+    initHooksObserver();
+    bindHostEvents();
+    console.log('✅ 状态栏v2 整合玩法已启动（做题/考试/商城/奖励袋）。');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
+
+/* ==== 引擎注入点 END ==== */
 </script>
 </body>
 </html>
