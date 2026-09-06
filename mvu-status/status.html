@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>状态栏v2 · 玩法中心（做题/考试/商城）</title>
+<title>状态栏v3 · 玩法中心（做题/考试/商城）</title>
 <style>
 /* ============================================================
-   状态栏v2 + 玩法中心（纯文档流，不锁高、不裁内容）
+   状态栏v3 + 玩法中心（纯文档流，不锁高、不裁内容）
    运行方式：正则 .load() 注入页面后，脚本读取楼层 stat_data
    （getAllVariables / Mvu），交互实时写回并重绘本页。
    ============================================================ */
@@ -21,7 +21,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 /* ==== 引擎注入点 START ==== */
 
 /* ============================================================
-   状态栏v2 · 玩法整合  (做题/考试/商城/奖励结算/奖励袋)
+   状态栏v3 · 玩法整合  (做题/考试/商城/奖励结算/奖励袋)
    实现方式：MVU 变量穿透（参考 MagVarUpdate），全部脚本内联，
    不依赖远程状态栏页面。
    ============================================================ */
@@ -31,7 +31,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   var P = 'hsv2';
 
   /* ---------- 宿主定位：优先本窗口（酒馆页），iframe 包裹时才取父窗 ---------- */
-  console.log('[状态栏v2] 页面脚本开始执行 (self=', window === window.top ? 'top' : 'frame', ', Mvu=', typeof window.Mvu, ', getAllVariables=', typeof window.getAllVariables, ')');
+  console.log('[状态栏v3] 页面脚本开始执行 (self=', window === window.top ? 'top' : 'frame', ', Mvu=', typeof window.Mvu, ', getAllVariables=', typeof window.getAllVariables, ')');
   function _hasGlob(w) { try { return !!(w && (w.Mvu || w.getAllVariables || w.SillyTavern || w.variables || w.jQuery)); } catch (e) { return false; } }
   var HOST = (function () {
     if (_hasGlob(window)) return window;
@@ -72,7 +72,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
         return;
       }
     } catch (e) {}
-    try { console.log('[状态栏v2] ' + m); } catch (e) {}
+    try { console.log('[状态栏v3] ' + m); } catch (e) {}
   }
 
   function num(v, d) {
@@ -139,7 +139,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     { s: '地理常识', c: '太平洋', w: ['大西洋', '印度洋', '北冰洋'], t: '世界上面积最大的大洋是：' },
     { s: '地理常识', c: '青藏高原', w: ['巴西高原', '蒙古高原', '云贵高原'], t: '被称为“世界屋脊”的高原是：' },
     { s: '地理常识', c: '刚果河（扎伊尔河）', w: ['尼罗河', '亚马孙河', '密西西比河'], t: '世界上水能资源最丰富的河流是：' },
-    { s: '地理常识', c: '日本', w: ['中国', '韩国', '菲律宾'], t: '位于环太平洋火山地震带，被称为“地震之国”的东亚岛国是：' },
+    { s: '地理常识', c: '印度尼西亚', w: ['菲律宾', '马来西亚', '新加坡'], t: '位于环太平洋火山地震带与地中海-喜马拉雅地震带交汇处，火山地震频繁的“千岛之国”是：' },
     { s: '科学常识', c: '水由氢元素和氧元素组成', w: ['水由氢元素和氮元素组成', '水由氧元素和碳元素组成', '水由氢元素和氯元素组成'], t: '从化学组成上看，水的化学式是 H₂O，这说明：' },
     { s: '科学常识', c: '光在真空中的传播速度约为每秒30万公里', w: ['每秒3万公里', '每秒300公里', '每秒3千公里'], t: '下列关于光速的说法，正确的是：' },
     { s: '科学常识', c: '导体容易导电是因为其内部存在大量自由电荷', w: ['导体内部没有任何原子', '导体内原子排列得特别整齐', '导体内部温度一定很低'], t: '金属等导体为什么容易导电？' },
@@ -154,7 +154,60 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     { s: '文学常识', c: '《红楼梦》', w: ['《三国演义》', '《水浒传》', '《西游记》'], t: '被公认为中国古典小说巅峰之作的是：' },
     { s: '文学常识', c: '李白', w: ['杜甫', '白居易', '王维'], t: '被称为“诗仙”的唐代诗人是：' },
     { s: '文学常识', c: '《呐喊》', w: ['《家》', '《骆驼祥子》', '《边城》'], t: '鲁迅先生的第一部白话短篇小说集是：' },
-    { s: '文学常识', c: '司马迁', w: ['司马光', '班固', '左丘明'], t: '纪传体通史《史记》的作者是：' }
+    { s: '文学常识', c: '司马迁', w: ['司马光', '班固', '左丘明'], t: '纪传体通史《史记》的作者是：' },
+    { s: '语文常识', c: '把已经说过的话再说一遍，形容说话重复啰嗦', w: ['多次道歉请求原谅', '声音沙哑说话不清', '形容朗诵很有感情'], t: '“说话啰嗦、重复絮叨”通常用哪个词语形容？' },
+    { s: '语文常识', c: '“己所不欲，勿施于人”', w: ['“三人行，必有我师焉”', '“学而不思则罔”', '“温故而知新”'], t: '下列哪句出自《论语》，意思是不想别人对你做的，也不要强加给别人？' },
+    { s: '语文常识', c: '少壮不努力', w: ['白日依山尽', '床前明月光', '锄禾日当午'], t: '“________，老大徒伤悲”中横线处应填：' },
+    { s: '语文常识', c: '春风又绿江南岸', w: ['秋风又扫落叶堆', '冬雪又封北国山', '夏雨又打芭蕉声'], t: '古诗“________，明月何时照我还”横线处应填：' },
+    { s: '语文常识', c: '指说话或写文章时用词恰当、字字准确，一个多余的字都没有', w: ['一个字也不认识', '文章里没有一个错别字', '文章字数非常少'], t: '成语“一字千金”最早形容的是文章的价值，现在也常形容：' },
+    { s: '语文常识', c: '仔细、认真地看（这里）', w: ['回头看', '闭着眼睛', '斜着眼睛看'], t: '“举头望明月”中的“望”和“遥望洞庭山水翠”中的“望”，都表示：' },
+    { s: '语文常识', c: '比喻非常稀少、难得的事物或机会', w: ['比喻动物很珍贵', '比喻运气非常差', '比喻数目庞大数不清'], t: '成语“凤毛麟角”的意思是：' },
+    { s: '语文常识', c: '“亡羊补牢”寓意出了问题及时补救，还不算晚', w: ['丢羊后再建新羊圈', '羊跑了就再也不养羊', '把牢房建得又高又厚'], t: '寓言故事“亡羊补牢”想告诉我们的道理是：' },
+    { s: '语文常识', c: '“自相矛盾”讽刺说话办事前后抵触、自己打自己的脸', w: ['形容兵器非常锋利', '形容两人意见完全一致', '形容做事很矛盾纠结很痛苦'], t: '成语“自相矛盾”的本意是讽刺：' },
+    { s: '语文常识', c: '“画蛇添足”指做了多余的事，反而不恰当', w: ['画技高超连蛇都画得很像', '比喻作画时画面非常完整', '形容食物十分美味'], t: '成语“画蛇添足”比喻：' },
+    { s: '语文常识', c: '“井底之蛙”比喻见识短浅、眼界狭小的人', w: ['住在井里很凉快', '蛙声很响亮', '比喻很会游泳的人'], t: '寓言“井底之蛙”常用来比喻：' },
+    { s: '语文常识', c: '“掩耳盗铃”指自己欺骗自己', w: ['铃声太吵捂住耳朵睡觉', '偷铃铛时捂住对方的耳朵', '形容声音大得像打雷'], t: '成语“掩耳盗铃”讽刺的是：' },
+    { s: '语文常识', c: '“守株待兔”比喻不努力、心存侥幸，想不劳而获', w: ['形容很有耐心地等待机会', '形容爱护小动物', '形容打猎技术高超'], t: '寓言“守株待兔”告诉我们的道理是：' },
+    { s: '语文常识', c: '“滥竽充数”比喻没有真才实学的人混在行家里面充数', w: ['形容乐队演奏得很棒', '形容人很爱惜乐器', '形容竹子数量很多'], t: '成语“滥竽充数”比喻：' },
+    { s: '语文常识', c: '“刻舟求剑”讽刺拘泥固执、不知道根据变化处理问题', w: ['形容水性极好', '形容做事非常细心', '形容剑术非常高强'], t: '寓言“刻舟求剑”讽刺的是：' },
+    { s: '语文常识', c: '“胸有成竹”比喻做事之前已经有通盘的考虑和把握', w: ['形容心情非常紧张', '形容人很爱种竹子', '形容人身体很棒'], t: '成语“胸有成竹”形容：' },
+    { s: '语文常识', c: '前鼻音“in”与后鼻音“ing”要分清，比如“人民”的“民”是前鼻音', w: ['“民”和“明”读音完全一样', '“in”和“ing”没有区别，随便读', '后鼻音比前鼻音读得短'], t: '关于普通话前后鼻音，正确的说法是：' },
+    { s: '语文常识', c: '“的地得”用法：修饰动作用“地”（如“慢慢地走”）', w: ['名词前面用“地”', '所有情况都用“的”', '动词后用“的”'], t: '“高兴______跳了起来”中横线处应填：' },
+    { s: '文学常识', c: '《西游记》里保护唐僧去西天取经的孙悟空、猪八戒、沙和尚', w: ['《红楼梦》里的贾宝玉', '《水浒传》里的武松', '《三国演义》里的关羽'], t: '“大师兄、二师兄、三师弟护送师父西天取经”出自哪部古典名著？' },
+    { s: '文学常识', c: '冰心的《寄小读者》是写给小朋友看的散文书信', w: ['《狂人日记》', '《骆驼祥子》', '《朝花夕拾》'], t: '以下哪部作品是冰心专门写给少年儿童看的？' },
+    { s: '文学常识', c: '安徒生是丹麦童话作家，代表作有《卖火柴的小女孩》《丑小鸭》', w: ['《伊索寓言》的作者', '《一千零一夜》的作者', '《格林童话》的作者'], t: '《卖火柴的小女孩》《丑小鸭》的作者安徒生是哪个国家的人？' },
+    { s: '文学常识', c: '“四大名著”指《西游记》《红楼梦》《三国演义》《水浒传》', w: ['《聊斋志异》《儒林外史》也属于四大名著', '四大名著都是清朝写的', '四大名著里没有神话小说'], t: '关于中国古典四大名著，正确的说法是：' },
+    { s: '文学常识', c: '《草房子》的作者是曹文轩', w: ['郑渊洁', '杨红樱', '沈石溪'], t: '长篇小说《草房子》的作者是：' },
+    { s: '文学常识', c: '“横眉冷对千夫指，俯首甘为孺子牛”出自鲁迅', w: ['郭沫若', '老舍', '巴金'], t: '名句“横眉冷对千夫指，俯首甘为孺子牛”的作者是：' },
+    { s: '中国历史', c: '中国历史上第一个统一的封建王朝是秦朝', w: ['夏朝', '商朝', '周朝'], t: '我国历史上第一个统一的、多民族的中央集权封建王朝是：' },
+    { s: '中国历史', c: '炎帝和黄帝被尊为中华民族的“人文初祖”', w: ['尧和舜', '大禹和启', '盘古和女娲'], t: '传说中共同被尊为中华民族“人文初祖”的是：' },
+    { s: '中国历史', c: '大禹治水，三过家门而不入', w: ['精卫填海的故事', '愚公移山的故事', '后羿射日的故事'], t: '“三过家门而不入”说的是哪位治水英雄的故事？' },
+    { s: '中国历史', c: '造纸术、印刷术、火药、指南针是四大发明', w: ['地动仪、算盘、青铜器、丝绸属于四大发明', '四大发明只有三项', '四大发明都出自唐朝'], t: '中国古代的四大发明是：' },
+    { s: '中国历史', c: '郑成功收复台湾，从荷兰殖民者手中夺回宝岛', w: ['郑和', '戚继光', '岳飞'], t: '从荷兰殖民者手中收复台湾的民族英雄是：' },
+    { s: '中国历史', c: '林则徐虎门销烟，是鸦片战争的导火索之一', w: ['关天培', '魏源', '龚自珍'], t: '在广东虎门当众销毁鸦片、被称为“开眼看世界第一人”之一的大臣是：' },
+    { s: '中国历史', c: '中国朝代顺序“唐宋元明清”中，“宋”分北宋和南宋', w: ['宋只有一段没有南北之分', '元朝在明朝之后', '清朝结束于唐朝'], t: '关于中国古代主要朝代顺序，正确的是：' },
+    { s: '中国历史', c: '京杭大运河沟通南北，是古代伟大的水利工程', w: ['它是元朝修的城墙', '它只经过三个省', '它是长城的一部分'], t: '隋朝时开凿、贯通南北、至今仍在使用的大运河是：' },
+    { s: '世界历史', c: '古埃及文明发源于尼罗河流域，有金字塔和狮身人面像', w: ['黄河', '印度河', '幼发拉底河与底格里斯河'], t: '金字塔和狮身人面像是哪个流域的古代文明留下的杰作？' },
+    { s: '世界历史', c: '四大文明古国指古埃及、古巴比伦、古印度、中国', w: ['古希腊、古罗马也属于四大文明古国', '四大文明古国只有两个', '四大文明古国都在欧洲'], t: '关于世界“四大文明古国”，正确的说法是：' },
+    { s: '世界历史', c: '哥伦布横渡大西洋发现了美洲大陆（他以为是印度）', w: ['哥伦布到了南极', '哥伦布到了非洲内陆', '哥伦布完成了环球航行'], t: '1492年航海家哥伦布横渡大西洋后到达的是：' },
+    { s: '世界历史', c: '发明蒸汽机的改良者是瓦特', w: ['爱迪生', '诺贝尔', '达尔文'], t: '工业革命中改进蒸汽机、推动机器大生产的关键人物是：' },
+    { s: '世界历史', c: '第一次世界大战的时间大致在1914—1918年', w: ['1939—1945年', '1900—1905年', '1800—1815年'], t: '关于第一次世界大战发生的大致时间，正确的是：' },
+    { s: '地理常识', c: '我国有“五岳”：东岳泰山、西岳华山等', w: ['黄山在五岳之中', '五岳都在南方', '五岳指五座大海'], t: '关于“五岳”，正确的说法是：' },
+    { s: '地理常识', c: '长江是我国第一长河，黄河是第二长河', w: ['珠江是我国第一长河', '黄河比长江长', '两条河都发源于长白山'], t: '我国第一长河和第二长河分别是：' },
+    { s: '地理常识', c: '中国四大高原包括青藏高原、内蒙古高原、黄土高原、云贵高原', w: ['四大高原都在南方', '华北平原属于高原', '四大高原只有三个'], t: '关于我国四大高原，正确的说法是：' },
+    { s: '地理常识', c: '一天中太阳高度最大、影子最短的时刻是正午', w: ['清晨', '黄昏', '半夜'], t: '一天中旗杆影子最短的时刻通常是：' },
+    { s: '科学常识', c: '把水加热到100℃（标准大气压下）会沸腾变成水蒸气', w: ['水会变成冰', '水会变成油', '水会消失不见'], t: '标准大气压下，把水烧到100℃时会发生什么？' },
+    { s: '科学常识', c: '地球绕太阳公转一周的时间是一年', w: ['一个月', '一天', '一个小时'], t: '地球绕太阳公转一圈大约需要：' },
+    { s: '科学常识', c: '月亮本身不发光，我们看到的光是它反射的太阳光', w: ['月亮自己会发光', '月亮反射地球的光', '月亮是太阳的一部分'], t: '关于月亮发光，正确的说法是：' },
+    { s: '科学常识', c: '磁铁有两个磁极：南极（S极）和北极（N极），同性相斥异性相吸', w: ['磁铁只有一个磁极', '同名磁极相互吸引', '磁铁不能吸铁'], t: '两块磁铁的N极和N极靠近时会：' },
+    { s: '科学常识', c: '水结冰后体积会变大，所以冬天水管容易被冻裂', w: ['水结冰体积变小', '水结冰后变成气体', '结冰和体积无关'], t: '冬天自来水管可能被冻裂，原因是：' },
+    { s: '科学常识', c: '声音是由物体振动产生的，真空里不能传声', w: ['声音能在真空里传播', '声音不需要介质也能传很远', '声音由光产生'], t: '宇航员在太空中（真空）面对面说话听不见，是因为：' },
+    { s: '科学常识', c: '人体消化食物、吸收营养的主要器官是小肠', w: ['胃只负责消化不吸收', '大肠是吸收水分的地方', '营养都在嘴里吸收'], t: '小肠是主要的消化吸收器官，下列说法正确的是：' },
+    { s: '生活常识', c: '用湿毛巾捂住口鼻弯腰逃生，是因为烟和毒气会向上飘', w: ['烟会向下飘所以要走高处', '湿毛巾会让人缺氧', '弯腰跑比直腰跑更累'], t: '火灾逃生时要弯腰、捂住口鼻，主要原因是：' },
+    { s: '生活常识', c: '燃气泄漏时不能开灯、不能开关电器，要开窗通风并撤离', w: ['先开灯看看哪里漏气', '马上点火试试', '继续用燃气做饭'], t: '在家闻到很浓的燃气味，正确的做法是：' },
+    { s: '生活常识', c: '被烫伤后应立即用流动的凉水冲洗降温', w: ['马上涂牙膏酱油', '用力搓揉伤口', '用热水再烫一下'], t: '手被开水烫伤后，第一步正确的急救方法是：' },
+    { s: '生活常识', c: '打雷下雨时不要在大树下避雨，以免遭雷击', w: ['大树下最安全', '雷雨天可以游泳', '室内窗户边很安全'], t: '雷雨天气在户外，下列做法正确的是：' }
+  
   ];
 
   // HARD：考试专用较难题（取自原库提炼 + 扩展，10选1）
@@ -171,7 +224,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     { s: '中国历史·进阶', c: '赵匡胤“杯酒释兵权”解除了石守信等禁军将领兵权', w: ['赵匡胤用鸿门宴除掉韩信', '赵匡胤杯酒释放了被俘的辽国将领', '赵匡胤设宴款待文人墨客'], t: '北宋“杯酒释兵权”的具体内容是：' },
     { s: '中国历史·进阶', c: '“靖康之变”中被金军掳走的北宋皇帝是宋徽宗和宋钦宗', w: ['宋太祖和宋太宗', '宋真宗和宋仁宗', '宋高宗和宋孝宗'], t: '靖康之变中，被金军俘虏北上的两位北宋皇帝是：' },
     { s: '中国历史·进阶', c: '戚继光组建“戚家军”，创鸳鸯阵，荡平东南沿海倭患', w: ['戚继光在北方修筑长城抵御蒙古', '戚继光率军收复台湾', '戚继光发动了土木堡之战'], t: '明代抗倭名将戚继光的主要事迹是：' },
-    { s: '中国历史·进阶', c: '《南京条约》割让香港岛、赔款2100万银元、开放五口通商', w: ['割让九龙半岛', '赔偿白银九亿两', '将台湾割让给日本'], t: '鸦片战争后清政府与英国签订的第一个不平等条约《南京条约》，内容包括：' },
+    { s: '中国历史·进阶', c: '《南京条约》割让香港岛、赔款2100万银元、开放五口通商', w: ['割让九龙半岛', '赔偿白银九亿两', '割让台湾给英国'], t: '鸦片战争后清政府与英国签订的第一个不平等条约《南京条约》，内容包括：' },
     { s: '世界历史·进阶', c: '哥伦布四次横渡大西洋，到达美洲（误认为印度）', w: ['哥伦布绕过好望角到达印度', '哥伦布完成了人类首次环球航行', '哥伦布到达的是澳大利亚'], t: '关于哥伦布航海，下列说法正确的是：' },
     { s: '世界历史·进阶', c: '麦哲伦船队完成人类首次环球航行，麦哲伦本人死于菲律宾', w: ['麦哲伦本人完成了全程环球航行', '麦哲伦到达了北极点', '麦哲伦发现了好望角'], t: '关于麦哲伦船队，正确的是：' },
     { s: '世界历史·进阶', c: '《马关条约》签订于1895年，标志着甲午战争结束，台湾被割让', w: ['《马关条约》签订于1842年', '《马关条约》割让了香港', '《马关条约》是中国近代第一个不平等条约'], t: '关于《马关条约》，说法正确的是：' },
@@ -182,7 +235,36 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     { s: '科学常识·进阶', c: '声音在固体中传播最快，其次液体，再次气体', w: ['声音在真空中传播最快', '声音在气体中传播最快', '声音在固体中最慢'], t: '声音在不同介质中的传播速度排序正确的是：' },
     { s: '科学常识·进阶', c: '近视眼成像在视网膜前，应佩戴凹透镜矫正', w: ['近视眼应佩戴凸透镜', '近视眼成像在视网膜后', '远视眼应佩戴凹透镜'], t: '关于近视眼的成因与矫正，正确的是：' },
     { s: '科学常识·进阶', c: '细胞是生物体结构和功能的基本单位（病毒除外）', w: ['病毒也有细胞结构', '细胞只存在于动物体内', '植物没有细胞壁'], t: '关于生物体结构层次，正确的是：' },
-    { s: '科学常识·进阶', c: '质量守恒定律：化学反应前后元素种类与原子数目不变', w: ['化学反应前后物质总质量一定改变', '化学变化中分子种类不变', '物理变化中也遵守质量守恒定律的表述错误'], t: '关于质量守恒定律，正确的是：' }
+    { s: '科学常识·进阶', c: '质量守恒定律：化学反应前后元素种类与原子数目不变', w: ['化学反应前后物质总质量一定改变', '化学变化中分子种类不变', '物理变化中也遵守质量守恒定律的表述错误'], t: '关于质量守恒定律，正确的是：' },
+    { s: '语文常识·进阶', c: '“一目十行”是形容看书速度很快', w: ['形容眼睛很大能看清十行字', '形容走路很快', '形容个子很高'], t: '“一目十行”这个成语是贬义还是形容速度快，下列说法正确的是：' },
+    { s: '语文常识·进阶', c: '“心急吃不了热豆腐”比喻做事不能太急躁，要一步一步来', w: ['豆腐太烫容易烫伤嘴', '越急豆腐越少', '要等豆腐凉透才好吃'], t: '俗语“心急吃不了热豆腐”想告诉我们的道理是：' },
+    { s: '语文常识·进阶', c: '“不入虎穴，焉得虎子”比喻不亲历艰险就不能取得成功', w: ['老虎的洞穴不能进去', '要保护好小老虎', '形容胆子特别小'], t: '“不入虎穴，焉得虎子”想表达的意思是：' },
+    { s: '语文常识·进阶', c: '“磨刀不误砍柴工”比喻事前做好准备不会耽误工作，反而更有效率', w: ['砍柴前一定要磨刀', '磨刀的人不该去砍柴', '刀磨快了会伤到自己'], t: '“磨刀不误砍柴工”说明的道理是：' },
+    { s: '语文常识·进阶', c: '“有志者事竟成”强调只要有决心和毅力，事情终究能做成', w: ['有志向的人做什么都快', '有志气就一定能当官', '成功全靠运气好'], t: '“有志者事竟成”的意思是：' },
+    { s: '语文常识·进阶', c: '“东张西望”是形容到处看、心神不定，含贬义', w: ['形容屋子很大', '形容视力很好', '形容方向感很强'], t: '“东张西望”通常用来形容：' },
+    { s: '语文常识·进阶', c: '“手忙脚乱”形容遇事慌张、不知如何是好', w: ['手和脚都受了伤', '做事井井有条', '手和脚都很勤快'], t: '遇到突发情况时“手忙脚乱”，意思是：' },
+    { s: '语文常识·进阶', c: '“欲速则不达”指一味求快反而达不到目的', w: ['想快就一定能快', '速度越快成绩越好', '不着急就永远做不成事'], t: '“欲速则不达”告诉我们：' },
+    { s: '中国历史·进阶', c: '商朝人把文字刻在龟甲和兽骨上，称为甲骨文，是我国最早的成熟文字', w: ['甲骨文刻在竹简上', '甲骨文是唐朝人发明的', '甲骨文最早刻在石头上'], t: '我国最早比较成熟的文字是刻在龟甲兽骨上的：' },
+    { s: '中国历史·进阶', c: '秦始皇统一六国后统一了文字，以小篆为标准字体', w: ['统一用楷书', '统一用草书', '没有统一文字'], t: '秦始皇统一文字后全国通行的标准字体是：' },
+    { s: '中国历史·进阶', c: '丝绸之路是汉代张骞出使西域后打通的连接中西方的商路', w: ['丝绸之路是海上航线', '开通者是玄奘', '只运送茶叶'], t: '汉武帝时期开通的、把丝绸等货物运往西方的通道是：' },
+    { s: '中国历史·进阶', c: '《资治通鉴》是北宋司马光主持编写的编年体史书', w: ['司马迁', '司马懿', '司马相如'], t: '编年体通史《资治通鉴》的主编是：' },
+    { s: '中国历史·进阶', c: '郑和下西洋发生在明朝，前后共七次', w: ['清朝', '元朝', '汉朝'], t: '郑和七下西洋发生在哪个朝代？' },
+    { s: '中国历史·进阶', c: '辛亥革命推翻了清朝统治，结束了两千多年的君主专制制度', w: ['太平天国运动', '戊戌变法', '义和团运动'], t: '1911年发生的、推翻清朝、结束君主专制制度的革命是：' },
+    { s: '中国历史·进阶', c: '我国古代采用“干支纪年”，比如2024年是甲辰年', w: ['干支纪年只有十个天干', '十二地支只有一个', '干支纪年六十年一个循环'], t: '关于干支纪年，正确的是：' },
+    { s: '中国历史·进阶', c: '“二十四节气”起源于黄河流域，是我国古人指导农事的历法知识', w: ['起源于珠江流域', '是西方传来的', '只用于现代天气预报'], t: '关于“二十四节气”，正确的说法是：' },
+    { s: '世界历史·进阶', c: '《马可·波罗游记》记录了马可·波罗到东方的见闻，激起了欧洲人对东方的向往', w: ['马可·波罗是中国人', '《游记》记录了美洲大陆', '马可·波罗到了南极'], t: '《马可·波罗游记》主要记录了马可·波罗在哪里旅行的见闻？' },
+    { s: '世界历史·进阶', c: '古希腊是西方文明的发源地，苏格拉底、柏拉图、亚里士多德都是古希腊思想家', w: ['他们都是罗马皇帝', '苏格拉底是埃及法老', '他们都生活在工业革命时期'], t: '苏格拉底、柏拉图、亚里士多德这三位大思想家共同属于：' },
+    { s: '世界历史·进阶', c: '埃及金字塔是古埃及法老的陵墓，是古埃及文明的象征', w: ['古希腊神庙', '古罗马斗兽场', '古代中国的长城'], t: '古代埃及的金字塔实际上是：' },
+    { s: '地理常识·进阶', c: '我国最长的河流长江发源于青藏高原上的唐古拉山脉', w: ['昆仑山脉', '秦岭', '大兴安岭'], t: '长江的发源地是：' },
+    { s: '地理常识·进阶', c: '世界上面积最大的国家是俄罗斯，其次是加拿大、中国', w: ['中国是世界上面积最大的', '美国面积世界第一', '俄罗斯面积排世界第五'], t: '世界上国土面积最大的国家是：' },
+    { s: '地理常识·进阶', c: '新疆是我国面积最大的省级行政区，简称“新”', w: ['内蒙古', '西藏', '青海'], t: '我国面积最大的省级行政区是：' },
+    { s: '地理常识·进阶', c: '北京时间用的是东八区的区时', w: ['东六区', '东十区', '西八区'], t: '我们常说的“北京时间”采用的是哪个时区的区时？' },
+    { s: '科学常识·进阶', c: '地球自转产生了昼夜交替，公转产生了四季变化', w: ['自转产生四季', '公转产生昼夜', '地球不转动'], t: '地球上昼夜交替和四季变化的原因分别是：' },
+    { s: '科学常识·进阶', c: '植物通过光合作用吸收二氧化碳、放出氧气', w: ['吸收氧气放出二氧化碳', '不呼吸不交换气体', '只吸收水分'], t: '绿色植物进行光合作用时：' },
+    { s: '科学常识·进阶', c: '金属导电能力排序大致为：银>铜>铝>铁', w: ['铁>铝>铜>银', '塑料比铜更导电', '所有金属导电能力一样'], t: '下列哪种金属的导电能力通常最强？' },
+    { s: '科学常识·进阶', c: '人体所需的维生素C主要来源于新鲜蔬菜水果，缺乏它会得坏血病', w: ['肉类', '米饭', '糖果'], t: '人体维生素C最主要的食物来源是：' },
+    { s: '科学常识·进阶', c: '用放大镜看物体是光的折射现象，凸透镜可以聚光', w: ['反射现象', '光沿直线传播', '物体自己变大'], t: '用凸透镜做放大镜观察小字，主要利用了光的哪种性质？' }
+  
   ];
 
 
@@ -194,7 +276,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     examEnergy: 30,      // 考试一次消耗精力
     examNeed: 10,        // 考试题量
     examPass: 7,         // 及格线：10 道答对 ≥7
-    quizPoolMax: 15,     // 做题一场最大题量
+    quizPoolMax: 20,     // 做题一场最大题量
     maxStorage: 12,      // 奖励袋容量上限
   };
 
@@ -395,7 +477,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
       bro: fa.弟弟 === '有' ? '有' : '无',
       dad: fa.爸爸 === '有' ? '有' : '无',
       quizState: (raw.答题状态 === '允许') ? '允许' : '禁用',
-      examState: String(ex.状态 || '关闭'),
+      examState: (ex.状态 === '允许') ? '允许' : '禁用',
       examTarget: String(ex.目标阶段 || ''),
       examPassed: Math.max(0, Math.min(3, Math.floor(num(ex.已通过阶段数, 0)))),
       examFailDay: Math.floor(num(ex.失败标记天, 0)),
@@ -695,22 +777,21 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   // 状态栏卡片（一个挂载点一个）
   function barHtml(S) {
     if (!S) S = getS();
-    var examOpen = S.examState === '开放';
-    var qzGo = S.quizState === '允许' || S.invite;
+    var examOpen = S.examState === '允许';
+    var canQuiz = S.quizState === '允许' || !!S.invite;
     var pieces = [];
     pieces.push('<div class="' + P + '-card">');
-    pieces.push('<div class="' + P + '-hd"><span>' + (S.mamaType === '毒蛇傲娇' ? '🐍' : '🌸') + '</span><span>' + esc(S.mamaName) + '</span><i>状态栏</i></div>');
-    // ④ 时间/地点
+    // ④ 时间 / 地点（非估值）
     pieces.push('<div class="' + P + '-row1"><span>📅 第 ' + S.day + ' 天</span>' + (S.clock ? '<span>🕐 ' + esc(S.clock) + '</span>' : '') + '<span>📍 ' + esc(S.place) + '</span></div>');
-    // ① 妈妈
-    pieces.push('<div class="' + P + '-sec"><div class="' + P + '-sec-t"><span>' + IC.heart + '</span>妈妈<small>身体与心声估值</small></div><div class="' + P + '-g">');
+    // ① 妈妈（主要区：姓名 + 身体估值 + 心声）
+    pieces.push('<div class="' + P + '-sec"><div class="' + P + '-sec-t"><span>' + (S.mamaType === '毒蛇傲娇' ? '🐍' : '🌸') + '</span>' + esc(S.mamaName) + '<small>' + esc(S.mamaType) + ' · 身体与心声估值</small></div><div class="' + P + '-g">');
     var parts = [['小穴', S.body.小穴, S.bodyDesc.小穴], ['乳头', S.body.乳头, S.bodyDesc.乳头], ['大腿', S.body.大腿, S.bodyDesc.大腿], ['足部', S.body.足部, S.bodyDesc.足部]];
     for (var i = 0; i < parts.length; i++) {
       pieces.push('<div class="' + P + '-cell" title="' + esc(parts[i][2]) + '"><b>' + parts[i][0] + '</b><span>' + esc(parts[i][1] || '—') + '</span></div>');
     }
     pieces.push('<div class="' + P + '-cell voice" title="' + esc(S.innerVoice) + '"><b>心声</b><span>' + esc(S.innerVoice || '……') + '</span></div>');
     pieces.push('</div></div>');
-    // ⑤ 家庭人物（可折叠）
+    // ⑤ 家庭人物（可折叠：弟弟/爸爸/无）
     pieces.push('<div class="' + P + '-sec"><div class="' + P + '-fam" data-a="famfold"><span style="font-weight:800;color:#6b4fd8;">[家庭人物]</span><span style="display:flex;gap:5px;">' +
       (S.bro === '有' ? '<span class="' + P + '-bchip ok">弟</span>' : '') + (S.dad === '有' ? '<span class="' + P + '-bchip ok">爸</span>' : '') +
       ((S.bro === '无' && S.dad === '无') ? '<span class="' + P + '-bchip no">无</span>' : '') +
@@ -719,27 +800,30 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
       '<span class="' + P + '-chip ' + (S.bro === '有' ? 'on' : 'off') + '" data-a="famset" data-x="bro">弟弟' + (S.bro === '有' ? ' ✓' : '') + '</span>' +
       '<span class="' + P + '-chip ' + (S.dad === '有' ? 'on' : 'off') + '" data-a="famset" data-x="dad">爸爸' + (S.dad === '有' ? ' ✓' : '') + '</span>' +
       '<span class="' + P + '-chip ' + (S.bro === '无' && S.dad === '无' ? 'on' : 'off') + '" data-a="famset" data-x="none">无</span>' +
-      '</div><div class="' + P + '-tip">展开/收起：点击条；点「弟弟/爸爸」切换在场，点「无」将两人都移出当前场景（脚本会同步给正文）。</div></div></div>');
-    // ② user
+      '</div><div class="' + P + '-tip">点「弟弟/爸爸」切换在场；点「无」让两人暂时都不在家。点击上方整条可展开/收起。</div></div></div>');
+    // ② user（精力/总成绩/智商A/奖励次数）
     pieces.push('<div class="' + P + '-sec"><div class="' + P + '-sec-t"><span>' + IC.bolt + '</span>' + esc(S.userName || 'user') + '<small>状态估值</small></div>');
     pieces.push(barRowHtml('精力', S.energy, 100, S.energy <= 20 ? '#f5587c' : '#37c690', 14));
     pieces.push(barRowHtml('总成绩', S.score, 750, '#b16cff', 16));
-    pieces.push('<div class="' + P + '-urow"><span class="' + P + '-lbl">智商</span><span style="color:#ffcf6e;font-weight:900;">' + S.iq + '</span><span style="color:#8a7bb0;font-size:10px;">(每题基础 +作弊D ' + S.dVal + ' = ' + round2(S.iq + S.dVal) + '分/对)</span></div>');
-    pieces.push('<div class="' + P + '-urow"><span class="' + P + '-lbl">奖励袋</span><span style="font-weight:900;color:#ff9ad5;">' + S.rewardCount + ' 张</span><span style="color:#8a7bb0;font-size:10px;">可点击使用</span></div>');
+    pieces.push('<div class="' + P + '-urow"><span class="' + P + '-lbl">智商A</span><span style="color:#ffcf6e;font-weight:900;">' + S.iq + '</span><span style="color:#8a7bb0;font-size:10px;">每题答对 A+D=' + round2(S.iq + S.dVal) + ' 分</span></div>');
+    pieces.push('<div class="' + P + '-urow"><span class="' + P + '-lbl">奖励次数</span><span style="font-weight:900;color:#ff9ad5;">' + S.rewardCount + ' 张</span><span style="color:#8a7bb0;font-size:10px;">已存储，点下方券即用</span></div>');
     pieces.push('</div>');
     // ③ 答题状态 / 考试状态
     pieces.push('<div class="' + P + '-sec"><div style="display:flex;gap:8px;flex-wrap:wrap;">');
     pieces.push('<span class="' + P + '-bchip ' + (S.quizState === '允许' ? 'ok' : 'no') + '">答题：' + S.quizState + '</span>');
-    var ec = 'hold';
-    var et = '考试：' + S.examState;
-    if (examOpen) { ec = 'hot'; et = '考试：开放（临界点已到！）'; }
-    else if (S.examPassed >= 3) { ec = 'done'; et = '考试：已全部通过'; }
-    pieces.push('<span class="' + P + '-bchip ' + ec + '">' + et + '</span>');
+    if (S.examPassed >= 3) {
+      pieces.push('<span class="' + P + '-bchip done">考试：已全部通过</span>');
+    } else if (examOpen) {
+      pieces.push('<span class="' + P + '-bchip ok">考试：允许（入口开放）</span>');
+    } else {
+      pieces.push('<span class="' + P + '-bchip no">考试：禁用</span>');
+    }
     pieces.push('</div>');
-    if (examOpen) pieces.push('<div class="' + P + '-tip">成绩已卡死在临界点 ' + esc(S.examTarget || '下一阶段') + ' —— 请从下方菜单进入「考试入口」。</div>');
-    if (S.energy <= 0) pieces.push('<div class="' + P + '-tip" style="color:#e0557b;">⚠ 精力为 0，先休息恢复精力再做/考试。</div>');
+    if (examOpen) pieces.push('<div class="' + P + '-tip">成绩已卡死在临界点 ' + esc(S.examTarget || '下一阶段') + ' —— 点下方「玩法菜单 → 考试入口」参加晋升考试。</div>');
+    if (S.examFailDay === S.day && S.score >= 300 && !examOpen) pieces.push('<div class="' + P + '-tip">⚠ 今天考试失败过，明天（第 ' + (S.day + 1) + ' 天）才能重考。</div>');
+    if (S.energy <= 0) pieces.push('<div class="' + P + '-tip" style="color:#e0557b;">⚠ 精力为 0，先休息恢复精力再做题/考试。</div>');
     pieces.push('</div>');
-    // 奖励袋内容
+    // 奖励袋内容（点击即使用并发送正文）
     if (S.storage && S.storage.length) {
       pieces.push('<div class="' + P + '-sec"><div class="' + P + '-sec-t"><span>' + IC.gift + '</span>奖励袋<small>点击券即使用并发送正文</small></div><div>');
       for (var s2 = 0; s2 < S.storage.length; s2++) {
@@ -748,10 +832,10 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
       }
       pieces.push('</div></div>');
     }
-    // 玩法入口按钮
+    // 玩法菜单入口按钮
     pieces.push('<div class="' + P + '-ft"><button type="button" class="' + P + '-btn ' + P + '-menu-btn" data-a="menu">🎮 打开玩法菜单</button>');
     pieces.push('<div class="' + P + '-dotrow">' +
-      '<span class="' + P + '-dot ' + (qzGo ? 'go' : 'stop') + '">做题</span>' +
+      '<span class="' + P + '-dot ' + (canQuiz ? 'go' : 'stop') + '">做题</span>' +
       '<span class="' + P + '-dot ' + (examOpen ? 'hot' : (S.examPassed >= 3 ? 'go' : 'stop')) + '">考试</span>' +
       '<span class="' + P + '-dot go">商城</span>' +
       '</div></div>');
@@ -819,12 +903,12 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   function htmlHub() {
     var S = getS();
     var qzOk = (S.quizState === '允许') || !!S.invite;
-    var qzWhy = qzOk ? '可以进入做题' : '妈妈还没有邀请你做题（当前正文无做题邀请）。';
-    if (S.quizState === '禁用' && !S.invite) qzWhy = '答题状态为「禁用」，需等妈妈开口邀请。';
+    var qzWhy = '入口关闭：需妈妈在正文中邀请/要求做题后才可进入。';
+    if (qzOk) qzWhy = '';
 
-    var exOk = S.examState === '开放' && S.energy >= CONF.examEnergy && S.examFailDay !== S.day;
+    var exOk = S.examState === '允许' && S.energy >= CONF.examEnergy && S.examFailDay !== S.day;
     var exWhy;
-    if (S.examState !== '开放') {
+    if (S.examState !== '允许') {
       if (S.examPassed >= 3) exWhy = '四个亲密阶段已全部通过，无需再考。';
       else if (S.score >= nextBoundNum(S.examPassed)) exWhy = '成绩已到临界点，但今天考试已失败（或入口暂闭），第 ' + (S.day + 1) + ' 天再来挑战。';
       else exWhy = '未到临界点：成绩到达 ' + nextBoundStr(S.examPassed) + ' 分后考试才会开放。';
@@ -835,7 +919,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 
     var html = [];
     html.push(entryHtml('quiz', IC.quiz, '#7c5cff', '做题入口', qzOk ? '去妈妈陪同下做题（每题消耗10精力）' : qzWhy, qzOk));
-    html.push(entryHtml('exam', IC.exam, '#ff7ab0', '考试入口', exOk ? '10 题答对 ≥7 即通过，进入下一亲密阶段' : exWhy, exOk, S.examState === '开放'));
+    html.push(entryHtml('exam', IC.exam, '#ff7ab0', '考试入口', exOk ? '10 题答对 ≥7 即通过，进入下一亲密阶段' : exWhy, exOk, S.examState === '允许'));
     html.push(entryHtml('shop', IC.shop, '#ffb74d', '商城入口', '智商药水 · 作弊道具 · 每日零花钱', true));
     html.push('<div class="' + P + '-card2" style="text-align:center;color:#a99add;font-size:11px;">当前：第 ' + S.day + ' 天 · ' + esc(S.place) + ' ｜ 智商A=' + S.iq + ' ｜ 作弊D=' + S.dVal + ' ｜ 每题答对=' + round2(S.iq + S.dVal) + '分 ｜ 零花钱：' + S.coins + ' 元</div>');
     return html.join('');
@@ -872,7 +956,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
         '<button type="button" class="' + P + '-bigbtn" style="background:#3d3570;" data-a="qz-restart">再来一轮</button>' +
         '<button type="button" class="' + P + '-bigbtn" style="background:#2a2350;" data-a="nav" data-x="hub">返回菜单</button>' +
         '</div></div>');
-      if (S.examState === '开放' && QZ.correct > 0) {
+      if (S.examState === '允许' && QZ.correct > 0) {
         out.push('<div class="' + P + '-card2" style="border-color:#ffb74d;"><h4>⚠ 临界点提示</h4><div style="font-size:11.5px;line-height:1.7;color:#e8ddff;">总成绩已卡死在临界点 <b style="color:#ffcf6e;">' + esc(S.examTarget || '下一阶段') + '</b>，本轮所得分数暂不计入（要先通过考试解锁）。精力照常消耗，答对的奖励照常结算。</div></div>');
       }
       return out.join('');
@@ -899,7 +983,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
       bottom.push('</div>');
     }
     bottom.push('<div style="margin-top:10px;"><button type="button" class="' + P + '-bigbtn" style="width:100%;background:linear-gradient(120deg,#ffb74d,#ff7ab0);' + (QZ.answered === 0 ? 'opacity:.45;' : '') + '" data-a="qz-settle" ' + (QZ.answered === 0 ? 'disabled' : '') + '>🎁 随时结算奖励（已作答可点）</button>');
-    bottom.push('<div style="font-size:10px;color:#8d7fb8;text-align:center;margin-top:6px;">做完 1 题后即可随时结算：索求奖励 = 立刻把战报与奖励清单发进正文；存储奖励 = 存进奖励袋。</div></div>');
+    bottom.push('<div style="font-size:10px;color:#8d7fb8;text-align:center;margin-top:6px;">已作答 1 题即可点「🎁 随时结算奖励」：索取 → 战报发送正文让妈妈兑现；存储 → 存入奖励次数，稍后在状态栏点券使用。</div></div>');
     out.push(bottom.join(''));
     return out.join('');
   }
@@ -981,11 +1065,11 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     }
     return '<div class="' + P + '-settle">' +
       '<div style="font-size:15px;font-weight:900;color:#ffcf6e;">🎁 本轮奖励结算</div>' +
-      '<div style="font-size:11px;color:#b9aee0;margin-top:4px;">本轮答对 ' + QZ.correct + ' 题 → 获得 ' + tokens.length + ' 张奖励券（' + esc(stageNameOf(getS().score)) + '奖励池）</div>' +
+      '<div style="font-size:11px;color:#b9aee0;margin-top:4px;">' + (tokens.length ? ('本轮答对 ' + QZ.correct + ' 题 → 获得 ' + tokens.length + ' 张「' + esc(tokens[0].stage) + '」奖励券') : '本轮没有答对题，没有奖励券（仍可结算战报）。') + '</div>' +
       '<div class="' + P + '-giftrow">' + rows.join('') + '</div>' +
       '<div class="' + P + '-sep2" style="margin-top:12px;">' +
-      '<button type="button" class="' + P + '-bigbtn" style="background:linear-gradient(120deg,#ffb74d,#ff7ab0);min-height:84px;flex-direction:column;" data-a="settle-claim"><span style="font-size:15px;">📤 索求奖励</span><span style="font-size:11px;opacity:.85;">' + tokens.length + ' 张 → 立即写入正文发送（妈妈现场兑现）</span></button>' +
-      '<button type="button" class="' + P + '-bigbtn" style="background:linear-gradient(120deg,#7c5cff,#b16cff);min-height:84px;flex-direction:column;" data-a="settle-store"><span style="font-size:15px;">🗂 存储奖励</span><span style="font-size:11px;opacity:.85;">' + tokens.length + ' 张 → 存入奖励袋（可在状态栏随时点券使用）</span></button>' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:linear-gradient(120deg,#ffb74d,#ff7ab0);min-height:84px;flex-direction:column;" data-a="settle-claim"><span style="font-size:15px;">📤 索取奖励</span><span style="font-size:11px;opacity:.85;">' + (tokens.length ? tokens.length + ' 张 → 写入输入框发送正文（妈妈现场兑现）' : '本轮无券 → 仅把战报发送进正文') + '</span></button>' +
+      '<button type="button" class="' + P + '-bigbtn" style="background:linear-gradient(120deg,#7c5cff,#b16cff);min-height:84px;flex-direction:column;" data-a="settle-store"><span style="font-size:15px;">🗂 存储奖励</span><span style="font-size:11px;opacity:.85;">' + (tokens.length ? tokens.length + ' 张 → 存入奖励次数（状态栏可随时点券使用）' : '无券可存') + '</span></button>' +
       '</div>' +
       '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">' +
       '<button type="button" class="' + P + '-bigbtn" style="background:#3d3570;" data-a="qz-restart">继续做题</button>' +
@@ -1059,7 +1143,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   }
   function canQuizNow(S) { return (S.quizState === '允许' || !!S.invite); }
   function canExamNow(S) {
-    if (S.examState !== '开放') return false;
+    if (S.examState !== '允许') return false;
     if (S.energy < CONF.examEnergy) return false;
     if (S.examFailDay === S.day) return false;
     return true;
@@ -1073,7 +1157,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     QZ.list = shuffleArray(NORMAL_POOL).slice(0, CONF.quizPoolMax).map(function (r) { return pickOne(r); });
     QZ.i = 0; QZ.answered = 0; QZ.correct = 0; QZ.wrong = 0; QZ.gain = 0; QZ.done = false;
     QZ.A = S.iq; QZ.D = S.dVal;
-    QZ.frozen = S.examState === '开放';
+    QZ.frozen = S.examState === '允许';
     SES.gain = 0; SES.correct = 0; SES.wrong = 0; SES.left = QZ.list.length; SES.rewards = [];
     return true;
   }
@@ -1112,6 +1196,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
       QZ.done = true;
       SES.left = 0;
     }
+    renderAllBars();
     redrawView();
   }
   function quizNext() {
@@ -1132,7 +1217,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   function buildRewards() {
     var S = getS();
     var p = S.examPassed;
-    var stIdx = (S.examState === '开放') ? Math.max(0, Math.min(p, 3)) : Math.max(stageByScore(S.score), p);
+    var stIdx = (S.examState === '允许') ? Math.max(0, Math.min(p, 3)) : Math.max(stageByScore(S.score), p);
     if (stIdx > 3) stIdx = 3;
     var pool = REWARD_TOKENS[stIdx].list;
     var stageLabel = STAGES[stIdx].name;
@@ -1162,10 +1247,10 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     var ns = S.score + g;
     if (ns >= b) {
       ns = b;
-      if (p < 3 && S.examState !== '开放') {
+      if (p < 3 && S.examState !== '允许' && S.examFailDay !== S.day) {
         boundCrossed = true;
         QZ.frozen = true;
-        applyVar(['考试', '状态'], '开放');
+        applyVar(['考试', '状态'], '允许');
         applyVar(['考试', '目标阶段'], STAGES[p + 1].name);
       }
     }
@@ -1180,8 +1265,8 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     var b = STAGE_BOUNDS[p];
     if (S.score >= b) {
       // 当天考试失败过 → 保持关闭，次日再自动开放
-      if (S.examFailDay !== S.day && S.examState !== '开放') {
-        applyVar(['考试', '状态'], '开放');
+      if (S.examFailDay !== S.day && S.examState !== '允许') {
+        applyVar(['考试', '状态'], '允许');
         applyVar(['考试', '目标阶段'], STAGES[p + 1].name);
       }
       if (S.score > b) applyVar(['user', '总成绩值'], b);
@@ -1195,35 +1280,6 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     for (var j = 0; j < names.length; j++) lines.push('【' + names[j] + '】×' + map[names[j]] + '（' + tokens[0].stage + '）');
     return lines;
   }
-  function composeQuizReport(store) {
-    var S = getS();
-    var lines = [];
-    lines.push('【学业答题结算】');
-    lines.push('- 答题统计：作答 ' + QZ.answered + ' 题，答对 ' + QZ.correct + ' 题，答错 ' + QZ.wrong + ' 题');
-    lines.push('- 结算参数：智商A=' + QZ.A + '，作弊加成D=' + QZ.D + '（每答对 1 题 = A+D = ' + round2(QZ.A + QZ.D) + ' 分）');
-    var gainApplied = realGain();
-    lines.push('- 本场得分：' + round2(gainApplied) + (QZ.frozen ? '（当前处于亲密阶段临界点，成绩已冻结，通过考试后方可累计）' : ''));
-    lines.push('- 当前精力：' + getS().energy);
-    if (QZ.correct > 0) {
-      var toks = SES.rewards.length ? SES.rewards : buildRewards();
-      var rl = rewardLinesHtml(toks);
-      lines.push('- 本轮奖励（' + (toks.length ? toks[0].stage : '') + '，共 ' + toks.length + ' 张）：');
-      for (var i = 0; i < rl.length; i++) lines.push('   ' + rl[i]);
-    }
-    var finalScore = getS().score;
-    lines.push('<学习系统结果>最新精力值：' + getS().energy + '，最新总成绩值：' + finalScore + '</学习系统结果>');
-    if (boundCrossed) {
-      var S2 = getS();
-      lines.push('<考试结果>状态：开放，目标阶段：' + STAGES[S2.examPassed + 1].name + '，已通过阶段数：' + S2.examPassed + '，失败标记天：0，最新精力值：' + S2.energy + '，最新总成绩值：' + S2.score + '</考试结果>');
-      lines.push('【提示】成绩已达亲密阶段临界点并被冻结，请自然地安排「妈妈出题考试」的剧情（状态栏的考试状态已变为“开放”）。');
-      boundCrossed = false;
-    }
-    if (store) {
-      var st = cloneStorageAfterAdd();
-      lines.push('<奖励存储同步>{"列表":' + JSON.stringify(st.list) + ',"总数":' + st.total + '}</奖励存储同步>');
-    }
-    return lines.join('\n');
-  }
   function cloneStorageAfterAdd() {
     var S = getS();
     var tokens = SES.rewards;
@@ -1234,15 +1290,32 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
       if (found >= 0) arr[found].数量 += 1;
       else arr.push({ 名称: tokens[i].name, 阶段: tokens[i].stage, 提示: tokens[i].guide, 数量: 1 });
     }
-    return { list: arr, total: arr.reduce(function (a, it) { return a + it.数量; }, 0) };
+    return { list: arr, total: arr.reduce(function (a2, it) { return a2 + it.数量; }, 0) };
   }
-  function storageTotal(arr) { return arr.reduce(function (a, it) { return a + it.数量; }, 0); }
-
+  function storageTotal(arr) { return arr.reduce(function (a2, it) { return a2 + it.数量; }, 0); }
   function doClaim() {
     applyScoreGain();
-    var txt = composeQuizReport(false);
-    sendToInput(txt, true);
-    toast('📤 战报与奖励清单已发送，等待妈妈兑现！');
+    var lines = [];
+    lines.push('【学业答题结算 · 索取奖励】');
+    lines.push('- 本轮作答 ' + QZ.answered + ' 题：答对 ' + QZ.correct + ' 题，答错 ' + QZ.wrong + ' 题');
+    var toks = SES.rewards.length ? SES.rewards : (QZ.correct > 0 ? buildRewards() : []);
+    if (toks.length) {
+      lines.push('- 本轮奖励（' + toks[0].stage + '，共 ' + toks.length + ' 张）：');
+      var rl = rewardLinesHtml(toks);
+      for (var i = 0; i < rl.length; i++) lines.push('   ' + rl[i]);
+    } else {
+      lines.push('- 本轮没有答对题，没有奖励券。');
+    }
+    if (QZ.frozen && !boundCrossed) lines.push('（成绩还卡在临界点上，得先通过妈妈的晋升考试才能继续加分。）');
+    if (boundCrossed) {
+      lines.push('');
+      lines.push('（成绩刚好卡到了临界点上，状态栏的考试入口亮了——妈妈似乎该给你来一场“小考”了。）');
+      boundCrossed = false;
+    }
+    lines.push('');
+    lines.push('（你把奖励清单递到妈妈面前，等她按约定兑现……）');
+    sendToInput(lines.join('\n'), true);
+    toast('📤 索取奖励已填入输入框并发送，等待妈妈兑现！');
     endSessionUI();
   }
   function doStore() {
@@ -1251,9 +1324,8 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     applyScoreGain();
     applyVar(['奖励', '存储'], next.list);
     applyVar(['user', '奖励次数'], next.total);
-    var txt = composeQuizReport(true);
-    sendToInput(txt, true);
-    toast('🗂 已存入奖励袋 ' + (SES.rewards.length || QZ.correct) + ' 张，可在状态栏点击使用');
+    var got = SES.rewards.length || QZ.correct;
+    toast('🗂 已存入奖励袋 ' + got + ' 张（状态栏奖励次数已更新，可随时点券使用）');
     endSessionUI();
   }
   function endSessionUI() {
@@ -1262,7 +1334,6 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     setView('hub');
     redrawView();
   }
-
   /* ================= 考试 ================= */
   function startExam() {
     var S = getS();
@@ -1295,45 +1366,39 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     var S = getS();
     var pass = EZ.correct >= CONF.examPass;
     var lines = [];
-    lines.push('【亲密阶段考试结果】');
-    lines.push('- 考试题量：' + CONF.examNeed + ' 题，答对：' + EZ.correct + ' 题（及格线：' + CONF.examPass + ' 题）');
+    lines.push('【亲密阶段考试 · 交卷】');
+    lines.push('- 题量 ' + CONF.examNeed + ' 题，答对 ' + EZ.correct + ' 题（及格线 ≥' + CONF.examPass + ' 题）');
     if (pass) {
-      lines.push('- 结果：✅ 考试通过！已解锁下一亲密阶段 ' + (S.examTarget || ''));
-      lines.push('- 后续做题将可获得 ' + (S.examTarget || '下一阶段') + ' 的奖励券。');
+      lines.push('- 结果：✅ 通过！下一亲密阶段「' + (S.examTarget || '已解锁') + '」正式开放，之后做题可领取该阶段奖励券。');
+      lines.push('（你放下笔，把答题卡推给妈妈，等她确认结果——）');
     } else {
-      lines.push('- 结果：❌ 未通过。今日考试入口已关闭，明天（第 ' + (S.day + 1) + ' 天）可再次挑战。');
+      lines.push('- 结果：❌ 未及格。今天没法再考了，明天才能重新挑战。');
+      lines.push('（妈妈摇头拿走卷子，嘴上不饶人，却还是给你留了句“明天再试”。）');
     }
-    lines.push('<考试结果>状态：' + (pass ? '已通过' : '关闭') + '，目标阶段：' + (pass ? '' : (S.examTarget || '')) + '，已通过阶段数：' + (pass ? (S.examPassed + 1) : S.examPassed) + '，失败标记天：' + (pass ? 0 : S.day) + '，最新精力值：' + getS().energy + '，最新总成绩值：' + S.score + '</考试结果>');
-    var finalScore = S.score;
-    lines.push('<学习系统结果>最新精力值：' + getS().energy + '，最新总成绩值：' + finalScore + '</学习系统结果>');
-    sendToInput(lines.join('\n'), true);
-    toast(pass ? '🏆 考试通过，进入下一亲密阶段！' : '❌ 未及格，明日再来');
-    // 本地即时生效
     if (pass) {
-      applyVar(['考试', '状态'], '已通过');
+      applyVar(['考试', '状态'], '禁用');
       applyVar(['考试', '目标阶段'], '');
       applyVar(['考试', '已通过阶段数'], S.examPassed + 1);
       applyVar(['考试', '失败标记天'], 0);
     } else {
-      applyVar(['考试', '状态'], '关闭');
+      applyVar(['考试', '状态'], '禁用');
       applyVar(['考试', '失败标记天'], S.day);
     }
+    sendToInput(lines.join('\n'), true);
+    toast(pass ? '🏆 考试通过，进入下一亲密阶段！' : '❌ 未及格，明日再来');
+    renderAllBars();
     redrawView();
   }
 
   /* ================= 商城 ================= */
   function doClaimAllowance() {
     var S = getS();
-    if (S.lastClaimDay >= S.day) { toast('今天已经领过了', 'warn'); return; }
+    if (S.lastClaimDay >= S.day) { toast('今天已经领过了（按 时间.第几天 判定），明天再来', 'warn'); return; }
     var money = dailyAllowance(S.score);
     applyVar(['user', '零花钱'], S.coins + money);
     applyVar(['user', '最后领取日'], S.day);
-    var lines = [];
-    lines.push('【每日零花钱】你领到了今天的 ' + money + ' 元零花钱（成绩越高每日越多）。');
-    lines.push('<商城结算结果>智商值：' + getS().iq + '，作弊加成D：' + getS().dVal + '，零花钱：' + (S.coins + money) + '，最后领取日：' + S.day + '</商城结算结果>');
-    sendToInput(lines.join('\n'), true);
-    toast('💰 领取成功 +' + money + ' 元');
-    redrawView();
+    renderAllBars();
+    toast('💰 已领取今日零花钱 +' + money + ' 元（状态栏已更新）');
   }
   function buyItem(key) {
     var S = getS();
@@ -1347,12 +1412,8 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     var nv = round2(Math.min(cap, cur + it.gain));
     applyVar(['user', '零花钱'], S.coins - it.price);
     if (isIQ) applyVar(['user', '智商值'], nv); else applyVar(['user', 'D加成'], nv);
-    var lines = [];
-    lines.push(it.guide);
-    lines.push('<商城结算结果>智商值：' + (isIQ ? nv : getS().iq) + '，作弊加成D：' + (isIQ ? getS().dVal : nv) + '，零花钱：' + (S.coins - it.price) + '，最后领取日：' + S.lastClaimDay + '</商城结算结果>');
-    sendToInput(lines.join('\n'), true);
-    toast('购买成功：' + it.name + '（' + it.desc + '）');
-    redrawView();
+    renderAllBars();
+    toast('购买成功：' + it.name + '（' + it.desc + '），状态栏已更新');
   }
 
   /* ================= 家庭人物 / 奖励使用 ================= */
@@ -1364,9 +1425,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     else { bro = '无'; dad = '无'; }
     applyVar(['家庭人物', '弟弟'], bro);
     applyVar(['家庭人物', '爸爸'], dad);
-    var lines = ['【状态栏操作】我把家庭人物调整为：弟弟=' + bro + '，爸爸=' + dad + '。请让剧情自然衔接（若有家人，请让他们在该出现时出场；若为“无”，请把对应家人安排得暂时不在家/不在场），并按以上值输出变量更新。'];
-    sendToInput(lines.join('\n'), true);
-    toast('家庭人物已调整为 弟弟=' + bro + ' 爸爸=' + dad);
+    toast('家庭人物：弟弟=' + bro + '，爸爸=' + dad);
     renderAllBars();
   }
   function useToken(idx) {
@@ -1381,11 +1440,8 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     var total = storageTotal(arr);
     applyVar(['奖励', '存储'], arr);
     applyVar(['user', '奖励次数'], total);
-    var lines = [];
-    lines.push('【奖励使用】' + it.提示);
-    lines.push('<奖励存储同步>{"列表":' + JSON.stringify(arr) + ',"总数":' + total + '}</奖励存储同步>');
-    sendToInput(lines.join('\n'), true);
-    toast('已使用：' + it.名称);
+    sendToInput('【奖励使用】' + it.提示, true);
+    toast('已使用：' + it.名称 + '，使用引导已发送正文');
     renderAllBars();
   }
 
@@ -1439,9 +1495,19 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   }
 
   /* ================= 状态栏挂载渲染 ================= */
+  function applyFoldState(el) {
+    if (!el) return;
+    try {
+      var box = el.querySelector('#' + P + '-fambox');
+      var arr = el.querySelector('#' + P + '-famarr');
+      if (box) box.style.display = el.__fold ? 'block' : 'none';
+      if (arr) arr.textContent = el.__fold ? '▼' : '▶';
+    } catch (e) {}
+  }
   function renderOne(el) {
     if (!el) return;
     el.innerHTML = barHtml(getS());
+    applyFoldState(el);
   }
   function renderAllBars() {
     refresh(true);
@@ -1585,132 +1651,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     refresh(true);
     initHooksObserver();
     bindHostEvents();
-    console.log('✅ 状态栏v2 整合玩法已启动（做题/考试/商城/奖励袋）。');
-  }
-
-  /* ============================================================
-     v35 补丁：玩法行为全部“内置化”——只在 索求奖励 / 使用奖励券 时写输入框
-     ============================================================ */
-  /* 家庭人物折叠记忆：重绘后仍保持展开状态 */
-  function applyFoldState(el) {
-    if (!el) return;
-    try {
-      var box = el.querySelector('#' + P + '-fambox');
-      var arr = el.querySelector('#' + P + '-famarr');
-      if (box) box.style.display = el.__fold ? 'block' : 'none';
-      if (arr) arr.textContent = el.__fold ? '▼' : '▶';
-    } catch (e) {}
-  }
-  function renderOne(el) {
-    if (!el) return;
-    el.innerHTML = barHtml(getS());
-    applyFoldState(el);
-  }
-  function setFamily(mode) {
-    var S = getS();
-    var bro = S.bro, dad = S.dad;
-    if (mode === 'bro') bro = bro === '有' ? '无' : '有';
-    else if (mode === 'dad') dad = dad === '有' ? '无' : '有';
-    else { bro = '无'; dad = '无'; }
-    var openSlots = [];
-    try { openSlots = allSlots().filter(function (e) { return !!e.__fold; }); } catch (e) {}
-    applyVar(['家庭人物', '弟弟'], bro);
-    applyVar(['家庭人物', '爸爸'], dad);
-    toast('家庭人物：弟弟=' + bro + '，爸爸=' + dad);
-    renderAllBars();
-    for (var i = 0; i < openSlots.length; i++) applyFoldState(openSlots[i]);
-  }
-  function composeQuizReport() {
-    var S = getS();
-    var toks = SES.rewards.length ? SES.rewards : (QZ.correct > 0 ? buildRewards() : []);
-    var lines = [];
-    lines.push('【学业答题结算·索求奖励】');
-    lines.push('- 本轮作答 ' + QZ.answered + ' 题：答对 ' + QZ.correct + ' 题，答错 ' + QZ.wrong + ' 题');
-    if (toks.length) {
-      lines.push('- 本轮奖励（' + toks[0].stage + '，共 ' + toks.length + ' 张）：');
-      var rl = rewardLinesHtml(toks);
-      for (var i = 0; i < rl.length; i++) lines.push('   ' + rl[i]);
-    } else {
-      lines.push('- 本轮没有答对题，无奖励券。');
-    }
-    lines.push('');
-    lines.push('（你把奖励清单递到妈妈面前，等她按约定兑现……）');
-    return lines.join('\n');
-  }
-  function doClaim() {
-    applyScoreGain();
-    var txt = composeQuizReport();
-    sendToInput(txt, true);
-    toast('📤 索求奖励已填入输入框并发送');
-    endSessionUI();
-  }
-  function doStore() {
-    var next = cloneStorageAfterAdd();
-    if (next.total > CONF.maxStorage) { toast('奖励袋已满（上限 ' + CONF.maxStorage + ' 张），先使用一些再存储', 'err'); return; }
-    applyScoreGain();
-    applyVar(['奖励', '存储'], next.list);
-    applyVar(['user', '奖励次数'], next.total);
-    toast('🗂 已存入奖励袋 ' + (SES.rewards.length || QZ.correct) + ' 张（可在状态栏点券使用）');
-    endSessionUI();
-  }
-  function finishExam() {
-    if (EZ.done) return;
-    EZ.done = true;
-    applyVar(['user', '精力值'], Math.max(0, getS().energy - CONF.examEnergy));
-    var S = getS();
-    var pass = EZ.correct >= CONF.examPass;
-    if (pass) {
-      applyVar(['考试', '状态'], '已通过');
-      applyVar(['考试', '目标阶段'], '');
-      applyVar(['考试', '已通过阶段数'], S.examPassed + 1);
-      applyVar(['考试', '失败标记天'], 0);
-      toast('🏆 考试通过：' + (S.examTarget || '已解锁下一阶段') + '（状态栏已更新）');
-    } else {
-      applyVar(['考试', '状态'], '关闭');
-      applyVar(['考试', '失败标记天'], S.day);
-      toast('❌ 未及格：今日关闭考试入口，第 ' + (S.day + 1) + ' 天可再考');
-    }
-    redrawView();
-  }
-  function doClaimAllowance() {
-    var S = getS();
-    if (S.lastClaimDay >= S.day) { toast('今天已经领过了，明天再来（按 时间.第几天 判定）', 'warn'); return; }
-    var money = dailyAllowance(S.score);
-    applyVar(['user', '零花钱'], S.coins + money);
-    applyVar(['user', '最后领取日'], S.day);
-    toast('💰 领取成功 +' + money + ' 元零花钱（已内置记录今日已领）');
-    redrawView();
-  }
-  function buyItem(key) {
-    var S = getS();
-    var it = findShop(key);
-    if (!it) return;
-    var isIQ = it.desc.indexOf('A') >= 0;
-    var cur = isIQ ? S.iq : S.dVal;
-    var cap = isIQ ? 5 : 2;
-    if (S.coins < it.price) { toast('零花钱不足', 'err'); return; }
-    if (cur >= cap) { toast((isIQ ? '智商' : '作弊D') + '已到上限，无法继续提升', 'warn'); return; }
-    var nv = round2(Math.min(cap, cur + it.gain));
-    applyVar(['user', '零花钱'], S.coins - it.price);
-    if (isIQ) applyVar(['user', '智商值'], nv); else applyVar(['user', 'D加成'], nv);
-    toast('购买成功：' + it.name + '（' + it.desc + '），状态栏已更新');
-    redrawView();
-  }
-  function useToken(idx) {
-    var S = getS();
-    if (!S.storage || idx < 0 || idx >= S.storage.length) return;
-    var it = S.storage[idx];
-    var arr = clone(S.storage);
-    var found = -1;
-    for (var j = 0; j < arr.length; j++) if (arr[j].名称 === it.名称 && arr[j].阶段 === it.阶段) { found = j; break; }
-    if (found < 0) return;
-    if (arr[found].数量 <= 1) arr.splice(found, 1); else arr[found].数量 -= 1;
-    var total = storageTotal(arr);
-    applyVar(['奖励', '存储'], arr);
-    applyVar(['user', '奖励次数'], total);
-    sendToInput('【奖励使用】' + it.提示, true);
-    toast('已使用：' + it.名称);
-    renderAllBars();
+    console.log('✅ 状态栏v3 整合玩法已启动（做题/考试/商城/奖励袋）。');
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
