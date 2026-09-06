@@ -505,6 +505,97 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 
 
   /* ============================================================
+     v35 补丁：真实持久化（getAllVariables / updateVariablesWith）
+     —— 变量直接写入楼层/聊天，不再依赖“发消息让模型回写”
+     ============================================================ */
+  function thCurMsgId() {
+    try {
+      var ctx = null;
+      if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) ctx = SillyTavern.getContext();
+      else if (HOST && HOST.SillyTavern && HOST.SillyTavern.getContext) ctx = HOST.SillyTavern.getContext();
+      if (ctx && Array.isArray(ctx.chat) && ctx.chat.length) return ctx.chat.length - 1;
+    } catch (e) {}
+    try { if (typeof getCurrentMessageId === 'function') { var m = getCurrentMessageId(); if (m !== undefined && m !== null) return m; } } catch (e) {}
+    try { if (HOST && typeof HOST.getCurrentMessageId === 'function') return HOST.getCurrentMessageId(); } catch (e) {}
+    return null;
+  }
+  function thReadCanonical() {
+    var tryRead = function (win) {
+      try {
+        if (win && typeof win.getAllVariables === 'function') {
+          var av = win.getAllVariables();
+          if (av && av.stat_data && typeof av.stat_data === 'object' && Object.keys(av.stat_data).length) return av.stat_data;
+        }
+      } catch (e) {}
+      try {
+        if (win && win.Mvu && typeof win.Mvu.getMvuData === 'function') {
+          var r = win.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+          var sd = r && r.stat_data ? r.stat_data : r;
+          if (sd && typeof sd === 'object' && Object.keys(sd).length) return sd;
+        }
+      } catch (e) {}
+      try {
+        if (win && win.Mvu && win.Mvu.data_service && win.Mvu.data_service.vars && Object.keys(win.Mvu.data_service.vars).length) {
+          var sv = win.Mvu.data_service.vars;
+          return sv.stat_data || sv;
+        }
+      } catch (e) {}
+      try {
+        if (win && win.variables && win.variables.stat_data) return win.variables.stat_data;
+      } catch (e) {}
+      return null;
+    };
+    var out = tryRead(window);
+    if (!out) out = tryRead(HOST);
+    return out;
+  }
+  function thPersist() {
+    if (!CACHE.raw) return;
+    var cloneData = JSON.parse(JSON.stringify(CACHE.raw));
+    var writer = function (mut) {
+      try { if (mut && typeof mut === 'object') { mut.stat_data = JSON.parse(JSON.stringify(cloneData)); } } catch (e) {}
+    };
+    try {
+      var api = null;
+      if (typeof updateVariablesWith === 'function') api = updateVariablesWith;
+      else if (HOST && typeof HOST.updateVariablesWith === 'function') api = HOST.updateVariablesWith;
+      else if (window.TavernHelper && typeof window.TavernHelper.updateVariablesWith === 'function') api = window.TavernHelper.updateVariablesWith;
+      if (api) {
+        try { api(writer, { type: 'chat' }); } catch (e) {}
+        var mid = thCurMsgId();
+        if (mid !== null && mid !== undefined) { try { api(writer, { type: 'message', message_id: mid }); } catch (e) {} }
+      }
+    } catch (e) {}
+  }
+  /* 读取：优先 canonical（getAllVariables 等），兜底引擎镜像 */
+  function readStatRaw() {
+    var canon = thReadCanonical();
+    if (canon) return canon;
+    var win = mvuWin();
+    try {
+      if (win && win.Mvu && win.Mvu.data) {
+        var d = win.Mvu.data;
+        if (d && typeof d === 'object' && Object.keys(d).length) return d;
+      }
+    } catch (e) {}
+    try {
+      var gv = (win && win.variables) || HOST.variables || window.variables;
+      if (gv && gv.stat_data) return gv.stat_data;
+      if (gv && typeof gv === 'object' && Object.keys(gv).length) return gv;
+    } catch (e) {}
+    return null;
+  }
+  /* 写：本地 CACHE + 镜像 + 持久化到楼层/聊天（无消息、无模型回写） */
+  function applyVar(parts, val) {
+    if (!CACHE.raw) { var canon = thReadCanonical(); CACHE.raw = canon || {}; CACHE.S = normalizeS(CACHE.raw); }
+    setDeep(CACHE.raw, parts, val);
+    CACHE.S = normalizeS(CACHE.raw);
+    try { writePath(parts, val); } catch (e) {}
+    thPersist();
+  }
+
+
+  /* ============================================================
      UI：图标 / 样式 / 状态栏卡片
      ============================================================ */
   var IC = {
@@ -1378,6 +1469,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
             if (box) {
               var show = box.style.display !== 'block';
               box.style.display = show ? 'block' : 'none';
+              slot.__fold = show;
               if (arr) arr.textContent = show ? '▼' : '▶';
             }
           }
@@ -1495,6 +1587,132 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     bindHostEvents();
     console.log('✅ 状态栏v2 整合玩法已启动（做题/考试/商城/奖励袋）。');
   }
+
+  /* ============================================================
+     v35 补丁：玩法行为全部“内置化”——只在 索求奖励 / 使用奖励券 时写输入框
+     ============================================================ */
+  /* 家庭人物折叠记忆：重绘后仍保持展开状态 */
+  function applyFoldState(el) {
+    if (!el) return;
+    try {
+      var box = el.querySelector('#' + P + '-fambox');
+      var arr = el.querySelector('#' + P + '-famarr');
+      if (box) box.style.display = el.__fold ? 'block' : 'none';
+      if (arr) arr.textContent = el.__fold ? '▼' : '▶';
+    } catch (e) {}
+  }
+  function renderOne(el) {
+    if (!el) return;
+    el.innerHTML = barHtml(getS());
+    applyFoldState(el);
+  }
+  function setFamily(mode) {
+    var S = getS();
+    var bro = S.bro, dad = S.dad;
+    if (mode === 'bro') bro = bro === '有' ? '无' : '有';
+    else if (mode === 'dad') dad = dad === '有' ? '无' : '有';
+    else { bro = '无'; dad = '无'; }
+    var openSlots = [];
+    try { openSlots = allSlots().filter(function (e) { return !!e.__fold; }); } catch (e) {}
+    applyVar(['家庭人物', '弟弟'], bro);
+    applyVar(['家庭人物', '爸爸'], dad);
+    toast('家庭人物：弟弟=' + bro + '，爸爸=' + dad);
+    renderAllBars();
+    for (var i = 0; i < openSlots.length; i++) applyFoldState(openSlots[i]);
+  }
+  function composeQuizReport() {
+    var S = getS();
+    var toks = SES.rewards.length ? SES.rewards : (QZ.correct > 0 ? buildRewards() : []);
+    var lines = [];
+    lines.push('【学业答题结算·索求奖励】');
+    lines.push('- 本轮作答 ' + QZ.answered + ' 题：答对 ' + QZ.correct + ' 题，答错 ' + QZ.wrong + ' 题');
+    if (toks.length) {
+      lines.push('- 本轮奖励（' + toks[0].stage + '，共 ' + toks.length + ' 张）：');
+      var rl = rewardLinesHtml(toks);
+      for (var i = 0; i < rl.length; i++) lines.push('   ' + rl[i]);
+    } else {
+      lines.push('- 本轮没有答对题，无奖励券。');
+    }
+    lines.push('');
+    lines.push('（你把奖励清单递到妈妈面前，等她按约定兑现……）');
+    return lines.join('\n');
+  }
+  function doClaim() {
+    applyScoreGain();
+    var txt = composeQuizReport();
+    sendToInput(txt, true);
+    toast('📤 索求奖励已填入输入框并发送');
+    endSessionUI();
+  }
+  function doStore() {
+    var next = cloneStorageAfterAdd();
+    if (next.total > CONF.maxStorage) { toast('奖励袋已满（上限 ' + CONF.maxStorage + ' 张），先使用一些再存储', 'err'); return; }
+    applyScoreGain();
+    applyVar(['奖励', '存储'], next.list);
+    applyVar(['user', '奖励次数'], next.total);
+    toast('🗂 已存入奖励袋 ' + (SES.rewards.length || QZ.correct) + ' 张（可在状态栏点券使用）');
+    endSessionUI();
+  }
+  function finishExam() {
+    if (EZ.done) return;
+    EZ.done = true;
+    applyVar(['user', '精力值'], Math.max(0, getS().energy - CONF.examEnergy));
+    var S = getS();
+    var pass = EZ.correct >= CONF.examPass;
+    if (pass) {
+      applyVar(['考试', '状态'], '已通过');
+      applyVar(['考试', '目标阶段'], '');
+      applyVar(['考试', '已通过阶段数'], S.examPassed + 1);
+      applyVar(['考试', '失败标记天'], 0);
+      toast('🏆 考试通过：' + (S.examTarget || '已解锁下一阶段') + '（状态栏已更新）');
+    } else {
+      applyVar(['考试', '状态'], '关闭');
+      applyVar(['考试', '失败标记天'], S.day);
+      toast('❌ 未及格：今日关闭考试入口，第 ' + (S.day + 1) + ' 天可再考');
+    }
+    redrawView();
+  }
+  function doClaimAllowance() {
+    var S = getS();
+    if (S.lastClaimDay >= S.day) { toast('今天已经领过了，明天再来（按 时间.第几天 判定）', 'warn'); return; }
+    var money = dailyAllowance(S.score);
+    applyVar(['user', '零花钱'], S.coins + money);
+    applyVar(['user', '最后领取日'], S.day);
+    toast('💰 领取成功 +' + money + ' 元零花钱（已内置记录今日已领）');
+    redrawView();
+  }
+  function buyItem(key) {
+    var S = getS();
+    var it = findShop(key);
+    if (!it) return;
+    var isIQ = it.desc.indexOf('A') >= 0;
+    var cur = isIQ ? S.iq : S.dVal;
+    var cap = isIQ ? 5 : 2;
+    if (S.coins < it.price) { toast('零花钱不足', 'err'); return; }
+    if (cur >= cap) { toast((isIQ ? '智商' : '作弊D') + '已到上限，无法继续提升', 'warn'); return; }
+    var nv = round2(Math.min(cap, cur + it.gain));
+    applyVar(['user', '零花钱'], S.coins - it.price);
+    if (isIQ) applyVar(['user', '智商值'], nv); else applyVar(['user', 'D加成'], nv);
+    toast('购买成功：' + it.name + '（' + it.desc + '），状态栏已更新');
+    redrawView();
+  }
+  function useToken(idx) {
+    var S = getS();
+    if (!S.storage || idx < 0 || idx >= S.storage.length) return;
+    var it = S.storage[idx];
+    var arr = clone(S.storage);
+    var found = -1;
+    for (var j = 0; j < arr.length; j++) if (arr[j].名称 === it.名称 && arr[j].阶段 === it.阶段) { found = j; break; }
+    if (found < 0) return;
+    if (arr[found].数量 <= 1) arr.splice(found, 1); else arr[found].数量 -= 1;
+    var total = storageTotal(arr);
+    applyVar(['奖励', '存储'], arr);
+    applyVar(['user', '奖励次数'], total);
+    sendToInput('【奖励使用】' + it.提示, true);
+    toast('已使用：' + it.名称);
+    renderAllBars();
+  }
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
