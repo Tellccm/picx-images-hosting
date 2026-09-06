@@ -557,64 +557,6 @@ function gl(name){
   var w = findWin(function (x) { try { return typeof x[name] !== 'undefined'; } catch (e) { return false; } });
   return w ? w[name] : undefined;
 }
-function patchMvu(name, score, slot){
-  var M = gl('Mvu');
-  if (!M) { return; }
-  var lastWrite = 0;
-  function writeOnce(){
-    var now = Date.now();
-    if (now - lastWrite < 800) { return; }
-    lastWrite = now;
-    ['latest', 0].forEach(function (mid) {
-      try {
-        var d = M.getMvuData({ type: 'message', message_id: mid });
-        if (d && d.stat_data && d.stat_data.user) {
-          var u = d.stat_data.user;
-          if (name) { u['姓名'] = name; }
-          u['总成绩值'] = clamp(Math.round(score) || 230, 0, 750);
-          try { if (!d.stat_data['考试']) { d.stat_data['考试'] = {}; } var ii = STAGES.findIndex(function (s) { return s.key === state.st; }); d.stat_data['考试']['已通过阶段数'] = ii < 0 ? 0 : ii; d.stat_data['考试']['状态'] = '禁用'; d.stat_data['考试']['目标阶段'] = ''; d.stat_data['考试']['失败标记天'] = 0; } catch (e) {}
-          M.replaceMvuData(d, { type: 'message', message_id: mid }).then(function () {
-            try {
-              var chk = M.getMvuData({ type: 'message', message_id: mid });
-              var cv = chk && chk.stat_data && chk.stat_data.user ? chk.stat_data.user['总成绩值'] : null;
-              console.info('[开局] 已写入 楼层', mid, '总成绩=', cv, '(目标', score + ')');
-            } catch (e) {}
-          }).catch(function () {});
-        }
-      } catch (e) {}
-    });
-  }
-  writeOnce();
-  var attempts = 0;
-  function reapply(){
-    writeOnce();
-    if (++attempts < 8) { setTimeout(reapply, 600); }
-  }
-  setTimeout(function () { reapply(); }, 600);
-  setTimeout(function () { reapply(); }, 1600);
-  try {
-    var pw = window.parent || window;
-    if (pw && pw.addEventListener) { pw.addEventListener('mag_variable_update_ended', writeOnce); }
-  } catch (e) {}
-  var guard = 0;
-  var finalTimer = setInterval(function () {
-    guard++;
-    var finalVal = null;
-    try {
-      var d0 = M.getMvuData({ type: 'message', message_id: 0 });
-      if (d0 && d0.stat_data && d0.stat_data.user) { finalVal = d0.stat_data.user['总成绩值']; }
-    } catch (e) {}
-    if (finalVal !== null) {
-      clearInterval(finalTimer);
-      var target = clamp(Math.round(score) || 230, 0, 750);
-      if (Number(finalVal) !== target) {
-        notify('⚠ 成绩写入不稳定：目标 ' + target + '，状态栏显示 ' + finalVal, true);
-      } else {
-        notify('✓ 已确认状态栏成绩 = ' + finalVal);
-      }
-    } else if (guard > 12) { clearInterval(finalTimer); }
-  }, 900);
-}
 
 /* ============ 二次确认浮层 ============ */
 function openOv(){
@@ -631,83 +573,128 @@ function openOv(){
 function closeOv(){ byId('ov').classList.remove('open'); }
 /* ---------- 主窗口变量写入/校验（不依赖楼层面板存活） ---------- */
 function topWin(){ var w = window; while (w && w.parent && w.parent !== w) { w = w.parent; } return w; }
-function applyMain(score, name){
+function buildOpenCmd(target, nameEsc, stIdx){
+  var c = "_.set('user.总成绩值', " + target + ");";
+  if (nameEsc) c += "_.set('user.姓名', '" + nameEsc + "');";
+  c += "_.set('考试.已通过阶段数', " + stIdx + ");_.set('考试.状态','禁用');_.set('考试.目标阶段','');_.set('考试.失败标记天',0);";
+  return c;
+}
+/* 权威管道写 message 0 与 latest（skill: 状态栏读的楼层与 latest 都要写） */
+function writeMainOnce(target, name){
   var M = gl('Mvu');
-  var target = clamp(Math.round(score) || 230, 0, 750);
-  var nameEsc = (name || '').replace(/['"\\]/g, '');
+  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') return false;
+  var nameEsc = String(name || '').replace(/['"\\]/g, '');
   var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
-  var mm = MOM_META[state.mom] || MOM_META.A;
-  var mmName = mm.name.replace(/['"\\]/g, '');
-  var mmType = mm.type.replace(/['"\\]/g, '');
-  var mmVoice = mm.voice.replace(/['"\\]/g, '');
-  var fbro = state.bro ? '有' : '无';
-  var fdad = state.dad ? '有' : '无';
-  var preCmd = "_.set('妈妈.姓名','" + mmName + "');_.set('妈妈.类型','" + mmType + "');_.set('妈妈.心里话','" + mmVoice + "');_.set('家庭人物.弟弟','" + fbro + "');_.set('家庭人物.爸爸','" + fdad + "');_.set('答题状态','禁用');_.set('user.精力值',100);_.set('user.智商值',1);_.set('user.D加成',0.2);_.set('user.零花钱',0);_.set('user.最后领取日',0);_.set('user.奖励次数',0);_.set('奖励.存储',[]);";
-  /* 首选：走真实 MVU 管道（parseMessage→replaceMvuData），该层不会被渲染校验覆盖 */
-  if (M && typeof M.parseMessage === 'function' && typeof M.getMvuData === 'function' && typeof M.replaceMvuData === 'function') {
-    var cmd = preCmd + "_.set('user.总成绩值', " + target + ");" + (nameEsc ? "_.set('user.姓名', '" + nameEsc + "');" : "") + "_.set('考试.已通过阶段数', " + stIdx + ");_.set('考试.状态','禁用');_.set('考试.目标阶段','');_.set('考试.失败标记天',0);";
-    ['latest', 0].forEach(function (mid) {
-      try {
-        var old = M.getMvuData({ type: 'message', message_id: mid });
-        M.parseMessage(cmd, old).then(function (nw) {
-          if (nw) { try { M.replaceMvuData(nw, { type: 'message', message_id: mid }); } catch (e) {} }
-        }).catch(function () {});
-      } catch (e) {}
-    });
-    return true;
-  }
-  /* 兜底：主窗口 updateVariablesWith */
-  var top = topWin();
-  var setter = top.updateVariablesWith || null;
-  function mutate(v){
-    v = v || {};
-    var root = (v.stat_data && v.stat_data.user) ? v.stat_data : (v.user ? v : null);
-    if (!root && v.stat_data) { root = v.stat_data; }
-    if (root) { if (!root.user) { root.user = {}; } var u = root.user; if (nameEsc) { u['姓名'] = nameEsc; } u['总成绩值'] = target; }
-    else { if (!v.stat_data) { v.stat_data = {}; } if (!v.stat_data.user) { v.stat_data.user = {}; } if (nameEsc) { v.stat_data.user['姓名'] = nameEsc; } v.stat_data.user['总成绩值'] = target; }
-    try { var eo = v.stat_data ? v.stat_data : v; if (!eo['考试']) { eo['考试'] = {}; } eo['考试']['已通过阶段数'] = stIdx; eo['考试']['状态'] = '禁用'; eo['考试']['目标阶段'] = ''; eo['考试']['失败标记天'] = 0;
-      eo['妈妈'] = { '姓名': mmName, '类型': mmType, '心里话': mmVoice };
-      eo['家庭人物'] = { '弟弟': fbro, '爸爸': fdad };
-      eo['答题状态'] = '禁用';
-      if (eo['user']) { eo['user']['精力值'] = 100; eo['user']['智商值'] = 1; eo['user']['D加成'] = 0.2; eo['user']['零花钱'] = 0; eo['user']['最后领取日'] = 0; eo['user']['奖励次数'] = 0; }
-      eo['奖励'] = { '存储': [] };
+  var cmd = buildOpenCmd(target, nameEsc, stIdx);
+  ['latest', 0].forEach(function (mid) {
+    try {
+      var old = M.getMvuData({ type: 'message', message_id: mid });
+      if (!old) return;
+      M.parseMessage(cmd, old).then(function (nw) {
+        if (nw) { try { M.replaceMvuData(nw, { type: 'message', message_id: mid }); } catch (e) {} }
+      }).catch(function () {});
     } catch (e) {}
-    return v;
-  }
-  if (setter) {
-    try { setter(mutate, { type: 'message', message_id: 0 }); } catch (e) {}
-    try { setter(mutate, { type: 'message', message_id: 'latest' }); } catch (e) {}
-  }
-  return !!setter;
+  });
+  return true;
+}
+/* 切前写并等待 parseMessage/replaceMvuData 完成（顺序：写 → 再切） */
+function writeMain(target, name){
+  var M = gl('Mvu');
+  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') return Promise.resolve(false);
+  var nameEsc = String(name || '').replace(/['"\\]/g, '');
+  var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
+  var cmd = buildOpenCmd(target, nameEsc, stIdx);
+  var work = ['latest', 0].map(function (mid) {
+    try {
+      var old = M.getMvuData({ type: 'message', message_id: mid });
+      if (!old) return Promise.resolve(false);
+      return M.parseMessage(cmd, old).then(function (nw) {
+        if (!nw) return false;
+        try { var r = M.replaceMvuData(nw, { type: 'message', message_id: mid }); if (r && typeof r.then === 'function') return r.then(function(){ return true; }).catch(function(){ return false; }); return true; } catch (e) { return false; }
+      }).catch(function () { return false; });
+    } catch (e) { return Promise.resolve(false); }
+  });
+  return Promise.all(work).then(function (rs) { return rs.indexOf(true) >= 0; });
+}
+/* 读取当前 message/latest 楼层 user.总成绩值（用于守护判定） */
+function readUserScoreNow(){
+  var M = gl('Mvu');
+  if (!M) return null;
+  var out = null;
+  ['latest', 0].forEach(function (mid) {
+    if (out !== null) return;
+    try {
+      var d = M.getMvuData({ type: 'message', message_id: mid });
+      var sd = d && d.stat_data ? d.stat_data : d;
+      if (sd && sd.user) { var v = sd.user['总成绩值']; if (v !== undefined && v !== null) out = v; }
+    } catch (e) {}
+  });
+  return out;
+}
+/* 切后守护：挂在主 window（可跨切换存活）。若楼层被重建回 schema 默认(prefault 230)则反复写回，直至读到所选分数 */
+function armSyncGuard(target, name){
+  try {
+    var tp = topWin();
+    if (!tp) return;
+    if (tp.__openGuard) { clearInterval(tp.__openGuard); tp.__openGuard = null; }
+    var tries = 0, last = 0;
+    var id = setInterval(function () {
+      tries++;
+      var cur = null;
+      try { cur = readUserScoreNow(); } catch (e) {}
+      if (cur !== null && Math.round(Number(cur)) === Math.round(target)) {
+        clearInterval(id); tp.__openGuard = null;
+        try { notify('✓ 已确认状态栏成绩 = ' + Math.round(target)); } catch (e) {}
+        return;
+      }
+      if (tries > 18) {
+        clearInterval(id); tp.__openGuard = null;
+        try { notify('⚠ 成绩同步未确认（当前 ' + (cur === null ? '无数据' : cur) + '），发一条任意消息触发刷新后再看状态栏', true); } catch (e) {}
+        return;
+      }
+      var now = Date.now();
+      if (now - last > 600) { last = now; try { writeMainOnce(target, name); } catch (e) {} }
+    }, 900);
+    tp.__openGuard = id;
+  } catch (e) {}
+}
+/* ---------- 主窗口变量写入（applyMain 保持旧签名：切前写一次） ---------- */
+function applyMain(score, name){
+  writeMainOnce(clamp(Math.round(score) || 230, 0, 750), name);
+  return true;
 }
 function finish(){
   var slot = slotOf();
   var name = byId('f-name').value.trim();
   var score = Number(byId('f-score').value);
-  try { applyMain(score, name); } catch (e) {}
+  var target = clamp(Math.round(score) || 230, 0, 750);
+  var bridge = globalThis.MyCardBridgeV1 || {};
+  var doSwitch = null;
+  if (typeof bridge.selectGreeting === 'function') { doSwitch = function () { return bridge.selectGreeting(slot); }; }
+  else if (typeof bridge.switchWithText === 'function') { doSwitch = function () { return bridge.switchWithText(slot, ''); }; }
+  if (!doSwitch) {
+    var msg = '预览模式：确认将进入「' + comboHead() + '」对应槽位 ' + slot + '（接入酒馆后自动跳转并同步变量）';
+    byId('ov-msg').textContent = msg;
+    setTimeout(closeOv, 1600);
+    return;
+  }
   function doneOk(){
-    notify('✓ 已切换到槽位 ' + slot + ' 的开场白（初始成绩 ' + clamp(Math.round(score) || 230, 0, 750) + ' 已写入）');
+    notify('✓ 已切换到槽位 ' + slot + ' 的开场白（初始成绩 ' + target + ' 已写入）');
     byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白';
     setTimeout(closeOv, 1000);
+    /* ③ 切后守护：若该 MVU/ST 版本 swipe 后重建楼层回默认，则自动写回所选分数 */
+    armSyncGuard(target, name);
   }
   function fail(e){
     var em = e && e.message ? e.message : '切换失败';
     byId('ov-msg').textContent = '⚠ ' + em;
     notify('⚠ ' + em, true);
   }
-  try {
-    var bridge = globalThis.MyCardBridgeV1 || {};
-    var doSwitch = null;
-    if (typeof bridge.selectGreeting === 'function') {
-      doSwitch = function () { return bridge.selectGreeting(slot); };
-    } else if (typeof bridge.switchWithText === 'function') {
-      doSwitch = function () { return bridge.switchWithText(slot, ''); };
-    }
-    if (doSwitch) { doSwitch().then(doneOk).catch(fail); return; }
-  } catch(e){}
-  var msg = '预览模式：确认将进入「' + comboHead() + '」对应槽位 ' + slot + '（接入酒馆后自动跳转并同步变量）';
-  byId('ov-msg').textContent = msg;
-  setTimeout(closeOv, 1600);
+  /* ① 切前写（等待真正落盘）→ ② 再切 swipe（skill 顺序不可换） */
+  var pre = (typeof writeMain === 'function') ? writeMain(target, name) : Promise.resolve(true);
+  pre.then(function () {
+    try { doSwitch().then(doneOk).catch(fail); } catch (e) { fail(e); }
+  }).catch(function (e) { fail(e); });
 }
 
 /* ============ 事件绑定与启动 ============ */
