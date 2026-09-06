@@ -45,7 +45,10 @@
     background:linear-gradient(90deg, transparent, rgba(216,180,138,.35), transparent); }
   .stcap{ margin-left:auto; font-size:9px; letter-spacing:.3em; color:var(--ink3); white-space:nowrap; }
 
-  .screens{ position:relative; margin-top:12px; }
+  .screens{ position:relative; margin-top:12px; max-height:clamp(320px, 48vh, 460px); overflow-y:auto;
+    scrollbar-width:thin; scrollbar-color:rgba(216,180,138,.35) transparent; }
+  .screens::-webkit-scrollbar{ width:6px; }
+  .screens::-webkit-scrollbar-thumb{ background:rgba(216,180,138,.3); border-radius:3px; }
   .scr{ position:relative; display:none; flex-direction:column; justify-content:flex-start;
     margin:0 0 6px; animation:vu .5s ease both; }
   .scr.in{ display:flex; }
@@ -160,14 +163,15 @@
   .sum b{ color:var(--ink); font-family:var(--serif); letter-spacing:.06em; text-align:right; }
 
   /* 底部导航 */
-  .nav{ display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
-  .navbtn{ font-family:var(--serif); letter-spacing:.3em; color:var(--ink2); background:none; border:none; cursor:pointer;
-    font-size:13px; padding:8px 12px; border-radius:8px; transition:color .2s; }
-  .navbtn:hover{ color:var(--accent); }
-  .navbtn.next{ color:var(--accent2); font-size:14px; }
-  .navbtn:disabled{ opacity:.25; pointer-events:none; }
-  .navbtn::before{ content:"◀ "; font-size:11px; } .navbtn.next::before{ content:""; }
-  .navbtn.next::after{ content:" ▶"; font-size:11px; }
+  /* 左右切换箭头（始终可点，不随内容滚动） */
+  .sidenav{ position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px;
+    border-radius:50%; border:1px solid var(--line); background:rgba(16,10,8,.5); color:var(--ink2);
+    font-size:24px; line-height:1; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all .2s ease; z-index:6; backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+  .sidenav:hover{ color:var(--accent); border-color:rgba(224,122,127,.6); transform:translateY(-50%) scale(1.08); }
+  .sidenav.prev{ left:-10px; }
+  .sidenav.next{ right:-10px; }
+  .sidenav.hidden{ display:none !important; }
 
   /* 提示/错误条（兜底 C12） */
   .note{ min-height:16px; margin-top:6px; text-align:center; font-size:10px; letter-spacing:.08em; color:var(--no); }
@@ -198,6 +202,8 @@
     .stepdot{ width:18px; height:18px; font-size:9px; } .stseg{ width:8px; }
     .stcap{ display:none; }
     .big{ font-size:22px; }
+    .sidenav{ width:34px; height:34px; font-size:18px; }
+    .sidenav.prev{ left:-6px; } .sidenav.next{ right:-6px; }
     .stageline{ font-size:13px; letter-spacing:.14em; }
     .stageline .sep{ margin:0 6px; }
     .pair{ grid-template-columns:1fr; max-width:520px; }
@@ -266,10 +272,8 @@
   </div>
 
   <div class="live hidden" id="live"></div>
-  <div class="nav">
-    <button class="navbtn" id="back">戻る</button>
-    <button class="navbtn next" id="next">次へ</button>
-  </div>
+  <button class="sidenav prev" id="side-prev" aria-label="上一步">‹</button>
+  <button class="sidenav next" id="side-next" aria-label="下一步">›</button>
   <div class="note" id="note"></div>
 </div>
 
@@ -521,8 +525,8 @@ function stepsDraw(){
     }
   }
   byId('stcap').textContent = 'STEP ' + (idx + 1) + ' / ' + scr.length + ' · ' + TITLES[idx];
-  byId('back').disabled = (idx === 0);
-  byId('next').style.display = (idx === 0 || idx === scr.length - 1) ? 'none' : '';
+  byId('side-prev').classList.toggle('hidden', idx === 0);
+  byId('side-next').classList.toggle('hidden', idx <= 0 || idx === scr.length - 1);
   byId('live').classList.toggle('hidden', idx === 0 || idx === scr.length - 1);
   if (idx === scr.length - 1) { renderSum(); }
 }
@@ -718,8 +722,8 @@ function finish(){
   fscore.addEventListener('change', function(){ save(); setNote(''); });
 
   byId('begin').addEventListener('click', function(){ go(1); });
-  byId('back').addEventListener('click', function(){ go(Math.max(0, idx - 1)); });
-  byId('next').addEventListener('click', function(){ go(idx + 1); });
+  byId('side-prev').addEventListener('click', function(){ go(Math.max(0, idx - 1)); });
+  byId('side-next').addEventListener('click', function(){ go(idx + 1); });
   byId('go').addEventListener('click', function(){ save(); openOv(); });
   byId('ov-no').addEventListener('click', closeOv);
   byId('ov-yes').addEventListener('click', finish);
