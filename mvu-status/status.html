@@ -30,14 +30,29 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 
   var P = 'hsv2';
 
-  /* ---------- 宿主定位（兼容 iframe 包裹） ---------- */
+  /* ---------- 宿主定位：优先本窗口（酒馆页），iframe 包裹时才取父窗 ---------- */
+  console.log('[状态栏v2] 页面脚本开始执行 (self=', window === window.top ? 'top' : 'frame', ', Mvu=', typeof window.Mvu, ', getAllVariables=', typeof window.getAllVariables, ')');
+  function _hasGlob(w) { try { return !!(w && (w.Mvu || w.getAllVariables || w.SillyTavern || w.variables || w.jQuery)); } catch (e) { return false; } }
   var HOST = (function () {
-    try { if (window.parent && window.parent !== window && window.parent.document && window.parent.document.body) return window.parent; } catch (e) {}
-    try { if (window.top && window.top !== window && window.top.document && window.top.document.body) return window.top; } catch (e) {}
+    if (_hasGlob(window)) return window;
+    try { if (_hasGlob(window.parent)) return window.parent; } catch (e) {}
+    try { if (_hasGlob(window.top)) return window.top; } catch (e) {}
     return window;
   })();
-
-  function getDoc() { return HOST.document || document; }
+  // 注入内容所在文档：优先当前文档；若为隔离 iframe，再把宿主文档用于窗口/覆盖层
+  var CUR_DOC = document;
+  var HOST_DOC = (HOST && HOST.document) || document;
+  function getDoc() { return HOST_DOC; }
+  function ownDoc() { return CUR_DOC; }
+  function allSlots() {
+    var out = [];
+    [ownDoc(), getDoc()].forEach(function (d) {
+      try {
+        Array.prototype.forEach.call(d.querySelectorAll('.' + P + '-slot'), function (el) { if (out.indexOf(el) === -1) out.push(el); });
+      } catch (e) {}
+    });
+    return out;
+  }
   function qs(s, c) { return (c || getDoc()).querySelector(s); }
   function qa(s, c) { return Array.from((c || getDoc()).querySelectorAll(s)); }
   function esc(s) {
@@ -472,7 +487,9 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   /* 发送文本到输入框并自动发送 */
   function sendToInput(text, autoSend) {
     var doc = getDoc();
-    var ta = doc.querySelector('#send_textarea') || doc.querySelector('textarea#send_textarea');
+    var ta = null;
+    try { ta = doc.querySelector('#send_textarea') || doc.querySelector('textarea#send_textarea'); } catch (e) {}
+    if (!ta) { try { ta = ownDoc().querySelector('#send_textarea') || ownDoc().querySelector('textarea#send_textarea'); } catch (e) {} }
     if (!ta) { try { HOST.navigator.clipboard.writeText(text); toast('未找到输入框，已复制到剪贴板'); } catch (e) {} return; }
     ta.value = text;
     ta.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1337,7 +1354,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   }
   function renderAllBars() {
     refresh(true);
-    var slots = qa('.' + P + '-slot');
+    var slots = allSlots();
     for (var i = 0; i < slots.length; i++) {
       renderOne(slots[i]);
     }
@@ -1402,15 +1419,15 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 
   /* ================= 启动 ================= */
   function cleanup() {
-    var doc = getDoc();
-    qa('#' + P + '-css, #' + P + '-ov', doc).forEach(function (el2) { el2 && el2.remove(); });
-    // 清掉旧版做题悬浮球等历史元素
-    qa('#st_quiz_v27-trigger, #st_quiz_v27-overlay, #st_quiz_v27-reward-modal, #st_quiz_v27-styles', doc).forEach(function (el3) { el3 && el3.remove(); });
+    [ownDoc(), getDoc()].forEach(function (doc) {
+      if (!doc) return;
+      qa('#' + P + '-css, #' + P + '-ov', doc).forEach(function (el2) { el2 && el2.remove(); });
+      qa('#st_quiz_v27-trigger, #st_quiz_v27-overlay, #st_quiz_v27-reward-modal, #st_quiz_v27-styles', doc).forEach(function (el3) { el3 && el3.remove(); });
+    });
   }
   function initHooksObserver() {
-    var doc = getDoc();
     var applyNew = function () {
-      var slots = qa('.' + P + '-slot');
+      var slots = allSlots();
       for (var i = 0; i < slots.length; i++) {
         if (!slots[i].__hsv2) { slots[i].__hsv2 = true; renderOne(slots[i]); }
       }
@@ -1419,10 +1436,13 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
     try {
       var obs = new MutationObserver(function () {
         applyNew();
-        // 检测最新楼变化（邀请状态可能改变）
         scheduleSync();
       });
-      obs.observe(qs('#chat') || doc.body, { childList: true, subtree: true });
+      var tgt = qs('#chat') || getDoc().body;
+      if (tgt) obs.observe(tgt, { childList: true, subtree: true });
+      if (ownDoc() !== getDoc() && ownDoc().body) {
+        try { obs.observe(ownDoc().body, { childList: true, subtree: true }); } catch (e2) {}
+      }
     } catch (e) {}
   }
   var syncTimer = null;
@@ -1433,6 +1453,7 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
   function bindHostEvents() {
     var doc = getDoc();
     doc.addEventListener('click', onClick);
+    try { if (ownDoc() !== doc) ownDoc().addEventListener('click', onClick); } catch (e) {}
     try {
       var hostWin = mvuWin() || HOST;
       var fire = function () { scheduleSync(); };
@@ -1481,11 +1502,9 @@ body { font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 /* ==== 引擎注入点 END ==== */
 
 
-/* 错误可见化：运行阶段出错直接显示在根容器，便于定位 */
-window.addEventListener('error', function (ev) {
-  try { var r = document.getElementById('hsv2-root'); if (r && !r.__showErr) { r.__showErr = true; r.style.padding='12px'; r.style.background='#2a1a14'; r.style.color='#ffb4b4'; r.style.border='1px solid #ff7b7b'; r.style.borderRadius='10px'; r.style.fontSize='12px'; r.innerHTML = '⚠ 状态栏脚本错误: ' + (ev && (ev.message || ev.error || 'unknown')); } } catch (e) {} });
-window.addEventListener('unhandledrejection', function (ev) {
-  try { var r = document.getElementById('hsv2-root'); if (r && !r.__showErr) { r.__showErr = true; r.style.padding='12px'; r.style.background='#2a1a14'; r.style.color='#ffb4b4'; r.style.border='1px solid #ff7b7b'; r.style.borderRadius='10px'; r.style.fontSize='12px'; r.innerHTML = '⚠ 状态栏异步错误: ' + (ev && ev.reason && (ev.reason.message || ev.reason) || 'unknown'); } } catch (e) {} });
+/* 错误可见化 */
+window.addEventListener('error', function (ev) { try { var r = document.getElementById('hsv2-root'); if (r && !r.__showErr) { r.__showErr = true; r.style.padding='12px'; r.style.background='#2a1a14'; r.style.color='#ffb4b4'; r.style.border='1px solid #ff7b7b'; r.style.borderRadius='10px'; r.style.fontSize='12px'; r.innerHTML = '⚠ 状态栏脚本错误: ' + (ev && (ev.message || (ev.error && ev.error.message) || 'unknown')); } } catch (e) {} });
+window.addEventListener('unhandledrejection', function (ev) { try { var r = document.getElementById('hsv2-root'); if (r && !r.__showErr) { r.__showErr = true; r.style.padding='12px'; r.style.background='#2a1a14'; r.style.color='#ffb4b4'; r.style.border='1px solid #ff7b7b'; r.style.borderRadius='10px'; r.style.fontSize='12px'; r.innerHTML = '⚠ 状态栏异步错误: ' + ((ev && ev.reason && (ev.reason.message || ev.reason)) || 'unknown'); } } catch (e) {} });
 </script>
 </body>
 </html>
