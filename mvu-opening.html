@@ -579,10 +579,37 @@ function buildOpenCmd(target, nameEsc, stIdx){
   c += "_.set('考试.已通过阶段数', " + stIdx + ");_.set('考试.状态','禁用');_.set('考试.目标阶段','');_.set('考试.失败标记天',0);";
   return c;
 }
-/* 权威管道写 message 0 与 latest（skill: 状态栏读的楼层与 latest 都要写） */
+/* 兜底写：走酒馆助手 updateVariablesWith（Mvu 未就绪时也可用） */
+function writeFallback(target, name){
+  try {
+    var t = topWin();
+    if (!t) return false;
+    var setter = null;
+    if (typeof t.updateVariablesWith === 'function') setter = t.updateVariablesWith;
+    else if (t.TavernHelper && typeof t.TavernHelper.updateVariablesWith === 'function') setter = t.TavernHelper.updateVariablesWith.bind(t.TavernHelper);
+    if (!setter) return false;
+    var nameEsc = String(name || '').replace(/['"\\]/g, '');
+    var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
+    function mutate(v){
+      v = v || {};
+      var root = (v.stat_data && v.stat_data.user) ? v.stat_data : (v.stat_data ? v.stat_data : v);
+      if (!root.user) root.user = {};
+      if (nameEsc) root.user['姓名'] = nameEsc;
+      root.user['总成绩值'] = clamp(Math.round(target) || 230, 0, 750);
+      try { if (!root['考试']) root['考试'] = {}; root['考试']['已通过阶段数'] = stIdx; root['考试']['状态'] = '禁用'; root['考试']['目标阶段'] = ''; root['考试']['失败标记天'] = 0; } catch (e) {}
+      return v;
+    }
+    try { setter(mutate, { type: 'message', message_id: 0 }); } catch (e) {}
+    try { setter(mutate, { type: 'message', message_id: 'latest' }); } catch (e) {}
+    return true;
+  } catch (e) { return false; }
+}
+/* 权威管道写 message 0 与 latest（skill: 状态栏读的楼层与 latest 都要写）；Mvu 未就绪则走 updateVariablesWith 兜底 */
 function writeMainOnce(target, name){
   var M = gl('Mvu');
-  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') return false;
+  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') {
+    return writeFallback(target, name);
+  }
   var nameEsc = String(name || '').replace(/['"\\]/g, '');
   var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
   var cmd = buildOpenCmd(target, nameEsc, stIdx);
@@ -600,7 +627,9 @@ function writeMainOnce(target, name){
 /* 切前写并等待 parseMessage/replaceMvuData 完成（顺序：写 → 再切） */
 function writeMain(target, name){
   var M = gl('Mvu');
-  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') return Promise.resolve(false);
+  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') {
+    return Promise.resolve(writeFallback(target, name));
+  }
   var nameEsc = String(name || '').replace(/['"\\]/g, '');
   var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
   var cmd = buildOpenCmd(target, nameEsc, stIdx);
@@ -616,20 +645,31 @@ function writeMain(target, name){
   });
   return Promise.all(work).then(function (rs) { return rs.indexOf(true) >= 0; });
 }
-/* 读取当前 message/latest 楼层 user.总成绩值（用于守护判定） */
+/* 读取当前 message/latest 楼层 user.总成绩值（用于守护判定）；Mvu 未就绪时读 getAllVariables */
 function readUserScoreNow(){
   var M = gl('Mvu');
-  if (!M) return null;
-  var out = null;
-  ['latest', 0].forEach(function (mid) {
-    if (out !== null) return;
-    try {
-      var d = M.getMvuData({ type: 'message', message_id: mid });
-      var sd = d && d.stat_data ? d.stat_data : d;
-      if (sd && sd.user) { var v = sd.user['总成绩值']; if (v !== undefined && v !== null) out = v; }
-    } catch (e) {}
-  });
-  return out;
+  if (M) {
+    var out = null;
+    ['latest', 0].forEach(function (mid) {
+      if (out !== null) return;
+      try {
+        var d = M.getMvuData({ type: 'message', message_id: mid });
+        var sd = d && d.stat_data ? d.stat_data : d;
+        if (sd && sd.user) { var v = sd.user['总成绩值']; if (v !== undefined && v !== null) out = v; }
+      } catch (e) {}
+    });
+    if (out !== null) return out;
+  }
+  try {
+    var t = topWin();
+    var av = (t && typeof t.getAllVariables === 'function') ? t.getAllVariables()
+      : (typeof window.getAllVariables === 'function' ? window.getAllVariables() : null);
+    if (av) {
+      if (av.stat_data && av.stat_data.user && av.stat_data.user['总成绩值'] !== undefined) return av.stat_data.user['总成绩值'];
+      if (av.user && av.user['总成绩值'] !== undefined) return av.user['总成绩值'];
+    }
+  } catch (e) {}
+  return null;
 }
 /* 切后守护：挂在主 window（可跨切换存活）。若楼层被重建回 schema 默认(prefault 230)则反复写回，直至读到所选分数 */
 function armSyncGuard(target, name){
