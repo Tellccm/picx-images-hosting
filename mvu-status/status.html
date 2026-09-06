@@ -2,16 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>状态栏 UI（外链加载版，供 jQuery .load 拉取）</title>
+<title>状态栏 · 商业级可切换版（整段替换 MVU状态栏 replaceString）</title>
 <style>
 /* ============================================================
-   状态栏 UI —— 外链加载版
-   使用方式：酒馆 MVU状态栏 正则的 replaceString 只放加载器：
-     <script>$(function(){ $('body').load('本文件的URL'); });</script>
-   本文件被 .load 拉入消息楼层文档后，<style> 生效、<script> 执行，
-   可直接使用该文档作用域内的 MVU 全局。
-   - 主题切换：纯 CSS（隐藏 radio + :has），无需脚本
-   - 变量填充：等 MVU 就绪 + 1.2s 兜底 + VARIABLE_UPDATE_ENDED/window 双事件
+   状态栏（基于工程已验证的 tk-status 布局 + 脚本）
+   - 布局/变量填充：与已验证版一致（等 MVU 就绪、1.2s 兜底、
+     VARIABLE_UPDATE_ENDED + window 事件双通道），保证不发肿、能更新
+   - 主题切换：纯 CSS 原生（隐藏 radio + :has 驱动四套主题变量），
+     不依赖脚本；脚本仅做「记忆 + 容器 data-theme 双保险」
    ============================================================ */
 
 /* ---------- 四套主题 token ---------- */
@@ -21,6 +19,7 @@
   --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a;
   --tk-radius:10px; --tk-track:#ece5d8;
 }
+/* radio 勾选驱动（CSS 换肤主通道，无需脚本） */
 .tk-status:has(#tk-a:checked){ --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
   --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
   --tk-mom:#a03a44; --tk-you:#2e5f5f; --tk-gold:#b98f4a; --tk-radius:10px; --tk-track:#ece5d8; }
@@ -33,6 +32,7 @@
 .tk-status:has(#tk-d:checked){ --tk-bg:#f4f2ea; --tk-bg-soft:#ebe7da; --tk-line:#dcd5c3; --tk-line-strong:#c2b896;
   --tk-ink:#3a3a2e; --tk-ink-2:#6a6755; --tk-ink-3:#97917b;
   --tk-mom:#8a6b3f; --tk-you:#4a6b57; --tk-gold:#a58a4b; --tk-radius:6px; --tk-track:#e2dccb; }
+/* 脚本同步的双保险：容器 data-theme 也会切主题 */
 html[data-theme="a"], .tk-status[data-theme="a"]{
   --tk-bg:#fbf8f2; --tk-bg-soft:#f5efe4; --tk-line:#e3d9c6; --tk-line-strong:#cfc1a8;
   --tk-ink:#40382c; --tk-ink-2:#6f6352; --tk-ink-3:#9c8f7a;
@@ -52,6 +52,7 @@ html[data-theme="d"], .tk-status[data-theme="d"]{
 
 html, body{ margin:0; padding:0; }
 
+/* ---------- 容器（布局与已验证版一致，紧凑不发肿） ---------- */
 .tk-status { width:100%; box-sizing:border-box; font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif; color:var(--tk-ink);
   background:var(--tk-bg); border:1px solid var(--tk-line); border-radius:var(--tk-radius);
   padding:14px 16px 12px; box-shadow:0 1px 0 rgba(64,56,44,.04) inset, 0 3px 10px rgba(64,56,44,.05); }
@@ -64,6 +65,7 @@ html, body{ margin:0; padding:0; }
 .tk-title { font-family:"Songti SC","STSong","SimSun",serif; font-size:15px; font-weight:700; letter-spacing:.18em; color:var(--tk-mom); }
 .tk-head-name { margin-left:auto; font-size:11px; letter-spacing:.12em; color:var(--tk-ink-2); }
 
+/* 主题切换器：四个色点（label 包 radio，纯 CSS 可切换） */
 .tk-swatches { display:flex; gap:6px; margin-left:10px; align-items:center; }
 .tk-swatch { width:11px; height:11px; border-radius:50%; cursor:pointer; padding:0; border:1px solid rgba(0,0,0,.14);
   background:var(--sw); opacity:.55; transition:transform .15s ease, opacity .15s ease; box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); }
@@ -107,9 +109,61 @@ html, body{ margin:0; padding:0; }
 .tk-fill { height:100%; border-radius:3px; transition:width .45s ease; }
 .tk-fill-energy { background:var(--tk-mom); }
 .tk-fill-score { background:var(--tk-you); }
+
+/* ============================================================
+   ★ 黄游风覆盖（与开局面板同一套暗红幕布 / 衬线金边）
+   ============================================================ */
+html[data-theme="a"], .tk-status[data-theme="a"], .tk-status:has(#tk-a:checked){
+  --tk-bg:#1d1310; --tk-bg-soft:#2a1a14; --tk-line:#3a2a20; --tk-line-strong:#4d3428;
+  --tk-ink:#f3e9dc; --tk-ink-2:#cbb9a2; --tk-ink-3:#8f7a64;
+  --tk-mom:#e07a7f; --tk-you:#d8b48a; --tk-gold:#caa24f; --tk-radius:14px; --tk-track:#3a2a20; }
+html[data-theme="b"], .tk-status[data-theme="b"], .tk-status:has(#tk-b:checked){
+  --tk-bg:#1c1712; --tk-bg-soft:#271f16; --tk-line:#3a3125; --tk-line-strong:#4a3d2c;
+  --tk-ink:#efe6d4; --tk-ink-2:#c9b594; --tk-ink-3:#93846a;
+  --tk-mom:#d9a85c; --tk-you:#8fa3b5; --tk-gold:#caa24f; --tk-radius:14px; --tk-track:#33291d; }
+html[data-theme="c"], .tk-status[data-theme="c"], .tk-status:has(#tk-c:checked){
+  --tk-bg:#131a20; --tk-bg-soft:#1c242c; --tk-line:#2c3944; --tk-line-strong:#384856;
+  --tk-ink:#e6eef5; --tk-ink-2:#b7c6d2; --tk-ink-3:#8797a3;
+  --tk-mom:#d07a86; --tk-you:#7f9fb6; --tk-gold:#b7a06a; --tk-radius:14px; --tk-track:#25323b; }
+html[data-theme="d"], .tk-status[data-theme="d"], .tk-status:has(#tk-d:checked){
+  --tk-bg:#131a16; --tk-bg-soft:#1b241e; --tk-line:#2b3a30; --tk-line-strong:#3a4d40;
+  --tk-ink:#eaf2e9; --tk-ink-2:#bcc8ba; --tk-ink-3:#8a988a;
+  --tk-mom:#c98f7a; --tk-you:#a9c1a6; --tk-gold:#b7a06a; --tk-radius:14px; --tk-track:#24312a; }
+
+.tk-status{
+  background:
+    radial-gradient(900px 420px at 84% -6%, rgba(224,122,127,.16), transparent 60%),
+    radial-gradient(700px 380px at 6% 114%, rgba(216,180,138,.12), transparent 55%),
+    linear-gradient(160deg, rgba(36,24,19,.9), rgba(23,17,15,.94) 55%, #120d0b);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05), 0 18px 44px -22px rgba(0,0,0,.7);
+}
+.tk-title{ font-family:"Songti SC","STSong","SimSun",serif; letter-spacing:.3em; font-size:15px; }
+.tk-title::before{
+  content:"開"; display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+  margin-right:9px; border-radius:4px; background:linear-gradient(150deg,#c74452,#8f1f2d);
+  color:#ffe9e2; font-size:12px; transform:rotate(-6deg);
+  box-shadow:0 0 0 1px rgba(255,255,255,.28); text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
+.tk-head-name{ font-family:"Songti SC","STSong","SimSun",serif; letter-spacing:.14em; }
+.tk-cell{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.02); }
+.tk-cell::before{ opacity:.8; box-shadow:0 0 10px -2px var(--tk-mom); }
+.tk-swatch{ border:1px solid rgba(255,255,255,.18); }
+.tk-swatch[data-theme="a"]{ --sw:#e07a7f; }
+.tk-swatch[data-theme="b"]{ --sw:#d9a85c; }
+.tk-swatch[data-theme="c"]{ --sw:#7f9fb6; }
+.tk-swatch[data-theme="d"]{ --sw:#a9c1a6; }
+.tk-thought b{ color:var(--tk-gold); }
+.tk-divider{ gap:12px; }
+.tk-divider::before,.tk-divider::after{ height:1px; background:linear-gradient(90deg, transparent, rgba(216,180,138,.4), transparent); }
+.tk-track{ box-shadow:inset 0 1px 2px rgba(0,0,0,.5); }
+.tk-fill-energy{ background:linear-gradient(90deg, var(--tk-mom), rgba(224,122,127,.4)); }
+.tk-fill-score{ background:linear-gradient(90deg, var(--tk-you), rgba(216,180,138,.35)); }
 </style>
 </head>
 <body>
+<!--@@MARKUP_START@@-->
 <div class="tk-status">
   <input type="radio" name="tk-theme" id="tk-a" value="a" class="tk-radio" checked>
   <input type="radio" name="tk-theme" id="tk-b" value="b" class="tk-radio">
@@ -169,62 +223,58 @@ html, body{ margin:0; padding:0; }
     </div>
   </div>
 </div>
+<!--@@MARKUP_END@@-->
 
 <script>
 /* ============================================================
-   运行时：本文件被 jQuery .load 拉入消息楼层文档后执行。
-   优先取当前 window 的 MVU 全局；找不到再向 window.parent 要
-   （加载进楼层 iframe 时，MVU 全局可能挂在父窗口）。
+   运行时（沿用已验证版：等 MVU 就绪、1.2s 兜底、双事件通道）
+   主题切换以 CSS 为主（radio 勾选），脚本只做记忆 + 双保险。
    ============================================================ */
 (function () {
   'use strict';
   var TK_KEY = 'tk_theme';
   var TK_THEMES = ['a', 'b', 'c', 'd'];
+  var tkDoc = function () { return document; };
 
-  /* 全局解析：当前 window → window.parent */
-  function gl(name) {
-    try { if (typeof window[name] !== 'undefined') { return window[name]; } } catch (e) {}
-    try { if (window.parent && typeof window.parent[name] !== 'undefined') { return window.parent[name]; } } catch (e) {}
-    return undefined;
+  function tkScope() {
+    var d = tkDoc();
+    return d.documentElement || d.body || d;
   }
-  function callable(name) { return typeof gl(name) === 'function' ? gl(name) : null; }
+  function tkSet(t) {
+    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
+    var d = tkDoc();
+    try { tkScope().setAttribute('data-theme', t); } catch (e) {}
+    try { d.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    var boxes = d.querySelectorAll('.tk-status');
+    for (var i = 0; i < boxes.length; i++) { try { boxes[i].setAttribute('data-theme', t); } catch (e) {} }
+    var rb = d.getElementById('tk-' + t);
+    if (rb && !rb.checked) { try { rb.checked = true; } catch (e) {} }
+    if (typeof setvar === 'function') { try { setvar(TK_KEY, t); } catch (e) {} }
+    try { localStorage.setItem(TK_KEY, t); } catch (e) {}
+    var sws = d.querySelectorAll('.tk-swatch');
+    for (var j = 0; j < sws.length; j++) {
+      var k = sws[j].getAttribute('data-theme');
+      try { sws[j].classList.toggle('on', k === t); } catch (e) {}
+    }
+  }
+  function tkRestore() {
+    var t = 'a';
+    try { if (typeof getvar === 'function') { var g = getvar(TK_KEY); if (g) { t = String(g); } } } catch (e) {}
+    if (TK_THEMES.indexOf(t) === -1) { try { t = localStorage.getItem(TK_KEY) || 'a'; } catch (e) { t = 'a'; } }
+    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
+    tkSet(t);
+  }
 
   function getPath(o, p, d) {
     var r = o, ks, i;
     try { ks = p.split('.'); for (i = 0; i < ks.length; i++) { r = (r == null) ? undefined : r[ks[i]]; } } catch (e) { r = undefined; }
     return r === undefined ? d : r;
   }
-
-  function tkSet(t) {
-    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
-    var d = document;
-    try { d.documentElement.setAttribute('data-theme', t); } catch (e) {}
-    var boxes = d.querySelectorAll('.tk-status');
-    for (var i = 0; i < boxes.length; i++) { try { boxes[i].setAttribute('data-theme', t); } catch (e) {} }
-    var rb = d.getElementById('tk-' + t);
-    if (rb && !rb.checked) { try { rb.checked = true; } catch (e) {} }
-    var setvar = callable('setvar');
-    if (setvar) { try { setvar(TK_KEY, t); } catch (e) {} }
-    try { localStorage.setItem(TK_KEY, t); } catch (e) {}
-    var sws = d.querySelectorAll('.tk-swatch');
-    for (var j = 0; j < sws.length; j++) {
-      try { sws[j].classList.toggle('on', sws[j].getAttribute('data-theme') === t); } catch (e) {}
-    }
-  }
-  function tkRestore() {
-    var t = 'a';
-    var getvar = callable('getvar');
-    try { if (getvar) { var g = getvar(TK_KEY); if (g) { t = String(g); } } } catch (e) {}
-    if (TK_THEMES.indexOf(t) === -1) { try { t = localStorage.getItem(TK_KEY) || 'a'; } catch (e) { t = 'a'; } }
-    if (TK_THEMES.indexOf(t) === -1) { t = 'a'; }
-    tkSet(t);
-  }
-
   function populateCharacterData() {
-    var getAllVariables = callable('getAllVariables');
-    var allVars = getAllVariables ? getAllVariables() : {};
+    var allVars = typeof getAllVariables === 'function' ? getAllVariables() : {};
     var statData = getPath(allVars, 'stat_data', {});
-    var set = function (id, v) { var el = document.getElementById(id); if (el) { el.textContent = v; } };
+    var $id = function (x) { return tkDoc().getElementById(x); };
+    var set = function (id, v) { var el = $id(id); if (el) { el.textContent = v; } };
 
     set('val-mom-name', getPath(statData, '妈妈.姓名', '中岛美咲子'));
     set('val-nipple-status', getPath(statData, '妈妈.乳头.状态', '粉嫩微挺'));
@@ -243,42 +293,50 @@ html, body{ margin:0; padding:0; }
     set('val-energy-num', energyVal + ' / 100');
     set('val-score-num', scoreVal + ' / 750');
 
-    var ef = document.getElementById('bar-energy-fill');
-    var sf = document.getElementById('bar-score-fill');
+    var ef = $id('bar-energy-fill'), sf = $id('bar-score-fill');
     var energyPercent = Math.min(Math.max(energyVal, 0), 100);
     var scorePercent = Math.min(Math.max((scoreVal / 750) * 100, 0), 100);
     if (ef) { ef.style.width = energyPercent + '%'; }
     if (sf) { sf.style.width = scorePercent + '%'; }
   }
 
-  function init() {
-    document.addEventListener('change', function (ev) {
+  async function init() {
+    var d = tkDoc();
+    var done = false;
+    var force = function () { if (!done) { done = true; try { populateCharacterData(); } catch (e) {} } };
+    setTimeout(force, 1200);
+    if (typeof waitGlobalInitialized === 'function') { try { await waitGlobalInitialized('Mvu'); } catch (e) {} }
+
+    /* 主题：radio 变化 + 点击色点双通道同步 */
+    d.addEventListener('change', function (ev) {
       var t = ev.target;
       if (t && t.type === 'radio' && t.className.indexOf('tk-radio') !== -1 && t.checked) { tkSet(t.value); }
     });
-    document.addEventListener('click', function (ev) {
+    d.addEventListener('click', function (ev) {
       var sw = ev.target && ev.target.closest ? ev.target.closest('.tk-swatch[data-theme]') : null;
       if (sw) { tkSet(sw.getAttribute('data-theme')); }
     });
 
-    populateCharacterData();
     tkRestore();
-    setTimeout(function () { try { populateCharacterData(); } catch (e) {} }, 1200);
+    force();
 
-    var eventOn = callable('eventOn');
-    var Mvu = gl('Mvu');
-    if (eventOn && Mvu && Mvu.events && Mvu.events.VARIABLE_UPDATE_ENDED) {
+    if (typeof eventOn === 'function' && typeof Mvu !== 'undefined' && Mvu.events && Mvu.events.VARIABLE_UPDATE_ENDED) {
       try { eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, populateCharacterData); } catch (e) {}
     }
-    try { window.addEventListener('VARIABLE_UPDATE_ENDED', populateCharacterData); } catch (e) {}
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      try { window.addEventListener('VARIABLE_UPDATE_ENDED', populateCharacterData); } catch (e) {}
+    }
   }
 
-  function boot() {
-    var go = function () { try { init(); } catch (e) { try { populateCharacterData(); } catch (e2) {} } };
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', go); }
+  (function boot() {
+    var doc = tkDoc();
+    var go = function () {
+      try { init(); } catch (e) { try { populateCharacterData(); } catch (e2) {} }
+    };
+    if (typeof $ === 'function') { try { $(function () { go(); }); } catch (e) { go(); } }
+    else if (doc.readyState === 'loading') { doc.addEventListener('DOMContentLoaded', go); }
     else { go(); }
-  }
-  boot();
+  })();
 })();
 </script>
 </body>
