@@ -1,772 +1,212 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>开局选择 · 纯文档流版（不裁剪）</title>
-<style>
-  :root{
-    --bg1:#17110f; --bg2:#241813; --ink:#f3e9dc; --ink2:#cbb9a2; --ink3:#8f7a64;
-    --accent:#e07a7f; --accent2:#d8b48a; --ok:#dcc08a; --no:#d09090; --line:rgba(255,255,255,.12);
-    --serif:"Songti SC","STSong","SimSun",serif;
-  }
-  *{ box-sizing:border-box; }
-  /* 纯文档流：body 不锁高、不隐藏溢出，内容多高就多高，超出由父级(聊天区)滚动 */
-  html,body{ margin:0; padding:0; background:transparent; }
-  body{ font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
-    color:var(--ink); -webkit-font-smoothing:antialiased; }
-
-  .wrap{ position:relative; width:100%; max-width:740px; margin:0 auto; padding:20px 22px 26px;
-    overflow:visible;
-    background:
-      radial-gradient(1200px 600px at 78% -8%, rgba(224,122,127,.18), transparent 60%),
-      radial-gradient(900px 520px at 8% 110%, rgba(216,180,138,.12), transparent 55%),
-      linear-gradient(160deg, var(--bg2), var(--bg1) 55%, #120d0b);
-    border-radius:14px; box-shadow:0 0 0 1px rgba(255,255,255,.05), 0 24px 60px -24px rgba(0,0,0,.7); }
-  .wrap::after{ content:""; position:absolute; inset:0; pointer-events:none; opacity:.5; border-radius:14px;
-    background-image:linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
-    background-size:44px 44px; }
-
-  /* 顶部：印章 + 标题 + 步骤 */
-  .topline{ position:relative; z-index:2; display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-  .seal{ flex:none; width:34px; height:34px; background:linear-gradient(150deg,#c74452,#8f1f2d);
-    color:#ffe9e2; font-family:var(--serif); font-size:15px; display:flex; align-items:center; justify-content:center;
-    transform:rotate(-6deg); border-radius:4px; box-shadow:0 2px 10px rgba(143,31,45,.5), inset 0 0 0 1px rgba(255,255,255,.28);
-    text-shadow:0 1px 2px rgba(0,0,0,.4); user-select:none; }
-  .logo{ font-family:var(--serif); font-size:16px; letter-spacing:.3em; color:var(--ink);
-    text-shadow:0 0 24px rgba(224,122,127,.35); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .logo b{ color:var(--accent); font-weight:700; }
-  .steps{ margin-left:auto; display:flex; align-items:center; }
-  .stepdot{ width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:10px; font-family:var(--serif); color:var(--ink3); border:1px solid rgba(255,255,255,.16);
-    background:rgba(255,255,255,.02); transition:all .4s ease; }
-  .stepdot.on{ color:#2a1c16; background:linear-gradient(180deg,#f2cdb0,#d8a07a); border-color:transparent;
-    box-shadow:0 0 14px rgba(224,122,127,.5); }
-  .stepdot.done{ color:var(--accent2); border-color:rgba(216,180,138,.55); }
-  .stseg{ width:18px; height:1px; background:rgba(255,255,255,.18); margin:0 4px; }
-  .stseg.done{ background:rgba(216,180,138,.6); }
-  .stcap{ margin-left:auto; font-size:9px; letter-spacing:.3em; color:var(--ink3); white-space:nowrap; }
-
-  .screens{ position:relative; z-index:2; margin-top:16px; }
-  /* 分屏：只有当前屏参与布局(.in)，其余 display:none → 纯文档流，不裁剪 */
-  .scr{ display:none; animation:vu .45s ease both; }
-  .scr.in{ display:block; }
-  @keyframes vu{ from{ opacity:0; transform:translateY(12px);} to{ opacity:1; transform:none;} }
-  .scr.in>*{ animation:vu .45s cubic-bezier(.2,.7,.2,1) both; }
-  .scr.in>*:nth-child(1){ animation-delay:.02s; } .scr.in>*:nth-child(2){ animation-delay:.06s; }
-  .scr.in>*:nth-child(3){ animation-delay:.10s; } .scr.in>*:nth-child(4){ animation-delay:.14s; }
-  .scr.in>*:nth-child(5){ animation-delay:.18s; } .scr.in>*:nth-child(6){ animation-delay:.22s; }
-
-  .big{ font-family:var(--serif); font-size:26px; letter-spacing:.16em; line-height:1.6; text-align:center;
-    color:var(--ink); text-shadow:0 2px 30px rgba(0,0,0,.5); padding-top:14px; }
-  .big small{ display:block; font-family:"PingFang SC",sans-serif; font-size:11px; letter-spacing:.5em;
-    color:var(--accent2); margin-bottom:16px; }
-  .big small::before, .big small::after{ content:"❖"; font-size:7px; margin:0 10px; color:rgba(216,180,138,.6); }
-  .stageline{ text-align:center; margin-top:16px; font-family:var(--serif); font-size:16px;
-    letter-spacing:.22em; color:var(--ink2); }
-  .stageline .hl{ color:var(--accent); }
-  .stageline .sep{ margin:0 10px; color:rgba(216,180,138,.45); font-size:12px; }
-  .big .hl{ color:var(--accent); }
-  .tagline{ text-align:center; margin-top:18px; font-size:11px; letter-spacing:.34em; color:var(--accent2);
-    opacity:.85; text-shadow:0 0 16px rgba(224,122,127,.4); }
-  .tagline::before,.tagline::after{ content:"❖"; font-size:7px; color:rgba(216,180,138,.55); margin:0 10px; vertical-align:2px; }
-  .cta{ text-align:center; margin-top:28px; }
-  .startbtn{ font-family:var(--serif); font-size:15px; letter-spacing:.5em; color:#2a1c16;
-    background:linear-gradient(180deg,#f2cdb0,#d8a07a); border:1px solid rgba(255,255,255,.25);
-    padding:13px 44px 13px 52px; border-radius:999px; cursor:pointer;
-    box-shadow:0 10px 34px -10px rgba(224,122,127,.55), inset 0 1px 0 rgba(255,255,255,.4);
-    transition:transform .25s ease, box-shadow .25s ease; }
-  .startbtn:hover{ transform:translateY(-2px) scale(1.03); box-shadow:0 16px 44px -10px rgba(224,122,127,.7); }
-
-  .h2{ font-family:var(--serif); font-size:19px; letter-spacing:.5em; color:var(--accent2); margin:0 0 20px; text-align:center; }
-  .h2::before, .h2::after{ content:"❖"; font-size:9px; color:rgba(216,180,138,.55); margin:0 12px; vertical-align:2px; }
-
-  .field{ margin:0 auto 18px; max-width:720px; }
-  .field label{ display:block; font-size:10px; letter-spacing:.4em; color:var(--ink3); margin-bottom:7px; }
-  .inp{ width:100%; background:transparent; border:none; border-bottom:1px solid rgba(255,255,255,.28);
-    color:var(--ink); font-size:18px; padding:9px 6px; font-family:var(--serif); letter-spacing:.12em; outline:none; }
-  .inp:focus{ border-color:var(--accent); box-shadow:0 6px 18px -12px rgba(224,122,127,.8); }
-  .inp.ph{ color:var(--ink3); }
-
-  .pair{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:0 auto; max-width:760px; }
-  .girl{ position:relative; border:1px solid var(--line); border-radius:10px; padding:16px 16px 14px; cursor:pointer;
-    background:linear-gradient(165deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
-    transition:all .35s ease; overflow:hidden; }
-  .girl::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
-    background:linear-gradient(180deg,var(--accent),var(--accent2)); opacity:0; transition:opacity .3s; }
-  .girl.on{ border-color:var(--accent);
-    background:linear-gradient(165deg, rgba(224,122,127,.14), rgba(255,255,255,.02));
-    box-shadow:0 14px 40px -18px rgba(224,122,127,.6); }
-  .girl.on::before{ opacity:1; }
-  .girl .nm{ font-family:var(--serif); font-size:16px; letter-spacing:.16em; color:var(--ink); margin-bottom:8px; }
-  .girl.on .nm{ color:var(--accent); }
-  .girl .desc{ font-size:11px; line-height:1.85; color:var(--ink2); }
-  .girl .tag{ display:inline-block; margin-top:9px; font-size:9px; letter-spacing:.3em; color:var(--accent2);
-    border:1px solid rgba(216,180,138,.4); padding:2px 10px; border-radius:999px; }
-  .sel-mark{ position:absolute; right:12px; top:10px; width:17px; height:17px; border-radius:50%;
-    border:1px solid var(--line); color:transparent; font-size:10px; display:flex; align-items:center; justify-content:center;
-    transition:all .3s; }
-  .girl.on .sel-mark{ background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 12px rgba(224,122,127,.8); }
-
-  .chiprow{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:6px 0 14px; }
-  .chip{ cursor:pointer; border:1px solid var(--line); border-radius:999px; padding:6px 16px; font-size:12px;
-    letter-spacing:.08em; color:var(--ink2); transition:all .25s ease; background:rgba(255,255,255,.02); }
-  .chip.on{ color:#fff; border-color:var(--accent);
-    background:linear-gradient(180deg, rgba(224,122,127,.35), rgba(224,122,127,.12));
-    box-shadow:0 0 18px -4px rgba(224,122,127,.5); }
-  .hintline{ text-align:center; font-size:10px; letter-spacing:.2em; color:var(--ink3); margin-bottom:6px; }
-
-  .stinfo{ max-width:600px; margin:0 auto 12px; border:1px solid var(--line); border-radius:12px;
-    padding:10px 14px 11px; background:rgba(0,0,0,.18); }
-  .si-row{ display:flex; align-items:flex-start; gap:10px; padding:3px 0; }
-  .si-row + .si-row{ border-top:1px dashed rgba(255,255,255,.09); margin-top:4px; padding-top:7px; }
-  .si-row .lab{ flex:none; width:52px; font-size:10px; letter-spacing:.34em; color:var(--ink3); padding-top:4px; }
-  .si-row .bds{ display:flex; flex-wrap:wrap; gap:6px; }
-  .bd{ display:inline-flex; align-items:center; gap:5px; border-radius:999px; padding:2px 10px; font-size:10.5px;
-    letter-spacing:.05em; background:rgba(255,255,255,.03); border:1px solid var(--line); }
-  .bd.ok{ color:var(--ok); border-color:rgba(220,192,138,.4); }
-  .bd.no{ color:var(--no); border-color:rgba(208,144,144,.35); }
-  .bd.none{ color:var(--ink3); }
-
-  .scorebox{ max-width:720px; margin:0 auto 2px; }
-  .scorehead{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
-  .scorehead label{ font-size:9px; letter-spacing:.42em; color:var(--ink3); }
-  .scorehead em{ font-style:normal; color:var(--accent2); font-weight:600; font-size:13px;
-    font-family:var(--serif); letter-spacing:.08em; }
-  .scorebox input[type=range]{ width:100%; accent-color:var(--accent); height:22px; cursor:pointer; }
-  .scorecap{ text-align:center; font-size:9px; letter-spacing:.2em; color:var(--ink3); margin-top:2px; }
-
-  /* 实时组合条（允许换行，避免被裁） */
-  .live{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; row-gap:4px; margin:16px 0 2px; padding:8px 14px;
-    border:1px solid rgba(216,180,138,.28); border-radius:999px;
-    background:linear-gradient(90deg, rgba(216,180,138,.10), transparent 60%);
-    font-size:11.5px; color:var(--ink2); letter-spacing:.05em; }
-  .live::before{ content:"◆"; color:var(--accent); font-size:9px; }
-  .live b{ color:var(--accent2); font-weight:600; margin:0 3px; }
-
-  /* 确认卡 */
-  .sum{ max-width:760px; margin:0 auto; border:1px solid var(--line); border-radius:12px;
-    background:rgba(0,0,0,.18); padding:20px 26px; font-size:14px; line-height:2.2; letter-spacing:.06em; }
-  .sum .r{ display:flex; justify-content:space-between; gap:16px; border-bottom:1px dashed rgba(255,255,255,.12); }
-  .sum .r:last-child{ border-bottom:none; }
-  .sum .k{ color:var(--ink3); letter-spacing:.3em; font-size:11px; flex:none; }
-  .sum b{ color:var(--ink); font-family:var(--serif); letter-spacing:.06em; text-align:right; }
-
-  /* 底部前进/后退（纯文档流内普通按钮） */
-  .nav{ display:flex; align-items:center; justify-content:space-between; margin-top:20px; gap:12px; }
-  .navbtn{ font-family:var(--serif); letter-spacing:.3em; color:var(--ink2); background:none;
-    border:1px solid rgba(255,255,255,.14); cursor:pointer; font-size:13px; padding:8px 18px; border-radius:999px;
-    transition:color .2s, border-color .2s, background .2s; }
-  .navbtn:hover{ color:var(--accent); border-color:rgba(224,122,127,.6); }
-  .navbtn.next{ color:var(--accent2); }
-  .navbtn.hidden{ display:none !important; }
-
-  .note{ min-height:16px; margin-top:8px; text-align:center; font-size:10px; letter-spacing:.08em; color:var(--no); }
-  .hidden{ display:none !important; }
-
-  /* 二次确认浮层（覆盖层，不参与文档流，不影响裁剪） */
-  .ov{ position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; padding:20px;
-    background:rgba(10,6,5,.66); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
-  .ov.open{ display:flex; }
-  .ovbox{ width:min(560px,94vw); border:1px solid rgba(216,180,138,.4); border-radius:14px; padding:22px 24px;
-    background:linear-gradient(165deg, #2a1f18, #1a120e); box-shadow:0 30px 80px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(0,0,0,.4);
-    animation:vu .35s ease both; }
-  .ov h3{ font-family:var(--serif); letter-spacing:.4em; text-align:center; color:var(--accent2); margin:0 0 14px; font-size:16px; }
-  .ov .sum{ font-size:12.5px; }
-  .ov-actions{ display:flex; gap:10px; justify-content:center; margin-top:18px; }
-  .ov .small{ font-size:10px; color:var(--ink3); letter-spacing:.06em; margin-top:14px; text-align:center; min-height:14px; }
-  .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--ink2); }
-  .btn-ghost:hover{ border-color:var(--ink3); color:var(--ink); }
-
-  @media (max-width:760px){
-    .wrap{ padding:16px 16px 20px; }
-    .logo{ font-size:12px; letter-spacing:.16em; }
-    .seal{ width:28px; height:28px; font-size:12px; }
-    .stepdot{ width:18px; height:18px; font-size:9px; } .stseg{ width:8px; }
-    .stcap{ display:none; }
-    .big{ font-size:22px; }
-    .stageline{ font-size:13px; letter-spacing:.14em; }
-    .stageline .sep{ margin:0 6px; }
-    .pair{ grid-template-columns:1fr; max-width:520px; }
-    .h2{ font-size:16px; }
-    .field{ max-width:100%; }
-    .scorebox,.stinfo,.sum{ max-width:100%; }
-    .scr.in>*{ animation:none; }
-  }
-  @media (max-width:480px){
-    .big{ font-size:17px; letter-spacing:.12em; }
-    .stageline{ font-size:11.5px; letter-spacing:.1em; }
-    .startbtn{ padding:11px 26px; font-size:13px; }
-    .chip{ padding:5px 11px; font-size:11px; }
-    .logo b{ display:none; }
-  }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="topline">
-    <span class="seal">開</span>
-    <div class="logo">什么？！又考好了？<b>天呐…又要做那种事了</b></div>
-    <div class="steps" id="steps"></div>
-    <div class="stcap" id="stcap"></div>
+<!-- ============================================================
+     《什么？！又考好了？…》开局选择器前端 · 玩法中心兼容版
+     (黄游风格 · 依据玩法中心引擎 v1.x 机制定制)
+     用法: 放入你托管开局页的位置, 并把卡内 [MVU开局选择] 正则的
+     replaceString 里的 $('body').load('...') 指向本文件。
+     ============================================================ -->
+<div id="khk-opening" style="font-family:'PingFang SC','Microsoft YaHei','Songti SC',serif; max-width:680px; margin:10px auto; color:#f6e3cf; background:
+  radial-gradient(760px 340px at 84% -6%, rgba(224,112,122,.20), transparent 60%),
+  radial-gradient(640px 320px at 4% 112%, rgba(232,184,76,.14), transparent 55%),
+  linear-gradient(160deg,#1a0e11,#2a1416 60%,#301a19);
+  border:1.5px solid rgba(207,170,99,.65); border-radius:18px; overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.7), 0 0 34px rgba(224,112,122,.22);">
+  <!-- 顶栏 -->
+  <div style="background:linear-gradient(180deg,#3c1f1e,#2a1416); border-bottom:1px solid rgba(207,170,99,.45); padding:14px 18px; text-align:center;">
+    <div style="font-size:19px; font-weight:700; letter-spacing:.35em; background:linear-gradient(135deg,#e8b84c,#e0707a); -webkit-background-clip:text; background-clip:text; color:transparent;">❖ 开局选择 ❖</div>
+    <div style="font-size:11px; color:#c4a58e; letter-spacing:.2em; margin-top:4px;">——《什么？！又考好了？天呐...又要做那种事了》</div>
   </div>
 
-  <div class="screens">
-    <section class="scr in">
-      <div class="big"><small>—— 開 局 選 択 ——</small>分数越高，能<span class="hl">索求</span>的就越深——</div>
-      <div class="stageline">手交<span class="sep">·</span>口交<span class="sep">·</span>乳交<span class="sep">·</span><span class="hl">完全接纳</span></div>
-      <div class="tagline">—— 只 要 成 绩 好 ， 就 能 跟 妈 妈 索 求 …… ——</div>
-      <div class="cta"><button class="startbtn" id="begin">开 始</button></div>
-    </section>
-
-    <section class="scr">
-      <h2 class="h2">基 础 设 定</h2>
-      <div class="field"><label>姓 名</label><input class="inp" id="f-name" placeholder="儿子的名字"></div>
-      <div class="field"><label>年 龄</label><input class="inp" id="f-age" placeholder="如 17 岁"></div>
-      <div class="field"><label>外 貌 · 性 格</label><input class="inp" id="f-look" placeholder="外貌特征、性格倾向…"></div>
-    </section>
-
-    <section class="scr">
-      <h2 class="h2">母 亲 风 格</h2>
-      <div class="pair" id="m-pair"></div>
-    </section>
-
-    <section class="scr">
-      <h2 class="h2">角 色 与 阶 段</h2>
-      <div class="hintline">加入角色（可都不选）</div>
-      <div class="chiprow"><span class="chip" id="c-bro">弟弟</span><span class="chip" id="c-dad">爸爸</span></div>
-      <div class="hintline">初始阶段 · 审核机制锁定成绩区间</div>
-      <div class="chiprow" id="stage-chips"></div>
-      <div class="stinfo" id="st-info"></div>
-      <div class="scorebox">
-        <div class="scorehead"><label>初始总成绩</label><em id="f-score-num">600 / 750</em></div>
-        <input type="range" id="f-score" min="600" max="750" step="1" value="600">
-        <div class="scorecap" id="f-score-cap"></div>
-      </div>
-    </section>
-
-    <section class="scr">
-      <h2 class="h2">确 认 开 局</h2>
-      <div class="sum" id="sum"></div>
-      <div class="cta"><button class="startbtn" id="go">进 入 本 开 局</button></div>
-    </section>
-  </div>
-
-  <div class="live hidden" id="live"></div>
-  <div class="nav">
-    <button class="navbtn" id="nav-prev">‹ 上一步</button>
-    <button class="navbtn next" id="nav-next">下一步 ›</button>
-  </div>
-  <div class="note" id="note"></div>
-</div>
-
-<div class="ov" id="ov">
-  <div class="ovbox">
-    <h3>— 確 認 開 始 —</h3>
-    <div class="sum" id="ov-sum"></div>
-    <div class="ov-actions">
-      <button class="startbtn btn-ghost" id="ov-no">再 想 想</button>
-      <button class="startbtn" id="ov-yes">开 始 游 戏</button>
+  <div style="padding:14px 18px 6px;">
+    <div style="font-size:13px; font-weight:700; letter-spacing:.18em; color:#e8b84c; margin-bottom:8px;">一 · 选择扮演的母亲</div>
+    <div id="khk-mom-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button id="khk-mom-mei" type="button" class="khk-opt" style="flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:2px solid rgba(207,170,99,.7);background:#331e1e;color:#f6e3cf;cursor:pointer;text-align:left;">
+        <div style="font-size:14px;font-weight:700;">🌸 中岛美咲子</div>
+        <div style="font-size:11px;color:#c4a58e;">腼腆羞恼人妻 · 脸红嘴硬、不敢直视</div>
+      </button>
+      <button id="khk-mom-sen" type="button" class="khk-opt" style="flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:2px solid rgba(148,163,184,0);background:#241416;color:#c4a58e;cursor:pointer;text-align:left;">
+        <div style="font-size:14px;font-weight:700;">🥀 森川千寻</div>
+        <div style="font-size:11px;color:#9a7a63;">毒舌清冷大小姐 · 好面子、端架子</div>
+      </button>
     </div>
-    <div class="small" id="ov-msg"></div>
+  </div>
+
+  <div style="padding:10px 18px 6px;">
+    <div style="font-size:13px; font-weight:700; letter-spacing:.18em; color:#e8b84c; margin-bottom:8px;">二 · 选择起步阶段（成绩每场考试最多晋一档，档位越高开局越高）</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;" id="khk-stage-row">
+      <button type="button" class="khk-stage" data-sel="stage1" style="border:2px solid rgba(207,170,99,.55);background:#331e1e;color:#f6e3cf;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
+        <div style="font-size:13px;font-weight:700;">阶段一 · 手交期</div>
+        <div style="font-size:10.5px;color:#c4a58e;">起始成绩 230 · 从零开始</div>
+      </button>
+      <button type="button" class="khk-stage" data-sel="stage2" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
+        <div style="font-size:13px;font-weight:700;">阶段二 · 口交期</div>
+        <div style="font-size:10.5px;color:#9a7a63;">起始成绩 300 · 已过阶段一</div>
+      </button>
+      <button type="button" class="khk-stage" data-sel="stage3" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
+        <div style="font-size:13px;font-weight:700;">阶段三 · 乳交期</div>
+        <div style="font-size:10.5px;color:#9a7a63;">起始成绩 450 · 已过阶段二</div>
+      </button>
+      <button type="button" class="khk-stage" data-sel="stage4" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
+        <div style="font-size:13px;font-weight:700;">阶段四 · 完全接纳</div>
+        <div style="font-size:10.5px;color:#9a7a63;">起始成绩 600 · 已过阶段三</div>
+      </button>
+    </div>
+  </div>
+
+  <div style="padding:10px 18px;">
+    <div style="font-size:12px; font-weight:700; letter-spacing:.15em; color:#e8b84c; margin:8px 0 6px;">三 · 智力加成起步（A，越高考试结算越多）</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;" id="khk-iq-row">
+      <button type="button" class="khk-iq" data-iq="1.0" style="border:2px solid rgba(207,170,99,.55);background:#331e1e;color:#f6e3cf;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.0（标准）</button>
+      <button type="button" class="khk-iq" data-iq="1.2" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.2（机灵）</button>
+      <button type="button" class="khk-iq" data-iq="1.5" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.5（聪明）</button>
+      <button type="button" class="khk-iq" data-iq="2.0" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">2.0（天才）</button>
+    </div>
+  </div>
+
+  <!-- 当前选择确认 -->
+  <div style="padding:10px 18px 4px;">
+    <div style="font-weight:700; font-size:12px; color:#e8b84c; letter-spacing:.15em; margin-bottom:6px;">📌 生效初始状态</div>
+    <div id="khk-summary" style="background:rgba(20,10,12,.55); border:1px solid rgba(207,170,99,.35); border-radius:10px; padding:9px 12px; font-family:ui-monospace,Consolas,monospace; font-size:11.5px; line-height:1.7; color:#dfc6ad;">
+      妈妈：中岛美咲子 · 阶段一 · 成绩 230/750 · 智力A 1.0 · 精力 100
+    </div>
+    <details style="margin:8px 0 2px;">
+      <summary style="cursor:pointer; font-size:11.5px; color:#e8b84c;">▸ 玩法速览（做题 / 考试 / 商城）</summary>
+      <div style="font-size:11px; line-height:1.8; color:#c4a58e; margin-top:4px;">
+        · 做题：每题扣10精力；答对智力A +0.02（成绩分不变，成绩只靠考试提升），随时结算可存/取阶段奖励券。<br>
+        · 考试：随时可【申请考试】（消耗30精力，当日限一次）：一次20题、题库每次不同且打乱、每题37.5分；总成绩 = 答对数×37.5×智力A（智力越高加成越高，封顶750）；每场最多晋一档（超出下一档上限的部分不结算，次日再申请继续升）；考完按分数进入阶段并产出该阶段奖励券。<br>
+        · 商城：每日领零花钱（成绩越高越多），买智力药水（提升A）；作弊D当前版本暂不参与结算。<br>
+        · 精力只在进入新的一天时恢复满。
+      </div>
+    </details>
+  </div>
+
+  <div style="padding:12px 18px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+    <span style="font-size:11px; color:#9a7a63;">确认后写入酒馆初始变量，并在楼层状态栏同步生效</span>
+    <button id="khk-apply" type="button" style="background:linear-gradient(135deg,#e8b84c,#b03a48); color:#fff; border:1px solid rgba(255,255,255,.25); padding:9px 22px; border-radius:22px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(224,112,122,.35);">
+      ✓ 确认进入当前开局
+    </button>
   </div>
 </div>
 
 <script>
-/* ============ 桥（TavernHelper）：切换消息 0 的开场白 swipe ============ */
-(function (global) {
+(function () {
   'use strict';
-  function scope(name) {
-    var candidates = [global];
-    try { if (global.parent && global.parent !== global) { candidates.push(global.parent); } } catch (_) {}
-    try { if (global.top && candidates.indexOf(global.top) === -1) { candidates.push(global.top); } } catch (_) {}
-    for (var i = 0; i < candidates.length; i++) {
-      try { if (candidates[i] && candidates[i][name] !== undefined) { return candidates[i][name]; } } catch (_) {}
-    }
-    return undefined;
-  }
-  function helperCall(name) {
-    var h = scope('TavernHelper');
-    if (h && typeof h[name] === 'function') { return h[name].bind(h); }
-    var d = scope(name);
-    return typeof d === 'function' ? d : null;
-  }
-  async function selectGreeting(swipeId) {
-    var index = Number(swipeId);
-    if (!Number.isInteger(index) || index < 1) { throw new Error('开场编号无效'); }
-    var getMessages = helperCall('getChatMessages');
-    if (!getMessages) { throw new Error('当前环境不支持读取开场白（无 getChatMessages）'); }
-    var messages = await getMessages(0, { include_swipes: true });
-    var first = messages && messages[0];
-    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) {
-      throw new Error('所选开场不存在（槽位 ' + index + '）');
-    }
-    // 优先：酒馆助手风格 API setChatMessages([{message_id,swipe_id}])
-    var setMessages = helperCall('setChatMessages');
-    if (setMessages) { return setMessages([{ message_id: 0, swipe_id: index }]); }
-    // 次选：skill 风格 setChatMessage(text,0,{swipe_id,refresh})
-    var setMessage = helperCall('setChatMessage');
-    if (setMessage) { return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' }); }
-    throw new Error('当前环境不支持切换开场（找不到 setChatMessage/setChatMessages）');
-  }
-  async function switchWithText(swipeId, suffix) {
-    var index = Number(swipeId);
-    if (!Number.isInteger(index) || index < 1) { throw new Error('开场编号无效'); }
-    var getMessages = helperCall('getChatMessages');
-    if (!getMessages) { throw new Error('当前环境不支持读取开场白（无 getChatMessages）'); }
-    var messages = await getMessages(0, { include_swipes: true });
-    var first = messages && messages[0];
-    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) {
-      throw new Error('所选开场不存在（槽位 ' + index + '）');
-    }
-    var setMessage = helperCall('setChatMessage');
-    if (setMessage) {
-      var text = String(first.swipes[index]);
-      if (suffix) { text = text.replace(/\s*$/, '\n' + suffix); }
-      try {
-        await setMessage(text, 0, { swipe_id: index, refresh: 'display_and_render_current' });
-        return { via: 'text' };
-      } catch (e) {}
-    }
-    var setMessages = helperCall('setChatMessages');
-    if (setMessages) { await setMessages([{ message_id: 0, swipe_id: index }]); return { via: 'switch' }; }
-    throw new Error('当前环境不支持切换开场（找不到 setChatMessage/setChatMessages）');
-  }
-  global.MyCardBridgeV1 = Object.freeze({ version: 1, selectGreeting: selectGreeting, switchWithText: switchWithText });
-})(globalThis);
-</script>
+  var stageMap = {
+    stage1: { name: '阶段一 · 手交期', score: 230, passed: 0 },
+    stage2: { name: '阶段二 · 口交期', score: 300, passed: 1 },
+    stage3: { name: '阶段三 · 乳交期', score: 450, passed: 2 },
+    stage4: { name: '阶段四 · 完全接纳期', score: 600, passed: 3 }
+  };
+  var momMap = {
+    mei:  { name: '中岛美咲子', thought: '这孩子……要是不管他...肯定会垮掉的吧...就仅限这一次...就这一次...', label: '🌸 中岛美咲子' },
+    sen:  { name: '森川千寻',   thought: '让这个不争气的儿子配得上森川家的荣光……但怎么最后会变成这样…', label: '🥀 森川千寻' }
+  };
 
-<script>
-/* ============ 集中配置（C11） ============ */
-var MOMS = {
-  A: {
-    nm: '温柔腼腆 · 内心抗拒母亲',
-    tag: '细 腻 · 克 制',
-    desc: '美咲子的温柔总慢了半拍：半夜推门见你还醒着，红着脸把你按回被窝，轻声哄着“别熬了呀，妈心疼。”她记得你所有忌口，却从不敢多碰你一下——掖被角的指尖悬在半空又悄悄收回。守夜后她趴在床边睡着，手还搭在你手背上；醒来却红着脸别开头：“…妈只是顺手照顾你。”嘴上守着界线，眼神却骗不了人。她的心软与你的抗拒，在同一间屋檐下反复拉扯，谁都不敢先迈出那一步呢。'
-  },
-  B: {
-    nm: '毒蛇傲娇 · 森川千寻',
-    tag: '冷 艳 · 毒 舌 · 高 贵',
-    desc: '森川千寻，森川家族大小姐。紫色长发总是披散着，清冷、冷艳，看人时带着居高临下的审视——包括她那个“不争气”的儿子。她从不夸你，毒舌张口就来：“就凭你这种脑子？”“别把森川家的脸丢光。”被妹妹当众炫耀儿子、又被长辈看扁之后，她把那口气全记在你头上，押上脸面也要把你逼出成绩。她极重尊严、说话算话——所以当你真敢拿成绩跟她谈条件时，她再屈辱、再恼羞，也会冷着脸把答应的事一样样做到底。毒舌之下，是拿捏不住脸面与羞恼的败北。'
-  }
-};
-var MOM_META = {
-  A: { name: '中岛美咲子', type: '温柔腼腆', voice: '这孩子……成绩都这样了还硬撑，当妈的哪能真看着他垮掉……就、就仅限这一次……' },
-  B: { name: '森川千寻', type: '毒蛇傲娇', voice: '这个蠢东西……要不是他姓森川，我真想当没生过。妹妹那张得意的脸、奶奶那句“这才像森川家的人”，我全都记着。他最好真能考出来，否则我让他知道什么叫后悔。' }
-};
-var STAGES = [
-  { key:'s1', short:'阶段一 · 手交', n:'阶段一 · 手交期', min:0,   max:299,
-    allow:['手交'], forbid:['口交','吸奶','脱衣','看光','插入','不隔着衣服摸奶'] },
-  { key:'s2', short:'阶段二 · 口交', n:'阶段二 · 口交期', min:300, max:449,
-    allow:['手交','口交','摸奶'], forbid:['乳交','看光','脱衣','不隔着衣服摸奶','插入'] },
-  { key:'s3', short:'阶段三 · 乳交', n:'阶段三 · 乳交期', min:450, max:599,
-    allow:['手交','口交','吸奶','看光','不隔着衣服摸奶'], forbid:['实质性插入'] },
-  { key:'s4', short:'阶段四 · 完全接纳', n:'阶段四 · 完全接纳期', min:600, max:750,
-    allow:['全面接纳（无限制）'], forbid:[] }
-];
-var SLOTS = { A:{ none:1, bro:3, dad:4, both:5 }, B:{ none:2, bro:6, dad:7, both:8 } };
-var TITLES = ['开局选择','基础设定','母亲风格','角色与阶段','确认开局'];
-var MEM_KEY = 'openingFlow_v1';
+  var state = { mom: 'mei', stage: 'stage1', iq: 1.0 };
 
-function byId(x){ return document.getElementById(x); }
-function clamp(n,a,b){ return Math.min(Math.max(n,a),b); }
-function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-function setNote(m){ byId('note').textContent = m || ''; }
-function notify(msg, isErr){
-  var w = window, d = 0;
-  while (w && d < 12) {
-    try { if (w.toastr) { (isErr ? w.toastr.error : w.toastr.success)(msg, '开局选择'); return; } } catch (e) {}
-    if (w === w.parent) { break; }
-    w = w.parent; d++;
+  function paint() {
+    var i, els;
+    els = document.querySelectorAll('#khk-mom-row .khk-opt');
+    for (i = 0; i < els.length; i++) {
+      var active = els[i].id === ('khk-mom-' + (state.mom === 'mei' ? 'mei' : 'sen'));
+      els[i].style.borderColor = active ? 'rgba(207,170,99,.7)' : 'rgba(148,163,184,0)';
+      els[i].style.background = active ? '#331e1e' : '#241416';
+      els[i].style.color = active ? '#f6e3cf' : '#c4a58e';
+    }
+    els = document.querySelectorAll('.khk-stage');
+    for (i = 0; i < els.length; i++) {
+      var a2 = els[i].getAttribute('data-sel') === state.stage;
+      els[i].style.borderColor = a2 ? 'rgba(207,170,99,.55)' : 'rgba(207,170,99,.2)';
+      els[i].style.background = a2 ? '#331e1e' : '#241416';
+      els[i].style.color = a2 ? '#f6e3cf' : '#c4a58e';
+    }
+    els = document.querySelectorAll('.khk-iq');
+    for (i = 0; i < els.length; i++) {
+      var a3 = Number(els[i].getAttribute('data-iq')) === Number(state.iq);
+      els[i].style.borderColor = a3 ? 'rgba(207,170,99,.55)' : 'rgba(207,170,99,.2)';
+      els[i].style.background = a3 ? '#331e1e' : '#241416';
+      els[i].style.color = a3 ? '#f6e3cf' : '#c4a58e';
+    }
+    var sm = document.getElementById('khk-summary');
+    if (sm) {
+      var st = stageMap[state.stage], mm = momMap[state.mom];
+      sm.innerHTML = '妈妈：' + mm.name + ' · ' + st.name + '<br>起始成绩 ' + st.score + '/750 · 智力A ' + state.iq + ' · 精力 100 · 第1天';
+    }
   }
-  try { console[(isErr ? 'error' : 'log')]('[开局] ' + msg); } catch (e) {}
-}
 
-/* ============ 渲染母亲卡 ============ */
-function renderMoms(){
-  var pair = byId('m-pair'); pair.innerHTML = '';
-  ['A','B'].forEach(function(k){
-    var g = document.createElement('div');
-    g.className = 'girl' + (k === state.mom ? ' on' : '');
-    g.dataset.m = k;
-    g.innerHTML = '<span class="sel-mark">✓</span>' +
-      '<div class="nm">' + esc(MOMS[k].nm) + '</div>' +
-      '<div class="desc">' + esc(MOMS[k].desc) + '</div>' +
-      '<span class="tag">' + esc(MOMS[k].tag) + '</span>';
-    g.addEventListener('click', function(){
-      state.mom = k;
-      document.querySelectorAll('.girl').forEach(function(x){ x.classList.toggle('on', x.dataset.m === k); });
-      save(); refreshLive();
-    });
-    pair.appendChild(g);
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var momBtn = t.closest('#khk-mom-mei'); if (momBtn) { state.mom = 'mei'; paint(); return; }
+    var senBtn = t.closest('#khk-mom-sen'); if (senBtn) { state.mom = 'sen'; paint(); return; }
+    var stBtn = t.closest('.khk-stage'); if (stBtn) { state.stage = stBtn.getAttribute('data-sel'); paint(); return; }
+    var iqBtn = t.closest('.khk-iq'); if (iqBtn) { state.iq = Number(iqBtn.getAttribute('data-iq')); paint(); return; }
+    var apply = t.closest('#khk-apply'); if (apply) { applyOpening(); }
   });
-}
 
-/* ============ 阶段 chips 渲染 ============ */
-function renderChips(){
-  var box = byId('stage-chips'); box.innerHTML = '';
-  STAGES.forEach(function(s){
-    var c = document.createElement('span');
-    c.className = 'chip' + (s.key === state.st ? ' on' : '');
-    c.dataset.st = s.key;
-    c.textContent = s.short;
-    c.addEventListener('click', function(){ setStage(s.key, true); save(); });
-    box.appendChild(c);
-  });
-}
-
-/* ============ 记忆（A2） ============ */
-var state = { name:'', age:'', look:'', mom:'A', bro:false, dad:false, st:'s4', score:600 };
-function save(){
-  state.name = byId('f-name').value; state.age = byId('f-age').value; state.look = byId('f-look').value;
-  state.bro = byId('c-bro').classList.contains('on');
-  state.dad = byId('c-dad').classList.contains('on');
-  state.score = Number(byId('f-score').value);
-  try { localStorage.setItem(MEM_KEY, JSON.stringify(state)); } catch(e){}
-}
-function restore(){
-  var raw = null;
-  try { raw = JSON.parse(localStorage.getItem(MEM_KEY) || 'null'); } catch(e){}
-  if (!raw) { return; }
-  if (typeof raw.name === 'string') { state.name = raw.name; }
-  if (typeof raw.age === 'string') { state.age = raw.age; }
-  if (typeof raw.look === 'string') { state.look = raw.look; }
-  if (raw.mom === 'A' || raw.mom === 'B') { state.mom = raw.mom; }
-  state.bro = !!raw.bro; state.dad = !!raw.dad;
-  var stValid = STAGES.some(function(s){ return s.key === raw.st; });
-  if (stValid) { state.st = raw.st; }
-  var sc = clamp(Number(raw.score) || 0, 0, 750);
-  var stk = STAGES.find(function(s){ return s.key === state.st; });
-  state.score = clamp(sc, stk.min, stk.max);
-  byId('f-name').value = state.name; byId('f-age').value = state.age; byId('f-look').value = state.look;
-  document.querySelectorAll('.girl').forEach(function(x){ x.classList.toggle('on', x.dataset.m === state.mom); });
-  byId('c-bro').classList.toggle('on', state.bro);
-  byId('c-dad').classList.toggle('on', state.dad);
-  document.querySelectorAll('.chip[data-st]').forEach(function(x){ x.classList.toggle('on', x.dataset.st === state.st); });
-}
-
-function stageInfo(k){ return STAGES.find(function(s){ return s.key === k; }); }
-
-/* ============ 阶段与分数 ============ */
-function setStage(k, snap){
-  var info = stageInfo(k);
-  state.st = k;
-  document.querySelectorAll('.chip[data-st]').forEach(function(x){ x.classList.toggle('on', x.dataset.st === k); });
-  var sld = byId('f-score');
-  sld.min = info.min; sld.max = info.max;
-  var target = snap ? info.min : clamp(Number(sld.value) || info.min, info.min, info.max);
-  if (snap) { setNote('已按「' + info.n + '」最低门槛设为 ' + info.min + ' 分，可再拖动微调'); }
-  sld.value = target;
-  state.score = target;
-  paintScore();
-  paintBoard(info);
-  refreshLive();
-}
-function paintScore(){
-  var v = Number(byId('f-score').value);
-  byId('f-score-num').textContent = v + ' / 750';
-  byId('f-score-cap').textContent = '可滑范围：' + byId('f-score').min + ' – ' + byId('f-score').max + ' 分';
-}
-function paintBoard(info){
-  var ok = info.allow.map(function(x){ return '<span class="bd ok">✦ ' + esc(x) + '</span>'; }).join('');
-  var no = info.forbid.length
-    ? info.forbid.map(function(x){ return '<span class="bd no">✕ ' + esc(x) + '</span>'; }).join('')
-    : '<span class="bd none">— 无 —</span>';
-  byId('st-info').innerHTML =
-    '<div class="si-row"><span class="lab">可 以</span><span class="bds">' + ok + '</span></div>' +
-    '<div class="si-row"><span class="lab">不可以</span><span class="bds">' + no + '</span></div>';
-}
-
-/* ============ 实时组合条 ============ */
-function extraShort(){
-  if (state.bro && state.dad) { return '弟弟 + 爸爸'; }
-  if (state.bro) { return '弟弟'; }
-  if (state.dad) { return '爸爸'; }
-  return '仅母子';
-}
-function extraKey(){ return (state.bro&&state.dad)?'both':state.bro?'bro':state.dad?'dad':'none'; }
-function comboHead(){ return MOMS[state.mom].nm + ' · ' + extraShort() + ' · ' + stageInfo(state.st).n; }
-function slotOf(){ return SLOTS[state.mom][extraKey()]; }
-function refreshLive(){
-  var score = Number(byId('f-score').value);
-  var el = byId('live');
-  el.classList.remove('hidden');
-  el.innerHTML = '当前组合：<b>' + esc(MOMS[state.mom].nm) + '</b> · ' + esc(extraShort()) +
-    ' · <b>' + esc(stageInfo(state.st).n) + '</b> · 成绩 <b>' + score + '</b>（槽位 ' + slotOf() + '）';
-}
-
-/* ============ 流程导航（纯文档流：仅切换当前屏 display） ============ */
-var idx = 0;
-var scr = document.querySelectorAll('.scr');
-function stepsDraw(){
-  var el = byId('steps'); el.innerHTML = '';
-  for (var i = 0; i < scr.length; i++){
-    var d = document.createElement('div');
-    d.className = 'stepdot' + (i === idx ? ' on' : i < idx ? ' done' : '');
-    d.textContent = String(i + 1);
-    el.appendChild(d);
-    if (i < scr.length - 1){
-      var seg = document.createElement('div');
-      seg.className = 'stseg' + (i < idx ? ' done' : '');
-      el.appendChild(seg);
-    }
+  function buildStatData() {
+    var st = stageMap[state.stage], mm = momMap[state.mom];
+    var iq = Number(state.iq);
+    return {
+      妈妈: {
+        姓名: mm.name, 心里话: mm.thought,
+        乳头: { 状态: '粉嫩微挺', 短描写: '平时被大号罩杯严实包裹，此刻在薄布下透着隐约轮廓与温度。' },
+        小穴: { 状态: '紧闭干爽', 短描写: '被居家短裤包裹得严严实实，尚处于未开发的成熟人妻私密地带。' },
+        大腿: { 状态: '丰满紧致', 短描写: '白皙修长且富有肉感，蹲下时泛着成熟女性独有的圆润光泽。' }
+      },
+      user: {
+        姓名: 'user', 精力值: 100, 总成绩值: st.score,
+        智力值A: iq, D加成: 0.2, 零花钱: 0, 每日零花钱: 10, 最后领取日: 0,
+        奖励次数: 0, 索取次数: 0, 存储次数: 0, 奖励存储: []
+      },
+      时间: { 第几天: 1, 时刻: '夜晚' },
+      考试: { 状态: '无', 目标阶段: 1, 已通过阶段数: st.passed, 失败日: 0, 已通过考试列表: [] },
+      答题状态: '禁用'
+    };
   }
-  byId('stcap').textContent = 'STEP ' + (idx + 1) + ' / ' + scr.length + ' · ' + TITLES[idx];
-  byId('nav-prev').classList.toggle('hidden', idx === 0);
-  byId('nav-next').classList.toggle('hidden', idx === scr.length - 1);
-  byId('live').classList.toggle('hidden', idx === 0 || idx === scr.length - 1);
-  if (idx === scr.length - 1) { renderSum(); }
-}
-function go(n){
-  if (n < 0 || n >= scr.length || n === idx) { return; }
-  idx = n;
-  for (var i = 0; i < scr.length; i++){ scr[i].classList.toggle('in', i === idx); }
-  stepsDraw();
-  /* 让卡片顶部保持可见（非强制，失败也无妨） */
-  try {
-    var w = byId('note'); var t = w ? w.closest('.wrap') : null;
-    if (t && t.scrollIntoView) { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  } catch (e) {}
-}
 
-function renderSum(){
-  var s = byId('sum');
-  var score = Number(byId('f-score').value);
-  s.innerHTML =
-    '<div class="r"><span class="k">姓名</span><b>' + esc(byId('f-name').value || '待填') + '</b></div>' +
-    '<div class="r"><span class="k">年龄</span><b>' + esc(byId('f-age').value || '待填') + '</b></div>' +
-    '<div class="r"><span class="k">母亲风格</span><b>' + esc(MOMS[state.mom].nm) + '</b></div>' +
-    '<div class="r"><span class="k">加入角色</span><b>' + esc(extraShort()) + '</b></div>' +
-    '<div class="r"><span class="k">初始阶段</span><b>' + esc(stageInfo(state.st).n) + '</b></div>' +
-    '<div class="r"><span class="k">初始成绩</span><b>' + score + ' / 750</b></div>' +
-    '<div class="r"><span class="k">对应槽位</span><b>槽位 ' + slotOf() + '</b></div>';
-}
-
-/* ---------- 变量同步（跳转后写楼层 user 姓名/总成绩，含防覆盖重试） ---------- */
-function findWin(pred){
-  var w = window, depth = 0;
-  while (w && depth < 12) {
-    try { if (pred(w)) { return w; } } catch (e) {}
-    if (w === w.parent) { break; }
-    w = w.parent; depth++;
+  function emitEvents() {
+    try { if (typeof eventEmit === 'function') eventEmit('VARIABLE_UPDATE_ENDED'); } catch (e) {}
+    try { if (typeof window !== 'undefined' && typeof window.CustomEvent === 'function') window.dispatchEvent(new CustomEvent('VARIABLE_UPDATE_ENDED')); } catch (e) {}
+    try { if (typeof eventSource !== 'undefined' && eventSource && eventSource.emit) eventSource.emit('VARIABLE_UPDATE_ENDED', {}); } catch (e) {}
   }
-  return null;
-}
-function gl(name){
-  var w = findWin(function (x) { try { return typeof x[name] !== 'undefined'; } catch (e) { return false; } });
-  return w ? w[name] : undefined;
-}
 
-/* ============ 二次确认浮层 ============ */
-function openOv(){
-  var s = byId('ov-sum');
-  var score = Number(byId('f-score').value);
-  s.innerHTML =
-    '<div class="r"><span class="k">母亲风格</span><b>' + esc(MOMS[state.mom].nm) + '</b></div>' +
-    '<div class="r"><span class="k">加入角色</span><b>' + esc(extraShort()) + '</b></div>' +
-    '<div class="r"><span class="k">初始阶段</span><b>' + esc(stageInfo(state.st).n) + '</b></div>' +
-    '<div class="r"><span class="k">初始成绩</span><b>' + score + ' / 750</b></div>';
-  byId('ov-msg').textContent = '';
-  byId('ov').classList.add('open');
-}
-function closeOv(){ byId('ov').classList.remove('open'); }
-/* ---------- 主窗口变量写入/校验（不依赖楼层面板存活） ---------- */
-function topWin(){ var w = window; while (w && w.parent && w.parent !== w) { w = w.parent; } return w; }
-function buildOpenCmd(target, nameEsc, stIdx){
-  var mm = MOM_META[state.mom] || MOM_META.A;
-  var mmName = mm.name.replace(/['"\\]/g, '');
-  var mmVoice = mm.voice.replace(/['"\\]/g, '');
-  var c = "_.set('user.总成绩值', " + target + ");";
-  if (nameEsc) c += "_.set('user.姓名', '" + nameEsc + "');";
-  c += "_.set('妈妈.姓名', '" + mmName + "');_.set('妈妈.心里话', '" + mmVoice + "');";
-  return c;
-}
-/* 兜底写：走酒馆助手 updateVariablesWith（Mvu 未就绪时也可用） */
-function writeFallback(target, name){
-  try {
-    var t = topWin();
-    if (!t) return false;
-    var setter = null;
-    if (typeof t.updateVariablesWith === 'function') setter = t.updateVariablesWith;
-    else if (t.TavernHelper && typeof t.TavernHelper.updateVariablesWith === 'function') setter = t.TavernHelper.updateVariablesWith.bind(t.TavernHelper);
-    if (!setter) return false;
-    var nameEsc = String(name || '').replace(/['"\\]/g, '');
-    var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
-    function mutate(v){
-      v = v || {};
-      var root = (v.stat_data && v.stat_data.user) ? v.stat_data : (v.stat_data ? v.stat_data : v);
-      if (!root.user) root.user = {};
-      if (nameEsc) root.user['姓名'] = nameEsc;
-      root.user['总成绩值'] = clamp(Math.round(target) || 230, 0, 750);
-      try { if (!root['考试']) root['考试'] = {}; root['考试']['已通过阶段数'] = stIdx; root['考试']['状态'] = '禁用'; root['考试']['目标阶段'] = ''; root['考试']['失败标记天'] = 0; } catch (e) {}
-      return v;
-    }
-    try { setter(mutate, { type: 'message', message_id: 0 }); } catch (e) {}
-    try { setter(mutate, { type: 'message', message_id: 'latest' }); } catch (e) {}
-    return true;
-  } catch (e) { return false; }
-}
-/* 权威管道写 message 0 与 latest（skill: 状态栏读的楼层与 latest 都要写）；Mvu 未就绪则走 updateVariablesWith 兜底 */
-function writeMainOnce(target, name){
-  var M = gl('Mvu');
-  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') {
-    return writeFallback(target, name);
-  }
-  var nameEsc = String(name || '').replace(/['"\\]/g, '');
-  var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
-  var cmd = buildOpenCmd(target, nameEsc, stIdx);
-  ['latest', 0].forEach(function (mid) {
+  async function applyOpening() {
+    var sd = buildStatData();
+    var ok = false;
     try {
-      var old = M.getMvuData({ type: 'message', message_id: mid });
-      if (!old) return;
-      M.parseMessage(cmd, old).then(function (nw) {
-        if (nw) { try { M.replaceMvuData(nw, { type: 'message', message_id: mid }); } catch (e) {} }
-      }).catch(function () {});
-    } catch (e) {}
-  });
-  return true;
-}
-/* 切前写并等待 parseMessage/replaceMvuData 完成（顺序：写 → 再切） */
-function writeMain(target, name){
-  var M = gl('Mvu');
-  if (!M || typeof M.parseMessage !== 'function' || typeof M.getMvuData !== 'function' || typeof M.replaceMvuData !== 'function') {
-    return Promise.resolve(writeFallback(target, name));
-  }
-  var nameEsc = String(name || '').replace(/['"\\]/g, '');
-  var stIdx = (function () { var i = STAGES.findIndex(function (s) { return s.key === state.st; }); return i < 0 ? 0 : i; })();
-  var cmd = buildOpenCmd(target, nameEsc, stIdx);
-  var work = ['latest', 0].map(function (mid) {
+      if (typeof updateVariablesWith === 'function') {
+        await updateVariablesWith(function (v) { v.stat_data = JSON.parse(JSON.stringify(sd)); return v; }, { type: 'chat' });
+        if (typeof getLastMessageId === 'function') {
+          var mid = getLastMessageId();
+          if (mid !== null && mid !== undefined && mid !== -1) {
+            await updateVariablesWith(function (v) { v.stat_data = JSON.parse(JSON.stringify(sd)); return v; }, { type: 'message', message_id: mid });
+          }
+        }
+        ok = true;
+      }
+    } catch (e) { console.log('[开局] updateVariablesWith fail', e); }
     try {
-      var old = M.getMvuData({ type: 'message', message_id: mid });
-      if (!old) return Promise.resolve(false);
-      return M.parseMessage(cmd, old).then(function (nw) {
-        if (!nw) return false;
-        try { var r = M.replaceMvuData(nw, { type: 'message', message_id: mid }); if (r && typeof r.then === 'function') return r.then(function(){ return true; }).catch(function(){ return false; }); return true; } catch (e) { return false; }
-      }).catch(function () { return false; });
-    } catch (e) { return Promise.resolve(false); }
-  });
-  return Promise.all(work).then(function (rs) { return rs.indexOf(true) >= 0; });
-}
-/* 读取当前 message/latest 楼层 user.总成绩值（用于守护判定）；Mvu 未就绪时读 getAllVariables */
-function readUserScoreNow(){
-  var M = gl('Mvu');
-  if (M) {
-    var out = null;
-    ['latest', 0].forEach(function (mid) {
-      if (out !== null) return;
-      try {
-        var d = M.getMvuData({ type: 'message', message_id: mid });
-        var sd = d && d.stat_data ? d.stat_data : d;
-        if (sd && sd.user) { var v = sd.user['总成绩值']; if (v !== undefined && v !== null) out = v; }
-      } catch (e) {}
-    });
-    if (out !== null) return out;
-  }
-  try {
-    var t = topWin();
-    var av = (t && typeof t.getAllVariables === 'function') ? t.getAllVariables()
-      : (typeof window.getAllVariables === 'function' ? window.getAllVariables() : null);
-    if (av) {
-      if (av.stat_data && av.stat_data.user && av.stat_data.user['总成绩值'] !== undefined) return av.stat_data.user['总成绩值'];
-      if (av.user && av.user['总成绩值'] !== undefined) return av.user['总成绩值'];
+      var win = window;
+      if (win.Mvu && typeof win.Mvu.getMvuData === 'function' && typeof win.Mvu.replaceMvuData === 'function') {
+        var cur = win.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        var payload = (cur && typeof cur === 'object') ? cur : {};
+        payload.stat_data = JSON.parse(JSON.stringify(sd));
+        await win.Mvu.replaceMvuData(payload, { type: 'message', message_id: 'latest' });
+        ok = true;
+      } else if (win.Mvu && typeof win.Mvu.setMvuData === 'function' && typeof win.getCurrentMessageId === 'function') {
+        win.Mvu.setMvuData({ type: 'message', message_id: win.getCurrentMessageId(), data: { stat_data: sd } });
+        ok = true;
+      }
+    } catch (e) { console.log('[开局] Mvu write fail', e); }
+    emitEvents();
+    var b = document.getElementById('khk-apply');
+    if (b) {
+      b.textContent = '✓ 已写入开局变量';
+      setTimeout(function () { b.textContent = '✓ 确认进入当前开局'; }, 2200);
     }
-  } catch (e) {}
-  return null;
-}
-/* 切后守护：挂在主 window（可跨切换存活）。若楼层被重建回 schema 默认(prefault 230)则反复写回，直至读到所选分数 */
-function armSyncGuard(target, name){
-  try {
-    var tp = topWin();
-    if (!tp) return;
-    if (tp.__openGuard) { clearInterval(tp.__openGuard); tp.__openGuard = null; }
-    var tries = 0, last = 0;
-    var id = setInterval(function () {
-      tries++;
-      var cur = null;
-      try { cur = readUserScoreNow(); } catch (e) {}
-      if (cur !== null && Math.round(Number(cur)) === Math.round(target)) {
-        clearInterval(id); tp.__openGuard = null;
-        try { notify('✓ 已确认状态栏成绩 = ' + Math.round(target)); } catch (e) {}
-        return;
-      }
-      if (tries > 18) {
-        clearInterval(id); tp.__openGuard = null;
-        try { notify('⚠ 成绩同步未确认（当前 ' + (cur === null ? '无数据' : cur) + '），发一条任意消息触发刷新后再看状态栏', true); } catch (e) {}
-        return;
-      }
-      var now = Date.now();
-      if (now - last > 600) { last = now; try { writeMainOnce(target, name); } catch (e) {} }
-    }, 900);
-    tp.__openGuard = id;
-  } catch (e) {}
-}
-/* ---------- 主窗口变量写入（applyMain 保持旧签名：切前写一次） ---------- */
-function applyMain(score, name){
-  writeMainOnce(clamp(Math.round(score) || 230, 0, 750), name);
-  return true;
-}
-function finish(){
-  var slot = slotOf();
-  var name = byId('f-name').value.trim();
-  var score = Number(byId('f-score').value);
-  var target = clamp(Math.round(score) || 230, 0, 750);
-  var bridge = globalThis.MyCardBridgeV1 || {};
-  var doSwitch = null;
-  if (typeof bridge.selectGreeting === 'function') { doSwitch = function () { return bridge.selectGreeting(slot); }; }
-  else if (typeof bridge.switchWithText === 'function') { doSwitch = function () { return bridge.switchWithText(slot, ''); }; }
-  if (!doSwitch) {
-    var msg = '预览模式：确认将进入「' + comboHead() + '」对应槽位 ' + slot + '（接入酒馆后自动跳转并同步变量）';
-    byId('ov-msg').textContent = msg;
-    setTimeout(closeOv, 1600);
-    return;
+    if (!ok) { console.log('[开局] 未找到可用写入通道, 请确认已加载 MVU/变量扩展'); }
   }
-  function doneOk(){
-    notify('✓ 已切换到槽位 ' + slot + ' 的开场白（初始成绩 ' + target + ' 已写入）');
-    byId('ov-msg').textContent = '✓ 已切换到槽位 ' + slot + ' 的开场白';
-    setTimeout(closeOv, 1000);
-    /* ③ 切后守护：若该 MVU/ST 版本 swipe 后重建楼层回默认，则自动写回所选分数 */
-    armSyncGuard(target, name);
-  }
-  function fail(e){
-    var em = e && e.message ? e.message : '切换失败';
-    byId('ov-msg').textContent = '⚠ ' + em;
-    notify('⚠ ' + em, true);
-  }
-  /* ① 切前写（等待真正落盘）→ ② 再切 swipe（skill 顺序不可换） */
-  var pre = (typeof writeMain === 'function') ? writeMain(target, name) : Promise.resolve(true);
-  pre.then(function () {
-    try { doSwitch().then(doneOk).catch(fail); } catch (e) { fail(e); }
-  }).catch(function (e) { fail(e); });
-}
 
-/* ============ 事件绑定与启动 ============ */
-(function bind(){
-  ['f-name','f-age','f-look'].forEach(function(id){
-    byId(id).addEventListener('input', function(){ if (this.value) { this.classList.remove('ph'); } save(); });
-  });
-  byId('c-bro').addEventListener('click', function(){ state.bro = !state.bro; this.classList.toggle('on', state.bro); save(); refreshLive(); });
-  byId('c-dad').addEventListener('click', function(){ state.dad = !state.dad; this.classList.toggle('on', state.dad); save(); refreshLive(); });
-  var fscore = byId('f-score');
-  fscore.addEventListener('input', function(){ paintScore(); refreshLive(); });
-  fscore.addEventListener('change', function(){ save(); setNote(''); });
-
-  byId('begin').addEventListener('click', function(){ go(1); });
-  byId('nav-prev').addEventListener('click', function(){ go(Math.max(0, idx - 1)); });
-  byId('nav-next').addEventListener('click', function(){ go(idx + 1); });
-  byId('go').addEventListener('click', function(){ save(); openOv(); });
-  byId('ov-no').addEventListener('click', closeOv);
-  byId('ov-yes').addEventListener('click', finish);
-
-  renderMoms();
-  renderChips();
-  restore();
-  document.querySelectorAll('.girl').forEach(function(x){ x.classList.toggle('on', x.dataset.m === state.mom); });
-  byId('c-bro').classList.toggle('on', state.bro);
-  byId('c-dad').classList.toggle('on', state.dad);
-  setStage(state.st, false);
-  stepsDraw();
+  paint();
 })();
 </script>
-</body>
-</html>
