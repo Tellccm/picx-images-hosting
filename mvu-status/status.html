@@ -233,7 +233,7 @@ html[data-theme="d"], .tk-status[data-theme="d"], .tk-status:has(#tk-d:checked){
 
   <div class="tk-divider tk-hidden" id="div-voices">家人的目光</div>
 
-  <div class="tk-voices">
+  <div class="tk-voices tk-hidden">
     <div class="tk-voice bro tk-hidden" id="row-bro">
       <span class="who bro">👦 弟弟</span>
       <span class="txt" id="val-bro-voice">（悄悄探出半个脑袋，看着你们这边，脸红红的却移不开眼。）</span>
@@ -351,9 +351,11 @@ html[data-theme="d"], .tk-status[data-theme="d"], .tk-status:has(#tk-d:checked){
     hide('row-fa', !hasFa);
     if (hasBro) set('val-bro-voice', getPath(statData, 'user.弟弟心声', '（悄悄探出半个脑袋，看着你们这边，脸红红的却移不开眼。）'));
     if (hasFa) set('val-fa-voice', getPath(statData, 'user.父亲心声', '（在客厅安静地喝着茶，丝毫没留意屋里的动静。）'));
-    /* 若无家人, 隐藏整个分栏(divider + voices 容器内空行) */
+    /* 若无家人, 隐藏整个分栏(divider + voices 容器) */
     var divider = $id('div-voices');
     if (divider) { if (hasBro || hasFa) divider.classList.remove('tk-hidden'); else divider.classList.add('tk-hidden'); }
+    var voices = tkDoc().querySelector('.tk-voices');
+    if (voices) { if (hasBro || hasFa) voices.classList.remove('tk-hidden'); else voices.classList.add('tk-hidden'); }
   }
 
   async function init() {
