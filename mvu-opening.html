@@ -1,8 +1,9 @@
 <!-- ============================================================
-     《什么？！又考好了？…》开局选择器前端 · 玩法中心兼容版
-     (黄游风格 · 依据玩法中心引擎 v1.x 机制定制)
-     用法: 放入你托管开局页的位置, 并把卡内 [MVU开局选择] 正则的
-     replaceString 里的 $('body').load('...') 指向本文件。
+     《什么？！又考好了？…》开局选择器前端 v2（玩法中心兼容）
+     黄游风格 · 依据玩法中心引擎:
+     做题只涨智力A; 成绩只由"随时可申请考试"结算(一次20题×37.5×智力A,
+     封顶750, 成绩=本次实际结果可升可降, 单场向上最多晋一档)
+     开局: 母亲二选一 + 弟弟/父亲开关(组合决定本局家人与主线) + 智力起步(数值调小)
      ============================================================ -->
 <div id="khk-opening" style="font-family:'PingFang SC','Microsoft YaHei','Songti SC',serif; max-width:680px; margin:10px auto; color:#f6e3cf; background:
   radial-gradient(760px 340px at 84% -6%, rgba(224,112,122,.20), transparent 60%),
@@ -19,11 +20,11 @@
   <div style="padding:14px 18px 6px;">
     <div style="font-size:13px; font-weight:700; letter-spacing:.18em; color:#e8b84c; margin-bottom:8px;">一 · 选择扮演的母亲</div>
     <div id="khk-mom-row" style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button id="khk-mom-mei" type="button" class="khk-opt" style="flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:2px solid rgba(207,170,99,.7);background:#331e1e;color:#f6e3cf;cursor:pointer;text-align:left;">
+      <button id="khk-mom-mei" type="button" style="flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:2px solid rgba(207,170,99,.7);background:#331e1e;color:#f6e3cf;cursor:pointer;text-align:left;">
         <div style="font-size:14px;font-weight:700;">🌸 中岛美咲子</div>
         <div style="font-size:11px;color:#c4a58e;">腼腆羞恼人妻 · 脸红嘴硬、不敢直视</div>
       </button>
-      <button id="khk-mom-sen" type="button" class="khk-opt" style="flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:2px solid rgba(148,163,184,0);background:#241416;color:#c4a58e;cursor:pointer;text-align:left;">
+      <button id="khk-mom-sen" type="button" style="flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:2px solid rgba(148,163,184,0);background:#241416;color:#c4a58e;cursor:pointer;text-align:left;">
         <div style="font-size:14px;font-weight:700;">🥀 森川千寻</div>
         <div style="font-size:11px;color:#9a7a63;">毒舌清冷大小姐 · 好面子、端架子</div>
       </button>
@@ -31,50 +32,41 @@
   </div>
 
   <div style="padding:10px 18px 6px;">
-    <div style="font-size:13px; font-weight:700; letter-spacing:.18em; color:#e8b84c; margin-bottom:8px;">二 · 选择起步阶段（成绩每场考试最多晋一档，档位越高开局越高）</div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;" id="khk-stage-row">
-      <button type="button" class="khk-stage" data-sel="stage1" style="border:2px solid rgba(207,170,99,.55);background:#331e1e;color:#f6e3cf;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
-        <div style="font-size:13px;font-weight:700;">阶段一 · 手交期</div>
-        <div style="font-size:10.5px;color:#c4a58e;">起始成绩 230 · 从零开始</div>
-      </button>
-      <button type="button" class="khk-stage" data-sel="stage2" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
-        <div style="font-size:13px;font-weight:700;">阶段二 · 口交期</div>
-        <div style="font-size:10.5px;color:#9a7a63;">起始成绩 300 · 已过阶段一</div>
-      </button>
-      <button type="button" class="khk-stage" data-sel="stage3" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
-        <div style="font-size:13px;font-weight:700;">阶段三 · 乳交期</div>
-        <div style="font-size:10.5px;color:#9a7a63;">起始成绩 450 · 已过阶段二</div>
-      </button>
-      <button type="button" class="khk-stage" data-sel="stage4" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;">
-        <div style="font-size:13px;font-weight:700;">阶段四 · 完全接纳</div>
-        <div style="font-size:10.5px;color:#9a7a63;">起始成绩 600 · 已过阶段三</div>
-      </button>
+    <div style="font-size:13px; font-weight:700; letter-spacing:.18em; color:#e8b84c; margin-bottom:6px;">二 · 本局家人（弟弟 / 父亲，可都选、都不选或任选其一）</div>
+    <div id="khk-combo-preset" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+      <button type="button" class="khk-preset" data-p="00" style="border:2px solid rgba(207,170,99,.55);background:#331e1e;color:#f6e3cf;border-radius:16px;padding:4px 10px;font-size:11px;cursor:pointer;">只有母子</button>
+      <button type="button" class="khk-preset" data-p="10" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:16px;padding:4px 10px;font-size:11px;cursor:pointer;">+弟弟(隐线)</button>
+      <button type="button" class="khk-preset" data-p="01" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:16px;padding:4px 10px;font-size:11px;cursor:pointer;">+父亲(NTL)</button>
+      <button type="button" class="khk-preset" data-p="11" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:16px;padding:4px 10px;font-size:11px;cursor:pointer;">弟弟+父亲(双隐线)</button>
     </div>
+    <div id="khk-family-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button id="khk-fam-bro" type="button" style="flex:1;min-width:150px;padding:8px 10px;border-radius:12px;border:2px solid rgba(207,170,99,.55);background:#331e1e;color:#f6e3cf;cursor:pointer;text-align:center;font-weight:700;">👦 弟弟 · 冈坂次郎（本局加入）</button>
+      <button id="khk-fam-fa" type="button" style="flex:1;min-width:150px;padding:8px 10px;border-radius:12px;border:2px solid rgba(148,163,184,0);background:#241416;color:#c4a58e;cursor:pointer;text-align:center;font-weight:700;">👨 父亲 · 冈坂日川（本局不加入）</button>
+    </div>
+    <div style="font-size:10.5px;color:#9a7a63;margin-top:6px;">组合决定开局主线：只有母子=密约日常；加弟弟=瞒着弟弟的隐线；加父亲=瞒着丈夫的背德线；两个都加=全家同住·双重隐线。未勾选的家人本局一律不存在。</div>
   </div>
 
   <div style="padding:10px 18px;">
-    <div style="font-size:12px; font-weight:700; letter-spacing:.15em; color:#e8b84c; margin:8px 0 6px;">三 · 智力加成起步（A，越高考试结算越多）</div>
+    <div style="font-size:12px; font-weight:700; letter-spacing:.15em; color:#e8b84c; margin:8px 0 6px;">三 · 智力加成起步（A · 数值调小，越高考试结算越多）</div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;" id="khk-iq-row">
       <button type="button" class="khk-iq" data-iq="1.0" style="border:2px solid rgba(207,170,99,.55);background:#331e1e;color:#f6e3cf;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.0（标准）</button>
-      <button type="button" class="khk-iq" data-iq="1.2" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.2（机灵）</button>
-      <button type="button" class="khk-iq" data-iq="1.5" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.5（聪明）</button>
-      <button type="button" class="khk-iq" data-iq="2.0" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">2.0（天才）</button>
+      <button type="button" class="khk-iq" data-iq="1.05" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.05（机灵）</button>
+      <button type="button" class="khk-iq" data-iq="1.1" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.1（聪明）</button>
+      <button type="button" class="khk-iq" data-iq="1.2" style="border:2px solid rgba(207,170,99,.2);background:#241416;color:#c4a58e;border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;">1.2（尖子生）</button>
     </div>
   </div>
 
-  <!-- 当前选择确认 -->
   <div style="padding:10px 18px 4px;">
     <div style="font-weight:700; font-size:12px; color:#e8b84c; letter-spacing:.15em; margin-bottom:6px;">📌 生效初始状态</div>
-    <div id="khk-summary" style="background:rgba(20,10,12,.55); border:1px solid rgba(207,170,99,.35); border-radius:10px; padding:9px 12px; font-family:ui-monospace,Consolas,monospace; font-size:11.5px; line-height:1.7; color:#dfc6ad;">
-      妈妈：中岛美咲子 · 阶段一 · 成绩 230/750 · 智力A 1.0 · 精力 100
-    </div>
+    <div id="khk-summary" style="background:rgba(20,10,12,.55); border:1px solid rgba(207,170,99,.35); border-radius:10px; padding:9px 12px; font-family:ui-monospace,Consolas,monospace; font-size:11.5px; line-height:1.7; color:#dfc6ad;">妈妈：中岛美咲子 · 家庭：只有母子 · 智力A 1.0 · 成绩 230/750 · 精力 100</div>
     <details style="margin:8px 0 2px;">
       <summary style="cursor:pointer; font-size:11.5px; color:#e8b84c;">▸ 玩法速览（做题 / 考试 / 商城）</summary>
       <div style="font-size:11px; line-height:1.8; color:#c4a58e; margin-top:4px;">
         · 做题：每题扣10精力；答对智力A +0.02（成绩分不变，成绩只靠考试提升），随时结算可存/取阶段奖励券。<br>
-        · 考试：随时可【申请考试】（消耗30精力，当日限一次）：一次20题、题库每次不同且打乱、每题37.5分；总成绩 = 答对数×37.5×智力A（智力越高加成越高，封顶750）；每场最多晋一档（超出下一档上限的部分不结算，次日再申请继续升）；考完按分数进入阶段并产出该阶段奖励券。<br>
+        · 考试：随时可【申请考试】（消耗30精力，当日限一次）：一次20题、题库每次不同且打乱、每题37.5分；总成绩 = 答对数×37.5×智力A（智力越高加成越高，封顶750）；<b style="color:#e8b84c">成绩=每场实际结果：考得好就升、发挥不佳会回落，阶段随成绩走</b>；单场向上最多晋一档；考完按分数进入阶段并产出该阶段奖励券。<br>
         · 商城：每日领零花钱（成绩越高越多），买智力药水（提升A）；作弊D当前版本暂不参与结算。<br>
-        · 精力只在进入新的一天时恢复满。
+        · 精力只在进入新的一天时恢复满。<br>
+        · 家庭配置：本局只按开局勾选登场（未勾选的弟弟/父亲一律不存在）。
       </div>
     </details>
   </div>
@@ -90,61 +82,68 @@
 <script>
 (function () {
   'use strict';
-  var stageMap = {
-    stage1: { name: '阶段一 · 手交期', score: 230, passed: 0 },
-    stage2: { name: '阶段二 · 口交期', score: 300, passed: 1 },
-    stage3: { name: '阶段三 · 乳交期', score: 450, passed: 2 },
-    stage4: { name: '阶段四 · 完全接纳期', score: 600, passed: 3 }
-  };
   var momMap = {
-    mei:  { name: '中岛美咲子', thought: '这孩子……要是不管他...肯定会垮掉的吧...就仅限这一次...就这一次...', label: '🌸 中岛美咲子' },
-    sen:  { name: '森川千寻',   thought: '让这个不争气的儿子配得上森川家的荣光……但怎么最后会变成这样…', label: '🥀 森川千寻' }
+    mei: { name: '中岛美咲子', thought: '这孩子……要是不管他...肯定会垮掉的吧...就仅限这一次...就这一次...', label: '🌸 中岛美咲子' },
+    sen: { name: '森川千寻',   thought: '让这个不争气的儿子配得上森川家的荣光……但怎么最后会变成这样…', label: '🥀 森川千寻' }
   };
-
-  var state = { mom: 'mei', stage: 'stage1', iq: 1.0 };
+  var comboMap = {
+    '00': '只有母子 · 密约暗线（纯私密日常）',
+    '10': '母子 + 弟弟 · 瞒着弟弟的隐线',
+    '01': '母子 + 父亲 · 瞒着丈夫的背德线（NTL）',
+    '11': '全家同住 · 双重隐线（弟弟隐奸 + 父亲背德）'
+  };
+  var state = { mom: 'mei', bro: false, fa: false, iq: 1.0 };
 
   function paint() {
-    var i, els;
-    els = document.querySelectorAll('#khk-mom-row .khk-opt');
+    var i, els, active;
+    els = document.querySelectorAll('#khk-mom-row button');
     for (i = 0; i < els.length; i++) {
-      var active = els[i].id === ('khk-mom-' + (state.mom === 'mei' ? 'mei' : 'sen'));
+      active = els[i].id === (state.mom === 'mei' ? 'khk-mom-mei' : 'khk-mom-sen');
       els[i].style.borderColor = active ? 'rgba(207,170,99,.7)' : 'rgba(148,163,184,0)';
       els[i].style.background = active ? '#331e1e' : '#241416';
       els[i].style.color = active ? '#f6e3cf' : '#c4a58e';
     }
-    els = document.querySelectorAll('.khk-stage');
-    for (i = 0; i < els.length; i++) {
-      var a2 = els[i].getAttribute('data-sel') === state.stage;
-      els[i].style.borderColor = a2 ? 'rgba(207,170,99,.55)' : 'rgba(207,170,99,.2)';
-      els[i].style.background = a2 ? '#331e1e' : '#241416';
-      els[i].style.color = a2 ? '#f6e3cf' : '#c4a58e';
-    }
+    setFamBtn('khk-fam-bro', state.bro, '弟弟');
+    setFamBtn('khk-fam-fa', state.fa, '父亲');
     els = document.querySelectorAll('.khk-iq');
     for (i = 0; i < els.length; i++) {
-      var a3 = Number(els[i].getAttribute('data-iq')) === Number(state.iq);
-      els[i].style.borderColor = a3 ? 'rgba(207,170,99,.55)' : 'rgba(207,170,99,.2)';
-      els[i].style.background = a3 ? '#331e1e' : '#241416';
-      els[i].style.color = a3 ? '#f6e3cf' : '#c4a58e';
+      active = Number(els[i].getAttribute('data-iq')) === Number(state.iq);
+      els[i].style.borderColor = active ? 'rgba(207,170,99,.55)' : 'rgba(207,170,99,.2)';
+      els[i].style.background = active ? '#331e1e' : '#241416';
+      els[i].style.color = active ? '#f6e3cf' : '#c4a58e';
     }
     var sm = document.getElementById('khk-summary');
     if (sm) {
-      var st = stageMap[state.stage], mm = momMap[state.mom];
-      sm.innerHTML = '妈妈：' + mm.name + ' · ' + st.name + '<br>起始成绩 ' + st.score + '/750 · 智力A ' + state.iq + ' · 精力 100 · 第1天';
+      var mm = momMap[state.mom];
+      sm.innerHTML = '妈妈：' + mm.name + '<br>家庭：' + comboMap[(state.bro ? '1' : '0') + (state.fa ? '1' : '0')] +
+        '<br>家庭配置：弟弟:' + (state.bro ? '有' : '无') + '，父亲:' + (state.fa ? '有' : '无') +
+        '<br>智力A ' + state.iq + ' · 成绩 230/750 · 精力 100 · 第1天';
     }
+  }
+  function setFamBtn(id, on, label) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.borderColor = on ? 'rgba(207,170,99,.55)' : 'rgba(148,163,184,0)';
+    el.style.background = on ? '#331e1e' : '#241416';
+    el.style.color = on ? '#f6e3cf' : '#c4a58e';
+    el.textContent = (label === '弟弟' ? '👦 弟弟 · 冈坂次郎' : '👨 父亲 · 冈坂日川') + '（本局' + (on ? '加入' : '不加入') + '）';
   }
 
   document.addEventListener('click', function (e) {
     var t = e.target;
     if (!t || !t.closest) return;
-    var momBtn = t.closest('#khk-mom-mei'); if (momBtn) { state.mom = 'mei'; paint(); return; }
-    var senBtn = t.closest('#khk-mom-sen'); if (senBtn) { state.mom = 'sen'; paint(); return; }
-    var stBtn = t.closest('.khk-stage'); if (stBtn) { state.stage = stBtn.getAttribute('data-sel'); paint(); return; }
+    if (t.closest('#khk-mom-mei')) { state.mom = 'mei'; paint(); return; }
+    if (t.closest('#khk-mom-sen')) { state.mom = 'sen'; paint(); return; }
+    if (t.closest('#khk-fam-bro')) { state.bro = !state.bro; paint(); return; }
+    if (t.closest('#khk-fam-fa')) { state.fa = !state.fa; paint(); return; }
+    var pre = t.closest('.khk-preset');
+    if (pre) { state.bro = pre.getAttribute('data-p').charAt(0) === '1'; state.fa = pre.getAttribute('data-p').charAt(1) === '1'; paint(); return; }
     var iqBtn = t.closest('.khk-iq'); if (iqBtn) { state.iq = Number(iqBtn.getAttribute('data-iq')); paint(); return; }
-    var apply = t.closest('#khk-apply'); if (apply) { applyOpening(); }
+    if (t.closest('#khk-apply')) { applyOpening(); }
   });
 
   function buildStatData() {
-    var st = stageMap[state.stage], mm = momMap[state.mom];
+    var mm = momMap[state.mom];
     var iq = Number(state.iq);
     return {
       妈妈: {
@@ -154,12 +153,13 @@
         大腿: { 状态: '丰满紧致', 短描写: '白皙修长且富有肉感，蹲下时泛着成熟女性独有的圆润光泽。' }
       },
       user: {
-        姓名: 'user', 精力值: 100, 总成绩值: st.score,
+        姓名: 'user', 精力值: 100, 总成绩值: 230,
         智力值A: iq, D加成: 0.2, 零花钱: 0, 每日零花钱: 10, 最后领取日: 0,
-        奖励次数: 0, 索取次数: 0, 存储次数: 0, 奖励存储: []
+        奖励次数: 0, 索取次数: 0, 存储次数: 0, 奖励存储: [],
+        家庭配置: '弟弟:' + (state.bro ? '有' : '无') + ',父亲:' + (state.fa ? '有' : '无')
       },
       时间: { 第几天: 1, 时刻: '夜晚' },
-      考试: { 状态: '无', 目标阶段: 1, 已通过阶段数: st.passed, 失败日: 0, 已通过考试列表: [] },
+      考试: { 状态: '无', 目标阶段: 1, 已通过阶段数: 0, 失败日: 0, 已通过考试列表: [] },
       答题状态: '禁用'
     };
   }
