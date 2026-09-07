@@ -92,7 +92,22 @@
     '01': '母子 + 父亲 · 瞒着丈夫的背德线（NTL）',
     '11': '全家同住 · 双重隐线（弟弟隐奸 + 父亲背德）'
   };
+  var idxMap = { mei00:1, sen00:2, mei10:3, mei01:4, mei11:5, sen10:6, sen01:7, sen11:8 };
   var state = { mom: 'mei', bro: false, fa: false, iq: 1.0 };
+
+  async function selectGreetingBridge(swipeId) {
+    var index = Number(swipeId);
+    if (isNaN(index) || index < 1) throw new Error('开场编号无效');
+    function scope(name){ var cs=[window]; try{ if(window.parent&&window.parent!==window) cs.push(window.parent);}catch(e){} try{ if(window.top&&!cs.includes(window.top)) cs.push(window.top);}catch(e){} for(var k=0;k<cs.length;k++){ try{ if(cs[k]&&cs[k][name]!==undefined) return cs[k][name]; }catch(e){} } return undefined; }
+    function helperCall(name){ var h=scope('TavernHelper'); if(h&&typeof h[name]==='function') return h[name].bind(h); var d=scope(name); return typeof d==='function'?d:null; }
+    var getMessages=helperCall('getChatMessages');
+    var setMessage=helperCall('setChatMessage');
+    if(!getMessages||!setMessage) throw new Error('当前运行环境不支持开场切换(需酒馆+TavernHelper)');
+    var messages=await getMessages('0',{include_swipes:true});
+    var first=messages&&messages[0];
+    if(!first||!Array.isArray(first.swipes)||first.swipes[index]==null) throw new Error('所选开场不存在');
+    await setMessage(String(first.swipes[index]),0,{swipe_id:index,refresh:'display_and_render_current'});
+  }
 
   function paint() {
     var i, els, active;
@@ -200,9 +215,15 @@
     } catch (e) { console.log('[开局] Mvu write fail', e); }
     emitEvents();
     var b = document.getElementById('khk-apply');
-    if (b) {
-      b.textContent = '✓ 已写入开局变量';
-      setTimeout(function () { b.textContent = '✓ 确认进入当前开局'; }, 2200);
+    if (b) b.textContent = '✓ 已写入变量，正在进入开局……';
+    var key = state.mom + (state.bro ? '1' : '0') + (state.fa ? '1' : '0');
+    var idx = idxMap[key] || 1;
+    try {
+      await selectGreetingBridge(idx);
+      if (b) { b.textContent = '✅ 已进入对应开局'; setTimeout(function(){},400); }
+    } catch (e2) {
+      console.log('[开局] 自动进入失败(需酒馆+TavernHelper):', e2);
+      if (b) { b.textContent = '⚠️ 变量已写入，但自动进入开场失败(请在酒馆内使用)'; setTimeout(function(){ b.textContent='✓ 确认进入当前开局'; }, 2600); }
     }
     if (!ok) { console.log('[开局] 未找到可用写入通道, 请确认已加载 MVU/变量扩展'); }
   }
