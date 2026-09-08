@@ -37,9 +37,14 @@ global.MaoNiangCardBridgeV2 = Object.freeze({ version: 2, selectGreeting });
 :root{
   --ink:#4a373a; --muted:#8c6a70; --faint:#cbb0b5; --accent:#ff6b8b; --deep:#ff4d79;
   --serif:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
-  /* 角色主题色 */
-  --xue-ink:#5b6470; --xue-accent:#9fb6c8; --xue-soft:rgba(190,207,219,.18);
-  --yi-ink:#7a5040; --yi-accent:#5f9ec4; --yi-soft:rgba(95,158,196,.16);
+  /* 雪球：冷银 + 浅金（猫瞳金） */
+  --xue-ink:#4a5a6b; --xue-accent:#c9a86a; --xue-bg:linear-gradient(160deg,rgba(214,228,240,.5),rgba(236,234,232,.42));
+  --xue-brd:rgba(201,168,106,.4); --xue-glow:rgba(201,168,106,.18);
+  /* 依依：暖栗 + 水蓝（杏眼蓝） */
+  --yi-ink:#8a5a43; --yi-accent:#5f9ec4; --yi-bg:linear-gradient(160deg,rgba(243,214,192,.5),rgba(214,232,242,.4));
+  --yi-brd:rgba(95,158,196,.4); --yi-glow:rgba(95,158,196,.18);
+  /* 圣诞特殊开局 */
+  --xmas-accent:#d64545; --xmas-green:#2e8b57; --xmas-glow:rgba(214,69,69,.18);
   --glass:rgba(255,255,255,.62);
   --glass-brd:rgba(255,255,255,.75);
 }
@@ -82,25 +87,28 @@ body{
 .intro{padding:16px 18px;margin-top:12px;font-size:14px}
 .intro b{color:var(--accent);font-weight:600}
 
-/* 角色卡：主题色跟随 */
+/* 角色卡：主题色分离（雪球=冷银金瞳 / 依依=暖栗水蓝） */
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
 @media(max-width:520px){.duo{grid-template-columns:1fr}}
-.char{padding:12px;text-align:center;border-radius:18px}
+.char{padding:12px;text-align:center;border-radius:18px;border:1px solid transparent}
 .char .pic{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7)}
 .char img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
-.char .nm{font-family:var(--serif);font-size:18px;margin-top:10px;letter-spacing:.06em}
-.char .role{font-size:12px;margin-top:2px;letter-spacing:.1em}
-.char .line{font-size:12.5px;margin-top:8px;opacity:.85;font-style:italic;padding:6px 10px;border-radius:10px}
-.char.snow{background:var(--xue-soft);border:1px solid rgba(159,182,200,.3)}
+.char .nm{font-family:var(--serif);font-size:19px;margin-top:10px;letter-spacing:.1em;font-weight:700}
+.char .role{font-size:12px;margin-top:3px;letter-spacing:.06em;font-weight:600}
+.char .line{font-size:12.5px;margin-top:8px;font-style:italic;padding:7px 10px;border-radius:10px;line-height:1.6}
+.char .hintp{font-size:11px;margin-top:8px;letter-spacing:.04em;opacity:.8}
+/* 雪球卡 */
+.char.snow{background:var(--xue-bg);border:1px solid var(--xue-brd);box-shadow:0 8px 22px var(--xue-glow)}
 .char.snow .nm{color:var(--xue-ink)}
-.char.snow .nom{color:#9fb6c8}
-.char.yiyi{background:var(--yi-soft);border:1px solid rgba(95,158,196,.3)}
+.char.snow .role{color:var(--xue-accent)}
+.char.snow .line{background:rgba(201,168,106,.18);color:var(--xue-ink)}
+.char.snow .hintp{color:var(--xue-ink)}
+/* 依依卡 */
+.char.yiyi{background:var(--yi-bg);border:1px solid var(--yi-brd);box-shadow:0 8px 22px var(--yi-glow)}
 .char.yiyi .nm{color:var(--yi-ink)}
-.char.yiyi .nom{color:#5f9ec4}
-.char .hintp{font-size:11px;color:var(--muted);margin-top:8px}
-
-/* Tailwind 式主题名色 */
-.tx-ink{color:var(--ink)}
+.char.yiyi .role{color:var(--yi-accent)}
+.char.yiyi .line{background:rgba(95,158,196,.18);color:var(--yi-ink)}
+.char.yiyi .hintp{color:var(--yi-ink)}
 
 /* 开局 Tab 选项卡 */
 .tabs{display:flex;gap:8px;margin-top:12px}
@@ -110,23 +118,31 @@ body{
 .tab .t-date{font-size:10.5px;letter-spacing:.1em;opacity:.85;margin-top:2px}
 .tab.active{background:#fff;border-color:var(--accent);box-shadow:0 6px 18px rgba(255,107,139,.22);color:var(--deep)}
 .tab.active .t-t{color:var(--deep)}
+.tab.xmas.active{border-color:var(--xmas-accent);box-shadow:0 6px 18px var(--xmas-glow);color:var(--xmas-accent)}
+.tab.xmas.active .t-t{color:var(--xmas-accent)}
 .panels{margin-top:12px}
 .panel{display:none}
 .panel.show{display:block;animation:fade .3s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .panel .p-body{padding:16px 18px}
-.panel .p-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.panel .p-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
 .panel .p-idx{font-family:var(--serif);font-style:italic;font-size:11px;letter-spacing:.18em;color:var(--accent)}
+.panel.xmas .p-idx{color:var(--xmas-accent)}
 .panel .p-time{font-size:11px;color:var(--faint);letter-spacing:.1em;margin-left:auto}
 .panel .p-title{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ink)}
 .panel p{font-size:13.5px;color:var(--muted);margin-top:8px}
+/* 开局预览：竖图 */
 .p-preview{margin-top:12px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7)}
-.panel.theme-snow .p-preview{background:var(--xue-soft)}
-.panel.theme-yiyi .p-preview{background:var(--yi-soft)}
-.p-preview img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.p-preview img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+/* 圣诞特殊开局：双图并排 */
+.xmas-duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.xmas-duo .xp{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.75)}
+.xmas-duo img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.xmas-duo figcaption{font-size:10.5px;color:var(--faint);text-align:center;padding:6px 6px 2px;letter-spacing:.1em}
 .enter{display:block;width:100%;margin-top:14px;padding:13px;border:none;border-radius:14px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;letter-spacing:.12em;color:#fff;background:linear-gradient(120deg,var(--accent),var(--deep));box-shadow:0 8px 20px rgba(255,107,139,.3);transition:all .2s}
 .enter:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(255,107,139,.4)}
 .enter:disabled{opacity:.6;cursor:default;transform:none}
+.panel.xmas .enter{background:linear-gradient(120deg,var(--xmas-green),var(--xmas-accent));box-shadow:0 8px 20px var(--xmas-glow)}
 .opening-status{display:none;text-align:center;font-size:13px;color:var(--muted);padding:10px 14px;border:1px solid rgba(255,255,255,.7);border-radius:12px;background:rgba(255,255,255,.55);margin:12px 0}
 .hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.16em;margin-top:18px}
 </style>
@@ -153,15 +169,15 @@ body{
   <div class="char snow glass">
     <div class="pic"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白丝连衣裙转身.13mj2qqr1r.webp" alt="雪球"></div>
     <div class="nm">雪球</div>
-    <div class="role nom">三无猫娘 · 银白波斯猫</div>
-    <div class="line" style="background:rgba(190,207,219,.22);color:var(--xue-ink)">「饿了。开两个，罐头…」</div>
+    <div class="role">三无猫娘 · 银白波斯猫</div>
+    <div class="line">「饿了。开两个，罐头…」</div>
     <div class="hintp">淡金猫瞳 · 只会踩奶与打直球</div>
   </div>
   <div class="char yiyi glass">
     <div class="pic"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-主要.3k8rhnxmyv.webp" alt="苏依依"></div>
     <div class="nm">苏依依</div>
-    <div class="role nom">兄控妹妹 · 蒸汽姬</div>
-    <div class="line" style="background:rgba(95,158,196,.18);color:var(--yi-ink)">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
+    <div class="role">假装自己不是兄控的 · 重度兄控</div>
+    <div class="line">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
     <div class="hintp">水蓝杏眼 · 一戳穿真心就宕机</div>
   </div>
 </div>
@@ -172,9 +188,10 @@ body{
     <button class="tab active" data-tab="1" type="button"><div class="t-t">愚人节的猫</div><div class="t-date">4月1日 · 清晨</div></button>
     <button class="tab" data-tab="2" type="button"><div class="t-t">妹妹的突击</div><div class="t-date">4月4日 · 中午</div></button>
     <button class="tab" data-tab="3" type="button"><div class="t-t">晨间修罗场</div><div class="t-date">4月6日 · 早上</div></button>
+    <button class="tab xmas" data-tab="4" type="button"><div class="t-t">圣诞节日</div><div class="t-date">12月24日 · 冬夜</div></button>
   </div>
   <div class="panels">
-    <div class="panel theme-snow show" data-panel="1">
+    <div class="panel show" data-panel="1">
       <div class="p-body glass">
         <div class="p-head"><span class="p-idx">Opening 01</span><span class="p-title">愚人节的猫</span><span class="p-time">4月1日 · 清晨 · 晴天 8:37</span></div>
         <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-女仆装端盘.3uvlatcv3f.webp" alt="愚人节的猫"></div>
@@ -182,7 +199,7 @@ body{
         <button class="enter" type="button" data-swipe="1">进入此开局</button>
       </div>
     </div>
-    <div class="panel theme-yiyi" data-panel="2">
+    <div class="panel" data-panel="2">
       <div class="p-body glass">
         <div class="p-head"><span class="p-idx">Opening 02</span><span class="p-title">妹妹的突击检查</span><span class="p-time">4月4日 · 中午 · 阴天 12:23</span></div>
         <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-打招呼.7i14yc8nln.webp" alt="妹妹的突击检查"></div>
@@ -190,12 +207,23 @@ body{
         <button class="enter" type="button" data-swipe="2">进入此开局</button>
       </div>
     </div>
-    <div class="panel theme-yiyi" data-panel="3">
+    <div class="panel" data-panel="3">
       <div class="p-body glass">
         <div class="p-head"><span class="p-idx">Opening 03</span><span class="p-title">晨间的修罗场</span><span class="p-time">4月6日 · 早上 · 晴天 8:10</span></div>
         <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球与苏依依同框4.9kgxmnjq0o.webp" alt="晨间的修罗场"></div>
         <p>接受设定的依依系上围裙做早餐，你怀里还抱着赖着不下的雪球。厨房飘香，醋意也在悄悄发酵。</p>
         <button class="enter" type="button" data-swipe="3">进入此开局</button>
+      </div>
+    </div>
+    <div class="panel xmas" data-panel="4">
+      <div class="p-body glass">
+        <div class="p-head"><span class="p-idx">Special · Opening 04</span><span class="p-title">圣诞节日</span><span class="p-time">12月24日 · 冬夜 · 暖光</span></div>
+        <figure class="xmas-duo">
+          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-圣诞礼物.7i14yc8nl0.webp" alt="雪球"><figcaption>雪球 · 圣诞礼物</figcaption></div>
+          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-圣诞礼物.9rk5htte1t.webp" alt="苏依依"><figcaption>苏依依 · 圣诞礼物</figcaption></div>
+        </figure>
+        <p>「当当——！圣诞快乐，笨蛋老哥！」今晚的依依格外大胆主动，和雪球一起把自己"打包"成礼物送给你。</p>
+        <button class="enter" type="button" data-swipe="4">进入圣诞特殊开局</button>
       </div>
     </div>
   </div>
