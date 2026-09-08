@@ -30,7 +30,7 @@ body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(
 </head>
 <body>
 <div class="status">
-  <div class="msg" data-state="loading">正在读取状态……</div>
+  <div class="msg" id="msg">正在读取状态……</div>
   <div id="panel" style="display:none">
     <div class="hd">📅 <span id="dtime">时间流逝中...</span></div>
     <div class="grid">
@@ -59,6 +59,7 @@ body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(
 <script>
 (function () {
 'use strict';
+// ---------- 工具 ----------
 function scope(name) {
   const candidates = [globalThis];
   try { if (globalThis.parent && globalThis.parent !== globalThis) candidates.push(globalThis.parent); } catch (_) {}
@@ -67,63 +68,143 @@ function scope(name) {
   return undefined;
 }
 const $id = function (i) { return document.getElementById(i); };
-const $ = {
-  get: function (o, p) {
-    if (!o || !p) return undefined;
-    const s = String(p).replace(/\[(\d+)\]/g, '.$1').split('.');
-    let v = o;
-    for (const k of s) { if (v == null) return undefined; v = v[k]; }
-    return v;
-  },
-  has: function (o, p) { return this.get(o, p) !== undefined; }
-};
-function asText(v, fb) {
+function getPath(o, p) {
+  if (!o || !p) return undefined;
+  const s = String(p).replace(/\[(\d+)\]/g, '.$1').split('.');
+  let v = o;
+  for (const k of s) { if (v == null) return undefined; v = v[k]; }
+  return v;
+}
+function toVal(v, fb) {
   if (v === undefined || v === null || v === '') return fb;
   if (Array.isArray(v)) v = v[0];
-  if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return String(v);
+  if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return v;
   return fb;
 }
-function setTxt(id, v, fb) { const n = $id(id); if (n) n.textContent = asText(v, fb); }
-function refresh() {
+function setTxt(id, v, fb) { const n = $id(id); if (n) n.textContent = toVal(v, fb); }
+function setMsg(txt, isErr) {
+  const m = $id('msg');
+  if (!m) return;
+  m.style.display = 'block';
+  m.textContent = txt;
+  m.style.color = isErr ? '#d64545' : 'var(--faint)';
+  const p = $id('panel'); if (p) p.style.display = 'none';
+}
+function showPanel() {
+  const m = $id('msg'); if (m) m.style.display = 'none';
+  const p = $id('panel'); if (p) p.style.display = 'block';
+}
+
+// ---------- 解析消息文本里的 {{setvar}} 注释（兜底数据源） ----------
+function parseSetvars(text) {
+  const out = {};
+  if (!text) return out;
+  const re = /\{\{\s*setvar\s+([^\s}]+)\s+"([^"]*)"\s*\}\}/g;
+  let m;
+  while ((m = re.exec(text)) !== null) { out[m[1]] = m[2]; }
+  return out;
+}
+
+// ---------- 取数路径 ----------
+// 目标：找到“当前显示的那条消息文本 + 它的变量”
+async function getMessageContext() {
+  const errs = [];
+  // 路径 A：Mvu API（原卡同款）
   const Mvu = scope('Mvu');
   const gcmid = scope('getCurrentMessageId');
-  const msg = $id('msg'); const panel = $id('panel');
-  if (!Mvu || typeof Mvu.getMvuData !== 'function' || !gcmid) { return false; }
-  let mvuData = null;
-  try { mvuData = Mvu.getMvuData({ type: 'message', message_id: gcmid() }); } catch (e) { mvuData = null; }
-  if (!mvuData || !$.has(mvuData, 'stat_data')) {
-    if (msg) msg.textContent = '状态尚未初始化。';
-    return false;
+  if (Mvu && typeof Mvu.getMvuData === 'function' && gcmid) {
+    try {
+      const msgId = gcmid();
+      const data = Mvu.getMvuData({ type: 'message', message_id: msgId });
+      if (data && (data.stat_data || data.display_data)) {
+        return { kind: 'mvu', data: data };
+      }
+    } catch (e) { errs.push('Mvu:' + e.message); }
   }
-  if (panel) panel.style.display = 'block';
-  if (msg) msg.style.display = 'none';
-  const sd = mvuData.stat_data || {};
-  const y = sd.yiyi || {}, s = sd.snowball || {}, g = sd.global || {};
-  setTxt('dtime', $.get(g, 'date_time') != null ? $.get(g, 'date_time') : undefined, '时间流逝中...');
-  const op = Number($.get(y, 'openness') != null ? ($.get(y, 'openness')[0] !== undefined ? $.get(y, 'openness')[0] : $.get(y, 'openness')) : 5);
+  // 路径 B：TavernHelper.getChatMessages 直接读 message.data（MVU 官方文档推荐读取法）
+  const th = scope('TavernHelper');
+  if (th && typeof th.getChatMessages === 'function') {
+    try {
+      const msgs = await th.getChatMessages('0', { include_swipes: true });
+      const m0 = msgs && msgs[0];
+      if (m0) {
+        const d = m0.data || {};
+        const sd = d.display_data || d.stat_data;
+        if (sd) return { kind: 'message-data', data: { stat_data: d.stat_data, display_data: d.display_data } };
+        // 数据不在 message.data：退回解析当前 swipe 文本
+        const cur = (m0.swipes && Number.isInteger(m0.swipe_id) && m0.swipes[m0.swipe_id] != null)
+          ? m0.swipes[m0.swipe_id] : m0.message;
+        return { kind: 'text', text: cur || '' };
+      }
+    } catch (e) { errs.push('TH:' + e.message); }
+  }
+  return { kind: 'none', errs: errs };
+}
+
+// ---------- 渲染 ----------
+function renderFromVars(sd) {
+  const y = (sd && sd.yiyi) || {}, s = (sd && sd.snowball) || {}, g = (sd && sd.global) || {};
+  const rawOp = getPath(y, 'openness');
+  const opArr = Array.isArray(rawOp) ? rawOp : [rawOp];
+  const op = Number(toVal(opArr[0], 5));
   const opv = Number.isFinite(op) ? Math.max(0, Math.min(100, op)) : 5;
   setTxt('op', opv, '5');
   const f = $id('opf'); if (f) f.style.width = opv + '%';
-  setTxt('yc', $.get(y, 'creampie_count') != null ? ($.get(y, 'creampie_count')[0] !== undefined ? $.get(y, 'creampie_count')[0] : $.get(y, 'creampie_count')) : 0, 0);
-  setTxt('sc', $.get(s, 'creampie_count') != null ? ($.get(s, 'creampie_count')[0] !== undefined ? $.get(s, 'creampie_count')[0] : $.get(s, 'creampie_count')) : 0, 0);
-  setTxt('tc', $.get(g, 'total_creampie') != null ? ($.get(g, 'total_creampie')[0] !== undefined ? $.get(g, 'total_creampie')[0] : $.get(g, 'total_creampie')) : 0, 0);
-  const yt = $.get(y, 'thought'); const st = $.get(s, 'thought');
-  setTxt('yth', yt != null ? (Array.isArray(yt) ? yt[0] : yt) : undefined, '（依依正在想事情…）');
-  setTxt('sth', st != null ? (Array.isArray(st) ? st[0] : st) : undefined, '（雪球正在发呆…）');
+  const cv = function (obj, key, fb) { const v = getPath(obj, key); return toVal(Array.isArray(v) ? v[0] : v, fb); };
+  setTxt('yc', cv(y, 'creampie_count', 0), 0);
+  setTxt('sc', cv(s, 'creampie_count', 0), 0);
+  setTxt('tc', cv(g, 'total_creampie', 0), 0);
+  setTxt('dtime', cv(g, 'date_time', null), '时间流逝中...');
+  setTxt('yth', cv(y, 'thought', null), '（依依正在想事情…）');
+  setTxt('sth', cv(s, 'thought', null), '（雪球正在发呆…）');
+  showPanel();
   return true;
 }
-async function boot() {
-  for (let i = 0; i < 60; i++) { if (scope('Mvu') && scope('getCurrentMessageId')) break; await new Promise(r => setTimeout(r, 250)); }
-  refresh();
-  const eventOn = scope('eventOn');
-  const Mvu = scope('Mvu');
-  if (eventOn && Mvu && Mvu.events) {
-    try {
-      eventOn(Mvu.events.VARIABLE_INITIALIZED, refresh);
-      eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, refresh);
-    } catch (_) {}
+function renderFromText(text) {
+  const sv = parseSetvars(text);
+  setTxt('op', 5, '5');
+  const f = $id('opf'); if (f) f.style.width = '5%';
+  setTxt('yc', 0, 0); setTxt('sc', 0, 0); setTxt('tc', 0, 0);
+  setTxt('dtime', sv['global.date_time'] || null, '时间流逝中...');
+  setTxt('yth', sv['yiyi.thought'] || null, '（依依正在想事情…）');
+  setTxt('sth', sv['snowball.thought'] || null, '（雪球正在发呆…）');
+  showPanel();
+  return true;
+}
+
+// ---------- 主刷新 ----------
+async function refresh() {
+  try {
+    const ctx = await getMessageContext();
+    if (ctx.kind === 'mvu') {
+      const sd = ctx.data.display_data || ctx.data.stat_data || {};
+      if (!renderFromVars(sd)) setMsg('状态数据为空。', true);
+      return;
+    }
+    if (ctx.kind === 'message-data') {
+      const sd = ctx.data.display_data || ctx.data.stat_data || {};
+      if (!renderFromVars(sd)) setMsg('状态数据为空。', true);
+      return;
+    }
+    if (ctx.kind === 'text') {
+      if (!renderFromText(ctx.text)) setMsg('开场文本为空。', true);
+      return;
+    }
+    const why = (ctx.errs && ctx.errs.length) ? ctx.errs.join(' | ') : '未找到 Mvu / TavernHelper';
+    setMsg('⚠️ ' + why + '（若在浏览器直接打开属正常，请在酒馆聊天中使用）', true);
+  } catch (e) {
+    setMsg('⚠️ 状态读取异常: ' + (e && e.message ? e.message : String(e)), true);
   }
-  setInterval(refresh, 2000);
+}
+
+async function boot() {
+  // 最多等 15 秒让扩展就绪
+  for (let i = 0; i < 60; i++) {
+    if (scope('Mvu') || scope('TavernHelper')) break;
+    await new Promise(r => setTimeout(r, 250));
+  }
+  await refresh();
+  setInterval(refresh, 1500);
 }
 boot();
 })();
