@@ -34,46 +34,106 @@ global.MaoNiangCardBridgeV2 = Object.freeze({ version: 2, selectGreeting });
 })(globalThis);
 </script>
 <style>
-:root{--ink:#4a373a;--muted:#8c6a70;--faint:#cbb0b5;--bg:#fff6f8;--line:#ffe2e8;--accent:#ff6b8b;--deep:#ff4d79;--serif:"Songti SC","STSong","SimSun","Noto Serif SC",serif}
+:root{
+  --ink:#4a373a; --muted:#8c6a70; --faint:#cbb0b5; --accent:#ff6b8b; --deep:#ff4d79;
+  --serif:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  /* 角色主题色 */
+  --xue-ink:#5b6470; --xue-accent:#9fb6c8; --xue-soft:rgba(190,207,219,.18);
+  --yi-ink:#7a5040; --yi-accent:#5f9ec4; --yi-soft:rgba(95,158,196,.16);
+  --glass:rgba(255,255,255,.62);
+  --glass-brd:rgba(255,255,255,.75);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:
-  radial-gradient(1200px 500px at 85% -10%, rgba(255,179,193,.35), transparent 60%),
-  radial-gradient(900px 420px at -10% 30%, rgba(255,214,224,.5), transparent 55%),
-  var(--bg);
-  color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.8;padding:40px 0 60px;-webkit-font-smoothing:antialiased}
-.wrap{max-width:640px;margin:0 auto;padding:0 24px}
-.hero{position:relative;border-radius:22px;overflow:hidden;background:#fff;border:1px solid var(--line);box-shadow:0 10px 28px rgba(255,107,139,.14)}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(900px 480px at 85% -8%, rgba(163,199,219,.35), transparent 60%),
+    radial-gradient(820px 460px at -8% 24%, rgba(233,178,146,.35), transparent 55%),
+    radial-gradient(760px 420px at 50% 96%, rgba(255,143,163,.22), transparent 60%),
+    linear-gradient(160deg,#fbf6f7 0%, #f2eef4 55%, #f7e9ec 100%);
+  color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  line-height:1.8; padding:38px 0 56px; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:660px;margin:0 auto;padding:0 22px}
+
+/* 玻璃拟态通用 */
+.glass{
+  background:var(--glass);
+  border:1px solid var(--glass-brd);
+  border-radius:22px;
+  box-shadow:0 8px 30px rgba(120,90,100,.12);
+  backdrop-filter:blur(14px) saturate(1.15);
+  -webkit-backdrop-filter:blur(14px) saturate(1.15);
+}
+
+/* hero 保留原图，加玻璃文字底板 */
+.hero{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--glass-brd);box-shadow:0 10px 32px rgba(120,90,100,.16)}
 .hero img.kv{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
-.hero .veil{position:absolute;left:0;right:0;bottom:0;padding:34px 22px 20px;background:linear-gradient(transparent,rgba(70,30,40,.72));color:#fff}
-.hero h1{font-family:var(--serif);font-size:27px;font-weight:400;letter-spacing:.06em;text-shadow:0 1px 6px rgba(0,0,0,.35)}
-.hero .sub{font-family:var(--serif);font-size:14px;margin-top:4px;letter-spacing:.12em;opacity:.95}
+.hero .veil{position:absolute;left:0;right:0;bottom:0;padding:32px 22px 18px;background:linear-gradient(transparent,rgba(60,28,38,.66));color:#fff}
+.hero h1{font-family:var(--serif);font-size:27px;font-weight:400;letter-spacing:.06em;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.hero .sub{font-family:var(--serif);font-size:14px;margin-top:4px;letter-spacing:.12em;opacity:.96}
+
 .sec{margin:26px 0 8px}
 .sec-t{font-size:12px;font-weight:600;letter-spacing:.3em;color:var(--accent);display:flex;align-items:center;gap:10px}
-.sec-t::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec-t::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,107,139,.4),transparent)}
 .sec-t small{color:var(--faint);letter-spacing:.08em;font-weight:400}
-.intro{font-size:14px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:12px}
+
+.intro{padding:16px 18px;margin-top:12px;font-size:14px}
 .intro b{color:var(--accent);font-weight:600}
-.gals{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-.gals figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
-.gals img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
-.gals figcaption{font-size:11px;color:var(--muted);padding:7px 10px;text-align:center;letter-spacing:.08em}
-.openings{margin-top:12px}
-.opening{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;cursor:pointer;font-family:inherit;transition:border-color .2s,box-shadow .2s,transform .15s}
-.opening:hover{border-color:var(--accent);box-shadow:0 6px 18px rgba(255,107,139,.16);transform:translateY(-1px)}
-.opening:disabled{opacity:.55;cursor:default;transform:none}
-.opening .o-top{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
-.opening .o-idx{font-family:var(--serif);font-style:italic;font-size:11px;letter-spacing:.18em;color:var(--accent)}
-.opening .o-time{font-size:11px;color:var(--faint);letter-spacing:.1em;margin-left:auto}
-.opening .o-title{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ink)}
-.opening.active{border-color:var(--deep);box-shadow:0 6px 20px rgba(255,77,121,.22)}
-.opening.active .o-title{color:var(--deep)}
-.opening p{font-size:13.5px;color:var(--muted);margin-top:6px}
-.opening-status{display:none;text-align:center;font-size:13px;color:var(--muted);padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;margin:4px 0 12px}
-.hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.16em;margin-top:16px}
+
+/* 角色卡：主题色跟随 */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+@media(max-width:520px){.duo{grid-template-columns:1fr}}
+.char{padding:12px;text-align:center;border-radius:18px}
+.char .pic{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7)}
+.char img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.char .nm{font-family:var(--serif);font-size:18px;margin-top:10px;letter-spacing:.06em}
+.char .role{font-size:12px;margin-top:2px;letter-spacing:.1em}
+.char .line{font-size:12.5px;margin-top:8px;opacity:.85;font-style:italic;padding:6px 10px;border-radius:10px}
+.char.snow{background:var(--xue-soft);border:1px solid rgba(159,182,200,.3)}
+.char.snow .nm{color:var(--xue-ink)}
+.char.snow .nom{color:#9fb6c8}
+.char.yiyi{background:var(--yi-soft);border:1px solid rgba(95,158,196,.3)}
+.char.yiyi .nm{color:var(--yi-ink)}
+.char.yiyi .nom{color:#5f9ec4}
+.char .hintp{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* Tailwind 式主题名色 */
+.tx-ink{color:var(--ink)}
+
+/* 开局 Tab 选项卡 */
+.tabs{display:flex;gap:8px;margin-top:12px}
+.tab{flex:1;padding:11px 6px;text-align:center;border:none;border-radius:14px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.6);cursor:pointer;font-family:inherit;transition:all .2s;color:var(--muted)}
+.tab:hover{transform:translateY(-1px)}
+.tab .t-t{font-family:var(--serif);font-size:16px;letter-spacing:.03em}
+.tab .t-date{font-size:10.5px;letter-spacing:.1em;opacity:.85;margin-top:2px}
+.tab.active{background:#fff;border-color:var(--accent);box-shadow:0 6px 18px rgba(255,107,139,.22);color:var(--deep)}
+.tab.active .t-t{color:var(--deep)}
+.panels{margin-top:12px}
+.panel{display:none}
+.panel.show{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.panel .p-body{padding:16px 18px}
+.panel .p-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.panel .p-idx{font-family:var(--serif);font-style:italic;font-size:11px;letter-spacing:.18em;color:var(--accent)}
+.panel .p-time{font-size:11px;color:var(--faint);letter-spacing:.1em;margin-left:auto}
+.panel .p-title{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ink)}
+.panel p{font-size:13.5px;color:var(--muted);margin-top:8px}
+.p-preview{margin-top:12px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7)}
+.panel.theme-snow .p-preview{background:var(--xue-soft)}
+.panel.theme-yiyi .p-preview{background:var(--yi-soft)}
+.p-preview img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.enter{display:block;width:100%;margin-top:14px;padding:13px;border:none;border-radius:14px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;letter-spacing:.12em;color:#fff;background:linear-gradient(120deg,var(--accent),var(--deep));box-shadow:0 8px 20px rgba(255,107,139,.3);transition:all .2s}
+.enter:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(255,107,139,.4)}
+.enter:disabled{opacity:.6;cursor:default;transform:none}
+.opening-status{display:none;text-align:center;font-size:13px;color:var(--muted);padding:10px 14px;border:1px solid rgba(255,255,255,.7);border-radius:12px;background:rgba(255,255,255,.55);margin:12px 0}
+.hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.16em;margin-top:18px}
 </style>
 </head>
 <body>
 <div class="wrap">
+
 <div class="hero">
   <img class="kv" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球与苏依依同框4.9kgxmnjq0o.webp" alt="雪球与苏依依">
   <div class="veil">
@@ -83,38 +143,81 @@ body{background:
 </div>
 
 <div class="sec"><div class="sec-t">关于本卡 <small>· 世界观</small></div></div>
-<div class="intro">2020年4月1日，你养了两年的<b>银白波斯猫【雪球】</b>一夜之间化为人形——三无、软糯、只认你一个饲主。
+<div class="intro glass">2020年4月1日，你养了两年的<b>银白波斯猫【雪球】</b>一夜之间化为人形——三无、软糯、只认你一个饲主。
 4月4日，重度兄控的<b>亲妹妹【苏依依】</b>拖着行李箱强行搬来同住，撞见了只穿一件白衬衫的猫娘。
 猫化的秘密<b>只有你们三人知道</b>：一个是把一切直球到底的猫，一个是把所有真心藏进傲娇的妹妹——而夹在中间的<b>{{user}}</b>，要同时伺候好两张嘴。
 本卡内置 <b>开放度 / 心声 / 内射计数</b> 状态变量，随剧情由 AI 自动更新。</div>
 
 <div class="sec"><div class="sec-t">她们是谁 <small>· 角色</small></div></div>
-<div class="gals">
-  <figure><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白丝连衣裙转身.13mj2qqr1r.webp" alt="雪球"><figcaption>雪球 · 三无猫娘</figcaption></figure>
-  <figure><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-主要.3k8rhnxmyv.webp" alt="苏依依"><figcaption>苏依依 · 兄控妹妹</figcaption></figure>
+<div class="duo">
+  <div class="char snow glass">
+    <div class="pic"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白丝连衣裙转身.13mj2qqr1r.webp" alt="雪球"></div>
+    <div class="nm">雪球</div>
+    <div class="role nom">三无猫娘 · 银白波斯猫</div>
+    <div class="line" style="background:rgba(190,207,219,.22);color:var(--xue-ink)">「饿了。开两个，罐头…」</div>
+    <div class="hintp">淡金猫瞳 · 只会踩奶与打直球</div>
+  </div>
+  <div class="char yiyi glass">
+    <div class="pic"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-主要.3k8rhnxmyv.webp" alt="苏依依"></div>
+    <div class="nm">苏依依</div>
+    <div class="role nom">兄控妹妹 · 蒸汽姬</div>
+    <div class="line" style="background:rgba(95,158,196,.18);color:var(--yi-ink)">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
+    <div class="hintp">水蓝杏眼 · 一戳穿真心就宕机</div>
+  </div>
 </div>
 
 <div class="sec"><div class="sec-t">选择开局 <small>· 点击直接跳转对应开场</small></div></div>
-<div class="openings">
-<button class="opening" type="button" data-swipe="1">
-  <div class="o-top"><span class="o-idx">Opening 01</span><span class="o-title">愚人节的猫</span><span class="o-time">4月1日 · 清晨 · 晴天 8:37</span></div>
-  <p>晨光入被窝。你掀开被子，等来的不是白毛团子，而是一个蜷在床单中央、顶着猫耳与尾巴的三无猫娘少女——雪球化人了。</p>
-</button>
-<button class="opening" type="button" data-swipe="2">
-  <div class="o-top"><span class="o-idx">Opening 02</span><span class="o-title">妹妹的突击检查</span><span class="o-time">4月4日 · 中午 · 阴天 12:23</span></div>
-  <p>「哥——！本小姐突击检查！」粉色行李箱碾过玄关，苏依依撞见只穿你白衬衫、趴地吃罐头的猫娘。误会大爆发！</p>
-</button>
-<button class="opening" type="button" data-swipe="3">
-  <div class="o-top"><span class="o-idx">Opening 03</span><span class="o-title">晨间的修罗场</span><span class="o-time">4月6日 · 早上 · 晴天 8:10</span></div>
-  <p>接受设定的依依系上围裙做早餐，你怀里还抱着赖着不下的雪球。厨房飘香，醋意也在悄悄发酵。</p>
-</button>
+<div class="origins">
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="1" type="button"><div class="t-t">愚人节的猫</div><div class="t-date">4月1日 · 清晨</div></button>
+    <button class="tab" data-tab="2" type="button"><div class="t-t">妹妹的突击</div><div class="t-date">4月4日 · 中午</div></button>
+    <button class="tab" data-tab="3" type="button"><div class="t-t">晨间修罗场</div><div class="t-date">4月6日 · 早上</div></button>
+  </div>
+  <div class="panels">
+    <div class="panel theme-snow show" data-panel="1">
+      <div class="p-body glass">
+        <div class="p-head"><span class="p-idx">Opening 01</span><span class="p-title">愚人节的猫</span><span class="p-time">4月1日 · 清晨 · 晴天 8:37</span></div>
+        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-女仆装端盘.3uvlatcv3f.webp" alt="愚人节的猫"></div>
+        <p>晨光入被窝。你掀开被子，等来的不是白毛团子，而是一个蜷在床单中央、顶着猫耳与尾巴的三无猫娘少女——雪球化人了。</p>
+        <button class="enter" type="button" data-swipe="1">进入此开局</button>
+      </div>
+    </div>
+    <div class="panel theme-yiyi" data-panel="2">
+      <div class="p-body glass">
+        <div class="p-head"><span class="p-idx">Opening 02</span><span class="p-title">妹妹的突击检查</span><span class="p-time">4月4日 · 中午 · 阴天 12:23</span></div>
+        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-打招呼.7i14yc8nln.webp" alt="妹妹的突击检查"></div>
+        <p>「哥——！本小姐突击检查！」粉色行李箱碾过玄关，苏依依撞见只穿你白衬衫、趴地吃罐头的猫娘。误会大爆发！</p>
+        <button class="enter" type="button" data-swipe="2">进入此开局</button>
+      </div>
+    </div>
+    <div class="panel theme-yiyi" data-panel="3">
+      <div class="p-body glass">
+        <div class="p-head"><span class="p-idx">Opening 03</span><span class="p-title">晨间的修罗场</span><span class="p-time">4月6日 · 早上 · 晴天 8:10</span></div>
+        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球与苏依依同框4.9kgxmnjq0o.webp" alt="晨间的修罗场"></div>
+        <p>接受设定的依依系上围裙做早餐，你怀里还抱着赖着不下的雪球。厨房飘香，醋意也在悄悄发酵。</p>
+        <button class="enter" type="button" data-swipe="3">进入此开局</button>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="opening-status">…</div>
 <div class="hint">开局切换后 · 状态栏变量将同步为对应开场的正文 🐾🌸</div>
+
 </div>
 
 <script>
-const ops = document.querySelectorAll('.opening');
+// —— Tab 切换 ——
+const tabs = document.querySelectorAll('.tab');
+const panels = document.querySelectorAll('.panel');
+tabs.forEach(function (t) {
+  t.addEventListener('click', function () {
+    const key = t.dataset.tab;
+    tabs.forEach(function (x) { x.classList.toggle('active', x === t); });
+    panels.forEach(function (p) { p.classList.toggle('show', p.dataset.panel === key); });
+  });
+});
+
+// —— 进入开局 ——
 const status = document.querySelector('.opening-status');
 const showStatus = function (txt, isError) {
   if (!status) return;
@@ -122,22 +225,21 @@ const showStatus = function (txt, isError) {
   status.textContent = txt;
   status.style.color = isError ? '#d64545' : 'var(--muted)';
 };
-ops.forEach(function (o) {
-  o.addEventListener('click', async function () {
-    const swipeId = Number(o.dataset.swipe);
-    ops.forEach(function (x) { x.classList.remove('active'); x.disabled = true; });
-    o.classList.add('active');
-    const title = (o.querySelector('.o-title') || {}).textContent || ('开局 ' + String(swipeId).padStart(2, '0'));
+document.querySelectorAll('.enter').forEach(function (btn) {
+  btn.addEventListener('click', async function () {
+    const swipeId = Number(btn.dataset.swipe);
+    document.querySelectorAll('.enter').forEach(function (x) { x.disabled = true; });
+    const title = ((btn.closest('.p-body').querySelector('.p-title')) || {}).textContent || ('开局 ' + String(swipeId).padStart(2, '0'));
     showStatus('正在进入「' + title + '」……');
     try {
       const bridge = globalThis.MaoNiangCardBridgeV2 || {};
       if (typeof bridge.selectGreeting !== 'function') throw new Error('开场桥接尚未就绪');
       await bridge.selectGreeting(swipeId);
-      showStatus('✅ 已切换开场，状态栏同步中……');
+      showStatus('✅ 已切换开局，状态栏同步中……');
     } catch (err) {
       showStatus('⚠️ ' + (err && err.message ? err.message : '切换失败') + '（若在浏览器直接打开属正常，请在酒馆聊天中点击）', true);
     } finally {
-      ops.forEach(function (x) { x.disabled = false; });
+      document.querySelectorAll('.enter').forEach(function (x) { x.disabled = false; });
     }
   });
 });
