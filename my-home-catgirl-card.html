@@ -91,8 +91,15 @@ body{
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
 @media(max-width:520px){.duo{grid-template-columns:1fr}}
 .char{padding:12px;text-align:center;border-radius:18px;border:1px solid transparent}
-.char .pic{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7)}
+.char .pic{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7);position:relative;cursor:pointer}
 .char img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+/* 点击翻转：正/反两图堆叠，点击切换 */
+.char .flip{position:relative;width:100%;aspect-ratio:3/4}
+.char .flip .face{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .35s ease,transform .35s ease;backface-visibility:hidden;border-radius:14px}
+.char .flip .back{opacity:0;transform:rotateY(180deg)}
+.char .flip.flipped .front{opacity:0;transform:rotateY(-180deg)}
+.char .flip.flipped .back{opacity:1;transform:rotateY(0)}
+.char .flip-hint{position:absolute;top:8px;right:8px;z-index:2;font-size:10px;color:#fff;background:rgba(0,0,0,.45);border-radius:20px;padding:2px 8px;letter-spacing:.08em;pointer-events:none}
 .char .nm{font-family:var(--serif);font-size:19px;margin-top:10px;letter-spacing:.1em;font-weight:700}
 .char .role{font-size:12px;margin-top:3px;letter-spacing:.06em;font-weight:600}
 .char .line{font-size:12.5px;margin-top:8px;font-style:italic;padding:7px 10px;border-radius:10px;line-height:1.6}
@@ -164,17 +171,29 @@ body{
 猫化的秘密<b>只有你们三人知道</b>：一个是把一切直球到底的猫，一个是把所有真心藏进傲娇的妹妹——而夹在中间的<b>{{user}}</b>，要同时伺候好两张嘴。
 本卡内置 <b>开放度 / 心声 / 内射计数</b> 状态变量，随剧情由 AI 自动更新。</div>
 
-<div class="sec"><div class="sec-t">她们是谁 <small>· 角色</small></div></div>
+<div class="sec"><div class="sec-t">她们是谁 <small>· 点击立绘可翻转</small></div></div>
 <div class="duo">
   <div class="char snow glass">
-    <div class="pic"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白丝连衣裙转身.13mj2qqr1r.webp" alt="雪球"></div>
+    <div class="pic">
+      <div class="flip" data-char="snow" role="button" tabindex="0" aria-label="点击翻转雪球立绘">
+        <img class="face front" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白丝睡衣.7w7kq54x5f.webp" alt="雪球">
+        <img class="face back" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-裸体涩图.4jouvrocsw.webp" alt="雪球 背面">
+        <span class="flip-hint">点击翻转</span>
+      </div>
+    </div>
     <div class="nm">雪球</div>
     <div class="role">三无猫娘 · 银白波斯猫</div>
     <div class="line">「饿了。开两个，罐头…」</div>
     <div class="hintp">淡金猫瞳 · 只会踩奶与打直球</div>
   </div>
   <div class="char yiyi glass">
-    <div class="pic"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-主要.3k8rhnxmyv.webp" alt="苏依依"></div>
+    <div class="pic">
+      <div class="flip" data-char="yiyi" role="button" tabindex="0" aria-label="点击翻转苏依依立绘">
+        <img class="face front" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-黑丝黑毛衣-并膝坐床.5c1qdi4yit.webp" alt="苏依依">
+        <img class="face back" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-裸体盘腿坐2.3yf79gtwht.webp" alt="苏依依 背面">
+        <span class="flip-hint">点击翻转</span>
+      </div>
+    </div>
     <div class="nm">苏依依</div>
     <div class="role">假装自己不是兄控的 · 重度兄控</div>
     <div class="line">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
@@ -194,7 +213,7 @@ body{
     <div class="panel show" data-panel="1">
       <div class="p-body glass">
         <div class="p-head"><span class="p-idx">Opening 01</span><span class="p-title">愚人节的猫</span><span class="p-time">4月1日 · 清晨 · 晴天 8:37</span></div>
-        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-女仆装端盘.3uvlatcv3f.webp" alt="愚人节的猫"></div>
+        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-躺床.5xbdzszeuc.webp" alt="愚人节的猫"></div>
         <p>晨光入被窝。你掀开被子，等来的不是白毛团子，而是一个蜷在床单中央、顶着猫耳与尾巴的三无猫娘少女——雪球化人了。</p>
         <button class="enter" type="button" data-swipe="1">进入此开局</button>
       </div>
@@ -202,7 +221,7 @@ body{
     <div class="panel" data-panel="2">
       <div class="p-body glass">
         <div class="p-head"><span class="p-idx">Opening 02</span><span class="p-title">妹妹的突击检查</span><span class="p-time">4月4日 · 中午 · 阴天 12:23</span></div>
-        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-打招呼.7i14yc8nln.webp" alt="妹妹的突击检查"></div>
+        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/猫娘角色卡-开局2.6il1m3tv4x.webp" alt="妹妹的突击检查"></div>
         <p>「哥——！本小姐突击检查！」粉色行李箱碾过玄关，苏依依撞见只穿你白衬衫、趴地吃罐头的猫娘。误会大爆发！</p>
         <button class="enter" type="button" data-swipe="2">进入此开局</button>
       </div>
@@ -210,7 +229,10 @@ body{
     <div class="panel" data-panel="3">
       <div class="p-body glass">
         <div class="p-head"><span class="p-idx">Opening 03</span><span class="p-title">晨间的修罗场</span><span class="p-time">4月6日 · 早上 · 晴天 8:10</span></div>
-        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球与苏依依同框4.9kgxmnjq0o.webp" alt="晨间的修罗场"></div>
+        <figure class="xmas-duo">
+          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user抱着雪球在厨房看苏依依做饭-立绘.26m8ekajmi.webp" alt="user抱着雪球看苏依依做饭"><figcaption>晨间 · 撒娇的雪球</figcaption></div>
+          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依背着雪球-立绘-厨房.7i14z9wmal.webp" alt="苏依依背着雪球"><figcaption>厨房 · 背上的雪球</figcaption></div>
+        </figure>
         <p>接受设定的依依系上围裙做早餐，你怀里还抱着赖着不下的雪球。厨房飘香，醋意也在悄悄发酵。</p>
         <button class="enter" type="button" data-swipe="3">进入此开局</button>
       </div>
@@ -234,6 +256,15 @@ body{
 </div>
 
 <script>
+// —— 角色立绘点击翻转（正/反） ——
+document.querySelectorAll('.flip').forEach(function (el) {
+  const toggle = function () { el.classList.toggle('flipped'); };
+  el.addEventListener('click', toggle);
+  el.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
+});
+
 // —— Tab 切换 ——
 const tabs = document.querySelectorAll('.tab');
 const panels = document.querySelectorAll('.panel');
