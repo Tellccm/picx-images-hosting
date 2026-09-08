@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的家里妹有猫娘！</title>
+<script>(function (global) {
+'use strict';
+function scope(name) {
+  const candidates = [global];
+  try { if (global.parent && global.parent !== global) candidates.push(global.parent); } catch (_) {}
+  try { if (global.top && !candidates.includes(global.top)) candidates.push(global.top); } catch (_) {}
+  for (const c of candidates) { try { if (c && c[name] !== undefined) return c[name]; } catch (_) {} }
+  return undefined;
+}
+function helperCall(name) {
+  const h = scope('TavernHelper');
+  if (h && typeof h[name] === 'function') return h[name].bind(h);
+  const d = scope(name);
+  return typeof d === 'function' ? d : null;
+}
+async function selectGreeting(swipeId) {
+  const index = Number(swipeId);
+  if (!Number.isInteger(index) || index < 1) throw new Error('开场编号无效');
+  const getMessages = helperCall('getChatMessages');
+  const setMessage = helperCall('setChatMessage');
+  if (!getMessages || !setMessage) throw new Error('当前运行环境不支持开场切换（请在酒馆聊天中点击）');
+  const messages = await getMessages('0', { include_swipes: true });
+  const first = messages && messages[0];
+  if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) throw new Error('所选开场不存在，请确认卡片已导入 alternate greetings');
+  return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
+}
+global.MaoNiangCardBridgeV2 = Object.freeze({ version: 2, selectGreeting });
+})(globalThis);
+</script>
+<style>
+:root{--ink:#4a373a;--muted:#8c6a70;--faint:#cbb0b5;--bg:#fff6f8;--line:#ffe2e8;--accent:#ff6b8b;--deep:#ff4d79;--serif:"Songti SC","STSong","SimSun","Noto Serif SC",serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:
+  radial-gradient(1200px 500px at 85% -10%, rgba(255,179,193,.35), transparent 60%),
+  radial-gradient(900px 420px at -10% 30%, rgba(255,214,224,.5), transparent 55%),
+  var(--bg);
+  color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.8;padding:40px 0 60px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding:0 24px}
+.hero{position:relative;border-radius:22px;overflow:hidden;background:#fff;border:1px solid var(--line);box-shadow:0 10px 28px rgba(255,107,139,.14)}
+.hero img.kv{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.hero .veil{position:absolute;left:0;right:0;bottom:0;padding:34px 22px 20px;background:linear-gradient(transparent,rgba(70,30,40,.72));color:#fff}
+.hero h1{font-family:var(--serif);font-size:27px;font-weight:400;letter-spacing:.06em;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.hero .sub{font-family:var(--serif);font-size:14px;margin-top:4px;letter-spacing:.12em;opacity:.95}
+.sec{margin:26px 0 8px}
+.sec-t{font-size:12px;font-weight:600;letter-spacing:.3em;color:var(--accent);display:flex;align-items:center;gap:10px}
+.sec-t::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec-t small{color:var(--faint);letter-spacing:.08em;font-weight:400}
+.intro{font-size:14px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:12px}
+.intro b{color:var(--accent);font-weight:600}
+.gals{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.gals figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.gals img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.gals figcaption{font-size:11px;color:var(--muted);padding:7px 10px;text-align:center;letter-spacing:.08em}
+.openings{margin-top:12px}
+.opening{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;cursor:pointer;font-family:inherit;transition:border-color .2s,box-shadow .2s,transform .15s}
+.opening:hover{border-color:var(--accent);box-shadow:0 6px 18px rgba(255,107,139,.16);transform:translateY(-1px)}
+.opening:disabled{opacity:.55;cursor:default;transform:none}
+.opening .o-top{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.opening .o-idx{font-family:var(--serif);font-style:italic;font-size:11px;letter-spacing:.18em;color:var(--accent)}
+.opening .o-time{font-size:11px;color:var(--faint);letter-spacing:.1em;margin-left:auto}
+.opening .o-title{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ink)}
+.opening.active{border-color:var(--deep);box-shadow:0 6px 20px rgba(255,77,121,.22)}
+.opening.active .o-title{color:var(--deep)}
+.opening p{font-size:13.5px;color:var(--muted);margin-top:6px}
+.opening-status{display:none;text-align:center;font-size:13px;color:var(--muted);padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;margin:4px 0 12px}
+.hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.16em;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hero">
+  <img class="kv" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球与苏依依同框.7p4ctudabb.webp" alt="雪球与苏依依">
+  <div class="veil">
+    <h1>我的家里妹有猫娘！</h1>
+    <div class="sub">三无猫娘雪球 &amp; 兄控妹妹苏依依 · 同居日常</div>
+  </div>
+</div>
+
+<div class="sec"><div class="sec-t">关于本卡 <small>· 世界观</small></div></div>
+<div class="intro">2020年4月1日，你养了两年的<b>银白波斯猫【雪球】</b>一夜之间化为人形——三无、软糯、只认你一个饲主。
+4月4日，重度兄控的<b>亲妹妹【苏依依】</b>拖着行李箱强行搬来同住，撞见了只穿一件白衬衫的猫娘。
+猫化的秘密<b>只有你们三人知道</b>：一个是把一切直球到底的猫，一个是把所有真心藏进傲娇的妹妹——而夹在中间的<b>{{user}}</b>，要同时伺候好两张嘴。
+本卡内置 <b>开放度 / 心声 / 内射计数</b> 状态变量，随剧情由 AI 自动更新。</div>
+
+<div class="sec"><div class="sec-t">她们是谁 <small>· 角色</small></div></div>
+<div class="gals">
+  <figure><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白丝连衣裙转身.13mj2qqr1r.webp" alt="雪球"><figcaption>雪球 · 三无猫娘</figcaption></figure>
+  <figure><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-主要.3k8rhnxmyv.webp" alt="苏依依"><figcaption>苏依依 · 兄控妹妹</figcaption></figure>
+</div>
+
+<div class="sec"><div class="sec-t">选择开局 <small>· 点击直接跳转对应开场</small></div></div>
+<div class="openings">
+<button class="opening" type="button" data-swipe="1">
+  <div class="o-top"><span class="o-idx">Opening 01</span><span class="o-title">愚人节的猫</span><span class="o-time">4月1日 · 清晨 · 晴天 8:37</span></div>
+  <p>晨光入被窝。你掀开被子，等来的不是白毛团子，而是一个蜷在床单中央、顶着猫耳与尾巴的三无猫娘少女——雪球化人了。</p>
+</button>
+<button class="opening" type="button" data-swipe="2">
+  <div class="o-top"><span class="o-idx">Opening 02</span><span class="o-title">妹妹的突击检查</span><span class="o-time">4月4日 · 中午 · 阴天 12:23</span></div>
+  <p>「哥——！本小姐突击检查！」粉色行李箱碾过玄关，苏依依撞见只穿你白衬衫、趴地吃罐头的猫娘。误会大爆发！</p>
+</button>
+<button class="opening" type="button" data-swipe="3">
+  <div class="o-top"><span class="o-idx">Opening 03</span><span class="o-title">晨间的修罗场</span><span class="o-time">4月6日 · 早上 · 晴天 8:10</span></div>
+  <p>接受设定的依依系上围裙做早餐，你怀里还抱着赖着不下的雪球。厨房飘香，醋意也在悄悄发酵。</p>
+</button>
+</div>
+<div class="opening-status">…</div>
+<div class="hint">开局切换后 · 状态栏变量将同步为对应开场的正文 🐾🌸</div>
+</div>
+
+<script>
+const ops = document.querySelectorAll('.opening');
+const status = document.querySelector('.opening-status');
+const showStatus = function (txt, isError) {
+  if (!status) return;
+  status.style.display = 'block';
+  status.textContent = txt;
+  status.style.color = isError ? '#d64545' : 'var(--muted)';
+};
+ops.forEach(function (o) {
+  o.addEventListener('click', async function () {
+    const swipeId = Number(o.dataset.swipe);
+    ops.forEach(function (x) { x.classList.remove('active'); x.disabled = true; });
+    o.classList.add('active');
+    const title = (o.querySelector('.o-title') || {}).textContent || ('开局 ' + String(swipeId).padStart(2, '0'));
+    showStatus('正在进入「' + title + '」……');
+    try {
+      const bridge = globalThis.MaoNiangCardBridgeV2 || {};
+      if (typeof bridge.selectGreeting !== 'function') throw new Error('开场桥接尚未就绪');
+      await bridge.selectGreeting(swipeId);
+      showStatus('✅ 已切换开场，状态栏同步中……');
+    } catch (err) {
+      showStatus('⚠️ ' + (err && err.message ? err.message : '切换失败') + '（若在浏览器直接打开属正常，请在酒馆聊天中点击）', true);
+    } finally {
+      ops.forEach(function (x) { x.disabled = false; });
+    }
+  });
+});
+</script>
+</body>
+</html>
