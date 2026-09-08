@@ -35,7 +35,7 @@ body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(
     <div class="hd">📅 <span id="dtime">时间流逝中...</span></div>
     <div class="grid">
       <div class="card">
-        <div class="av"><img src="https://$198 108 111 98 32 57 51 57 50 0/苏依依-头像.1hsytlz1xx.webp" alt=""></div>
+        <div class="av"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-头像.1hsytlz1xx.webp" alt=""></div>
         <div class="mid">
           <div class="nm">🌸 苏依依 <span class="tag">妹妹</span></div>
           <div class="lab"><span>开放度</span><span><b id="op">5</b>/100</span></div>
@@ -45,7 +45,7 @@ body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(
         </div>
       </div>
       <div class="card">
-        <div class="av"><img src="https://$198 108 111 98 32 57 51 57 50 0/雪球-头像.67y7s0qobe.webp" alt=""></div>
+        <div class="av"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-头像.67y7s0qobe.webp" alt=""></div>
         <div class="mid">
           <div class="nm">🐾 雪球 <span class="tag">猫娘</span></div>
           <div class="stat"><span>内射次数</span><b id="sc">0</b></div>
@@ -59,7 +59,6 @@ body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(
 <script>
 (function () {
 'use strict';
-// ---------- 工具 ----------
 function scope(name) {
   const candidates = [globalThis];
   try { if (globalThis.parent && globalThis.parent !== globalThis) candidates.push(globalThis.parent); } catch (_) {}
@@ -94,8 +93,6 @@ function showPanel() {
   const m = $id('msg'); if (m) m.style.display = 'none';
   const p = $id('panel'); if (p) p.style.display = 'block';
 }
-
-// ---------- 解析消息文本里的 {{setvar}} 注释（兜底数据源） ----------
 function parseSetvars(text) {
   const out = {};
   if (!text) return out;
@@ -104,12 +101,8 @@ function parseSetvars(text) {
   while ((m = re.exec(text)) !== null) { out[m[1]] = m[2]; }
   return out;
 }
-
-// ---------- 取数路径 ----------
-// 目标：找到“当前显示的那条消息文本 + 它的变量”
 async function getMessageContext() {
   const errs = [];
-  // 路径 A：Mvu API（原卡同款）
   const Mvu = scope('Mvu');
   const gcmid = scope('getCurrentMessageId');
   if (Mvu && typeof Mvu.getMvuData === 'function' && gcmid) {
@@ -121,7 +114,6 @@ async function getMessageContext() {
       }
     } catch (e) { errs.push('Mvu:' + e.message); }
   }
-  // 路径 B：TavernHelper.getChatMessages 直接读 message.data（MVU 官方文档推荐读取法）
   const th = scope('TavernHelper');
   if (th && typeof th.getChatMessages === 'function') {
     try {
@@ -131,7 +123,6 @@ async function getMessageContext() {
         const d = m0.data || {};
         const sd = d.display_data || d.stat_data;
         if (sd) return { kind: 'message-data', data: { stat_data: d.stat_data, display_data: d.display_data } };
-        // 数据不在 message.data：退回解析当前 swipe 文本
         const cur = (m0.swipes && Number.isInteger(m0.swipe_id) && m0.swipes[m0.swipe_id] != null)
           ? m0.swipes[m0.swipe_id] : m0.message;
         return { kind: 'text', text: cur || '' };
@@ -140,8 +131,6 @@ async function getMessageContext() {
   }
   return { kind: 'none', errs: errs };
 }
-
-// ---------- 渲染 ----------
 function renderFromVars(sd) {
   const y = (sd && sd.yiyi) || {}, s = (sd && sd.snowball) || {}, g = (sd && sd.global) || {};
   const rawOp = getPath(y, 'openness');
@@ -171,8 +160,6 @@ function renderFromText(text) {
   showPanel();
   return true;
 }
-
-// ---------- 主刷新 ----------
 async function refresh() {
   try {
     const ctx = await getMessageContext();
@@ -196,9 +183,7 @@ async function refresh() {
     setMsg('⚠️ 状态读取异常: ' + (e && e.message ? e.message : String(e)), true);
   }
 }
-
 async function boot() {
-  // 最多等 15 秒让扩展就绪
   for (let i = 0; i < 60; i++) {
     if (scope('Mvu') || scope('TavernHelper')) break;
     await new Promise(r => setTimeout(r, 250));
