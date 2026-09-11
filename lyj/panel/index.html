@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>灵渊纪 · 状态栏</title>
+<script src="../lyj-bridge.js"></script>
+<style>
+/* ===== 《灵渊纪：守与放》状态栏 · 宣纸水墨 ===== */
+#lyj-st{
+  position:relative; width:100%; max-width:680px; margin:0 auto;
+  font-family:"Songti SC","STSong","SimSun","Noto Serif CJK SC",serif;
+  font-size:13px; line-height:1.7; color:#2b2620;
+  background-color:#f2ead9;
+  background-image:
+    radial-gradient(rgba(120,100,70,.05) 1px, transparent 1px),
+    linear-gradient(168deg,#f2ead9 0%,#f2ead9 46%,#e9dfc9 100%);
+  background-size:4px 4px, 100% 100%;
+  border:1px solid #c9b48c;
+  border-radius:5px;
+  box-shadow:0 0 0 1px rgba(201,180,140,.45), 0 2px 6px rgba(90,70,40,.12);
+  overflow:hidden;
+}
+#lyj-st,#lyj-st *{box-sizing:border-box;}
+
+/* ---- 四角卷云（纯 CSS 弧线拼合） ---- */
+#lyj-st::before,#lyj-st::after{
+  content:''; position:absolute; width:14px; height:14px; z-index:2;
+  border:1px solid #b8892b; opacity:.5; pointer-events:none;
+}
+#lyj-st::before{top:5px; left:5px; border-color:#b8892b transparent transparent #b8892b; border-radius:50% 0 0 50%;}
+#lyj-st::after{top:5px; right:5px; border-color:#b8892b #b8892b transparent transparent; border-radius:0 50% 0 0;}
+#lyj-st .lyj-st-head::before,#lyj-st .lyj-st-head::after{
+  content:''; position:absolute; width:7px; height:7px; z-index:2;
+  border:1px solid #b8892b; opacity:.32; pointer-events:none;
+}
+#lyj-st .lyj-st-head::before{top:10px; left:10px; border-color:transparent #b8892b #b8892b transparent; border-radius:0 0 50% 0;}
+#lyj-st .lyj-st-head::after{top:10px; right:10px; border-color:#b8892b transparent transparent #b8892b; border-radius:50% 0 0 50%;}
+#lyj-st .lyj-st-panels::before,#lyj-st .lyj-st-panels::after{
+  content:''; position:absolute; width:14px; height:14px; z-index:2;
+  border:1px solid #b8892b; opacity:.5; pointer-events:none;
+}
+#lyj-st .lyj-st-panels::before{bottom:5px; left:5px; border-color:transparent transparent #b8892b #b8892b; border-radius:0 0 0 50%;}
+#lyj-st .lyj-st-panels::after{bottom:5px; right:5px; border-color:transparent #b8892b #b8892b transparent; border-radius:0 0 50% 0;}
+#lyj-st .lyj-st-tabs::before,#lyj-st .lyj-st-tabs::after{
+  content:''; position:absolute; width:7px; height:7px; z-index:2;
+  border:1px solid #b8892b; opacity:.32; pointer-events:none;
+}
+#lyj-st .lyj-st-tabs::before{bottom:10px; left:10px; border-color:#b8892b transparent transparent #b8892b; border-radius:50% 0 0 50%;}
+#lyj-st .lyj-st-tabs::after{bottom:10px; right:10px; border-color:#b8892b #b8892b transparent transparent; border-radius:0 50% 0 0;}
+
+/* ---- 抬头（常驻，不随标签切换） ---- */
+#lyj-st .lyj-st-head{
+  padding:13px 22px 11px;
+  background:linear-gradient(180deg,rgba(233,223,201,.55),rgba(242,234,217,.15));
+  border-bottom:1px solid rgba(120,100,70,.22);
+}
+#lyj-st .lyj-st-head-main{min-width:0;}
+#lyj-st .lyj-st-name{
+  font-size:18px; font-weight:700; letter-spacing:.16em; color:#2b2620;
+}
+#lyj-st .lyj-st-name .lyj-st-glyph{color:#b8892b; margin-right:5px;}
+/* 朱砂小印（纯 CSS 生成） */
+#lyj-st .lyj-st-name::after{
+  content:'道'; display:inline-block;
+  margin-left:9px; padding:0 3px 1px 4px;
+  font-size:10px; font-weight:700; line-height:1.42; letter-spacing:0;
+  color:#f2ead9; background:#a83232; border-radius:2px;
+  transform:rotate(-2deg) translateY(-2px);
+  box-shadow:0 0 0 1px rgba(168,50,50,.35);
+}
+#lyj-st .lyj-st-tags{margin-top:5px; font-size:12px; color:#6b6152; letter-spacing:.06em;}
+#lyj-st .lyj-st-tag b{color:#2b2620; font-weight:700; margin-left:3px;}
+#lyj-st .lyj-st-tag.lyj-st-route b{color:#b8892b;}
+#lyj-st .lyj-st-sep{color:rgba(184,137,43,.55); margin:0 7px;}
+#lyj-st .lyj-st-realm{margin-top:4px; font-size:11.5px; color:#6b6152; letter-spacing:.1em;}
+#lyj-st .lyj-st-realm b{color:#a83232; font-weight:700;}
+
+/* ---- 姿态大字条 ---- */
+#lyj-st .lyj-st-stance{
+  position:relative; padding:11px 26px 10px;
+  color:#f2ead9; border-bottom:1px solid rgba(120,100,70,.25);
+}
+#lyj-st .lyj-st-stance::before,#lyj-st .lyj-st-stance::after{
+  content:''; position:absolute; top:50%; margin-top:-8px;
+  width:15px; height:15px; border:1px solid rgba(242,234,217,.8);
+  opacity:.72; pointer-events:none;
+}
+#lyj-st .lyj-st-stance::before{left:5px; border-color:rgba(242,234,217,.8) transparent transparent rgba(242,234,217,.8); border-radius:50% 0 0 50%;}
+#lyj-st .lyj-st-stance::after{right:5px; border-color:rgba(242,234,217,.8) rgba(242,234,217,.8) transparent transparent; border-radius:0 50% 0 0;}
+#lyj-st .lyj-st-stance-row{display:flex; align-items:center; flex-wrap:wrap; gap:8px;}
+#lyj-st .lyj-st-stance-glyph{font-size:15px; line-height:1; color:rgba(242,234,217,.85);}
+#lyj-st .lyj-st-stance-word{font-size:23px; font-weight:700; letter-spacing:.2em; line-height:1.12; color:#f2ead9;}
+#lyj-st .lyj-st-stance-hint{font-size:11px; color:rgba(242,234,217,.72); letter-spacing:.04em; margin-left:4px;}
+#lyj-st .lyj-st-stance-warn{
+  margin-left:auto; font-size:12px; font-weight:700; letter-spacing:.08em;
+  padding:2px 10px; border-radius:3px;
+  color:#a83232; background:#f2ead9; border:1px solid rgba(242,234,217,.9);
+}
+#lyj-st .lyj-st-stance-sub{margin-top:4px; font-size:11px; color:rgba(242,234,217,.88); letter-spacing:.08em;}
+#lyj-st .lyj-st-stance-rest{margin-left:9px; color:rgba(242,234,217,.62);}
+#lyj-st .lyj-st-pose-in{background:#3a4a52;}
+#lyj-st .lyj-st-pose-in .lyj-st-stance-glyph,#lyj-st .lyj-st-pose-in .lyj-st-stance-word{color:#f2ead9;}
+#lyj-st .lyj-st-pose-out{background:#7a4a2b;}
+#lyj-st .lyj-st-pose-out .lyj-st-stance-glyph,#lyj-st .lyj-st-pose-out .lyj-st-stance-word{color:#f2ead9;}
+#lyj-st .lyj-st-pose-shift{background:#a83232; animation:lyj-breathe 1.2s ease-in-out infinite;}
+#lyj-st .lyj-st-pose-shift .lyj-st-stance-glyph,#lyj-st .lyj-st-pose-shift .lyj-st-stance-word{color:#f2ead9;}
+@keyframes lyj-breathe{
+  0%{opacity:1; box-shadow:inset 0 0 0 rgba(242,234,217,0);}
+  50%{opacity:.76; box-shadow:inset 0 0 14px rgba(242,234,217,.28);}
+  100%{opacity:1; box-shadow:inset 0 0 0 rgba(242,234,217,0);}
+}
+
+/* ---- 资源条 ---- */
+#lyj-st .lyj-st-bars{padding:11px 22px 4px;}
+#lyj-st .lyj-st-bar{display:flex; align-items:center; gap:9px; margin-bottom:7px;}
+#lyj-st .lyj-st-bar-label{flex:0 0 34px; font-size:12px; color:#6b6152; letter-spacing:.1em;}
+#lyj-st .lyj-st-bar-track{
+  position:relative; flex:1 1 auto; height:11px; border-radius:3px; overflow:hidden;
+  background:#ded3bd; border:1px solid rgba(120,100,70,.22);
+}
+#lyj-st .lyj-st-bar-fill{display:block; height:100%; transition:width .35s ease;}
+#lyj-st .lyj-st-bar-pct{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  font-size:9.5px; font-weight:700; color:#5a5142; letter-spacing:.02em;
+}
+#lyj-st .lyj-st-bar-val{flex:0 0 auto; min-width:98px; text-align:right; font-size:11.5px; color:#6b6152;}
+#lyj-st .lyj-st-bar-val b{font-size:13.5px; font-weight:700; color:#2b2620;}
+#lyj-st .lyj-st-bar-ex{color:#a83232; font-weight:700; margin-left:4px;}
+#lyj-st .lyj-st-bar-hp .lyj-st-bar-fill{background:linear-gradient(90deg,#a83232,#7a4a2b);}
+#lyj-st .lyj-st-bar-hp .lyj-st-bar-val b{color:#a83232;}
+#lyj-st .lyj-st-bar-qi{margin:2px 0 8px;}
+#lyj-st .lyj-st-bar-qi .lyj-st-bar-label{color:#b8892b; font-weight:700;}
+#lyj-st .lyj-st-bar-qi .lyj-st-bar-track{height:17px; border-color:rgba(184,137,43,.5);}
+#lyj-st .lyj-st-bar-qi .lyj-st-bar-fill{background:linear-gradient(90deg,#e3c67e,#c9a24a 48%,#a8761c);}
+#lyj-st .lyj-st-bar-qi .lyj-st-bar-val b{color:#b8892b; font-size:15px;}
+#lyj-st .lyj-st-bar-qi .lyj-st-bar-pct{font-size:10.5px; font-weight:700;}
+#lyj-st .lyj-st-bar-ss .lyj-st-bar-fill{background:#3a4a52;}
+#lyj-st .lyj-st-bar-ss .lyj-st-bar-val b{color:#3a4a52;}
+
+/* ---- 熟练度 ---- */
+#lyj-st .lyj-st-prof{padding:10px 22px 11px; position:relative; border-top:1px solid rgba(120,100,70,.22);}
+#lyj-st .lyj-st-prof::before,#lyj-st .lyj-st-fx::before,#lyj-st .lyj-st-own::before,#lyj-st .lyj-st-rep::before,#lyj-st .lyj-st-want::before{
+  content:''; position:absolute; top:-6px; left:50%; margin-left:-8px;
+  width:16px; height:6px; background:#f2ead9;
+  border:1px solid #b8892b; border-color:#b8892b #b8892b transparent transparent;
+  border-radius:8px 8px 0 0; opacity:.8; pointer-events:none;
+}
+#lyj-st .lyj-st-prof::after,#lyj-st .lyj-st-fx::after,#lyj-st .lyj-st-own::after,#lyj-st .lyj-st-rep::after{
+  content:''; position:absolute; top:-3px; left:50%; margin-left:-4px;
+  width:8px; height:3px; background:#f2ead9;
+  border:1px solid rgba(184,137,43,.6); border-color:rgba(184,137,43,.6) rgba(184,137,43,.6) transparent transparent;
+  border-radius:4px 4px 0 0; pointer-events:none;
+}
+#lyj-st .lyj-st-prof-head{
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:11.5px; color:#b8892b; letter-spacing:.14em; margin-bottom:6px;
+}
+#lyj-st .lyj-st-prof-pt{color:#a83232; font-weight:700; letter-spacing:.06em;}
+#lyj-st .lyj-st-prof-row{display:flex; align-items:center; gap:9px;}
+#lyj-st .lyj-st-prof-name{flex:0 0 34px; font-size:12px; color:#6b6152; letter-spacing:.1em;}
+#lyj-st .lyj-st-dots{flex:1 1 auto; letter-spacing:.16em; font-size:14px; line-height:1.3;}
+#lyj-st .lyj-st-dot{color:#8c8271;}
+#lyj-st .lyj-st-dot.on{color:#b8892b;}
+#lyj-st .lyj-st-dot.lock{opacity:.38;}
+#lyj-st .lyj-st-prof-num{flex:0 0 auto; min-width:18px; text-align:right; font-size:12.5px; font-weight:700; color:#2b2620;}
+#lyj-st .lyj-st-prof-mid{margin:4px 0 4px 34px;}
+#lyj-st .lyj-st-prof-badge{
+  display:inline-block; font-size:11px; font-weight:700; letter-spacing:.12em;
+  padding:1px 10px; border-radius:3px; color:#b8892b;
+  border:1px solid rgba(184,137,43,.5); background:#f7f1e3;
+}
+#lyj-st .lyj-st-prof-badge.lyj-st-bal{color:#5c7a52; border-color:rgba(92,122,82,.5); background:rgba(92,122,82,.07);}
+#lyj-st .lyj-st-prof-foot{margin-top:5px; font-size:10.5px; color:#8c8271; letter-spacing:.06em;}
+
+/* ---- 状态效果 ---- */
+#lyj-st .lyj-st-fx{
+  padding:10px 22px 11px; position:relative; border-top:1px solid rgba(120,100,70,.22);
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+}
+#lyj-st .lyj-st-fx-label{font-size:11.5px; color:#b8892b; letter-spacing:.14em; margin-right:3px;}
+#lyj-st .lyj-st-chip{
+  font-size:11.5px; padding:2px 9px; border-radius:3px; color:#6b6152;
+  border:1px solid rgba(184,137,43,.45); background:#f7f1e3;
+}
+#lyj-st .lyj-st-chip.bad{color:#a83232; border-color:rgba(168,50,50,.45); background:rgba(168,50,50,.06);}
+#lyj-st .lyj-st-fx-none{font-size:11.5px; color:#8c8271; letter-spacing:.1em;}
+
+/* ---- 底行 ---- */
+#lyj-st .lyj-st-foot{
+  padding:10px 22px 17px; border-top:1px solid rgba(120,100,70,.22);
+  display:flex; flex-wrap:wrap; gap:5px 14px; font-size:11.5px; color:#6b6152;
+}
+#lyj-st .lyj-st-f i{font-style:normal; color:#b8892b; letter-spacing:.1em; margin-right:5px;}
+#lyj-st .lyj-st-f b{color:#2b2620; font-weight:700;}
+
+/* ---- 标签栏 ---- */
+#lyj-st .lyj-st-tabs{
+  display:flex; flex-wrap:wrap; gap:2px;
+  padding:8px 14px 0;
+  background:linear-gradient(180deg,rgba(233,223,201,.5),rgba(242,234,217,.1));
+  border-bottom:1px solid rgba(120,100,70,.25);
+}
+#lyj-st .lyj-st-tab{
+  flex:1 1 0; min-width:54px; text-align:center;
+  cursor:pointer; user-select:none; -webkit-user-select:none;
+  font-size:12px; letter-spacing:.08em; padding:6px 4px 7px;
+  color:#8c8271; background:transparent; border:1px solid transparent; border-bottom:none;
+  border-radius:3px 3px 0 0;
+  transition:color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+#lyj-st .lyj-st-tab:hover{color:#2b2620; background:rgba(184,137,43,.08);}
+#lyj-st .lyj-st-tab.on{
+  color:#2b2620; font-weight:700;
+  background:linear-gradient(180deg,rgba(184,137,43,.12),rgba(184,137,43,.02));
+  border-color:rgba(201,180,140,.7);
+  box-shadow:inset 0 -2px 0 #b8892b;
+}
+#lyj-st .lyj-st-tab.on::before{
+  content:''; display:inline-block; width:5px; height:5px; border-radius:50%;
+  background:#a83232; margin-right:4px; vertical-align:1px;
+}
+
+/* ---- 面板 ---- */
+#lyj-st .lyj-st-panel{display:none;}
+#lyj-st .lyj-st-panel.on{display:block; animation:lyj-fade .18s ease both;}
+@keyframes lyj-fade{from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);}}
+#lyj-st .lyj-st-empty{padding:16px; font-size:11.5px; color:#8c8271; letter-spacing:.1em; text-align:center;}
+
+/* ---- 所拥有之物 ---- */
+#lyj-st .lyj-st-own{padding:10px 22px 6px; position:relative; border-top:1px solid rgba(120,100,70,.22);}
+#lyj-st .lyj-st-own-sec{margin-bottom:7px;}
+#lyj-st .lyj-st-own-title{font-size:11.5px; color:#b8892b; letter-spacing:.14em; margin-bottom:5px;}
+#lyj-st .lyj-st-own-body{display:flex; flex-wrap:wrap; align-items:center; gap:6px;}
+#lyj-st .lyj-st-slot{
+  font-size:11.5px; padding:2px 9px; border-radius:3px; color:#2b2620;
+  border:1px solid rgba(120,100,70,.3); background:#f7f1e3;
+}
+#lyj-st .lyj-st-slot i{font-style:normal; color:#6b6152; margin-right:4px;}
+#lyj-st .lyj-st-slot b{color:#2b2620; font-weight:700;}
+#lyj-st .lyj-st-chip2{
+  font-size:11.5px; padding:2px 9px; border-radius:3px; color:#2b2620;
+  border:1px solid rgba(120,100,70,.3); background:#f7f1e3;
+}
+#lyj-st .lyj-st-chip2 b{color:#b8892b; font-weight:700; margin-left:2px;}
+#lyj-st .lyj-st-skill-line{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:4px;}
+#lyj-st .lyj-st-skill-cat{
+  font-size:11px; color:#b8892b; letter-spacing:.06em;
+  padding:0 6px; border-radius:3px; border:1px solid rgba(184,137,43,.45); background:rgba(184,137,43,.07);
+}
+#lyj-st .lyj-st-skill{font-size:11.5px; color:#2b2620; letter-spacing:.04em;}
+#lyj-st .lyj-st-none{font-size:11.5px; color:#8c8271; letter-spacing:.1em;}
+#lyj-st .lyj-st-more{font-size:11px; color:#8c8271; letter-spacing:.06em;}
+
+/* ---- 人物（人际关系） ---- */
+#lyj-st .lyj-st-relwrap{padding:6px 0 18px;}
+#lyj-st .lyj-st-rel{border-bottom:1px solid rgba(120,100,70,.16);}
+#lyj-st .lyj-st-rel-line{
+  display:flex; align-items:center; flex-wrap:wrap; gap:7px;
+  padding:8px 22px; cursor:pointer; font-size:12px;
+  transition:background .16s ease;
+}
+#lyj-st .lyj-st-rel-line:hover{background:rgba(184,137,43,.08);}
+#lyj-st .lyj-st-rel.on .lyj-st-rel-line{background:rgba(184,137,43,.12);}
+#lyj-st .lyj-st-rel-line::after{content:'▸'; margin-left:auto; font-size:10.5px; color:#b8892b; opacity:.7;}
+#lyj-st .lyj-st-rel.on .lyj-st-rel-line::after{content:'▾';}
+#lyj-st .lyj-st-rel-name{font-weight:700; color:#2b2620; letter-spacing:.06em;}
+#lyj-st .lyj-st-rel-sex{color:#6b6152;}
+#lyj-st .lyj-st-rel-role{color:#6b6152; max-width:9em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+#lyj-st .lyj-st-rel-stage{color:#b8892b;}
+#lyj-st .lyj-st-rel-dot{color:rgba(120,100,70,.45);}
+#lyj-st .lyj-st-rel-fav{font-weight:700; letter-spacing:.02em;}
+#lyj-st .lyj-st-favbar{
+  position:relative; flex:0 0 auto; width:60px; height:7px; border-radius:3px;
+  background:#ded3bd; border:1px solid rgba(120,100,70,.25); overflow:hidden;
+}
+#lyj-st .lyj-st-favbar::before{
+  content:''; position:absolute; left:50%; top:0; bottom:0; width:1px;
+  background:rgba(120,100,70,.5);
+}
+#lyj-st .lyj-st-favfill{position:absolute; top:0; bottom:0; display:block;}
+#lyj-st .lyj-st-favfill.pos{left:50%;}
+#lyj-st .lyj-st-favfill.neg{right:50%;}
+#lyj-st .fav-a{color:#b8892b;}
+#lyj-st .fav-b{color:#5c7a52;}
+#lyj-st .fav-c{color:#8c8271;}
+#lyj-st .fav-d{color:#a83232;}
+#lyj-st .fav-a.lyj-st-favfill{background:linear-gradient(90deg,#e0c07a,#b8892b);}
+#lyj-st .fav-b.lyj-st-favfill{background:linear-gradient(90deg,#8aa87e,#5c7a52);}
+#lyj-st .fav-c.lyj-st-favfill{background:linear-gradient(90deg,#b3a894,#8c8271);}
+#lyj-st .fav-d.lyj-st-favfill{background:linear-gradient(90deg,#c86a6a,#a83232);}
+
+/* ---- 二级展开详情（人物 / 任务共用） ---- */
+#lyj-st .lyj-st-detail{display:none; padding:0 22px 11px;}
+#lyj-st .lyj-st-detail.on{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 12px;}
+#lyj-st .lyj-st-dfield{font-size:11.5px; color:#6b6152; min-width:0; overflow-wrap:anywhere;}
+#lyj-st .lyj-st-dfield i{font-style:normal; color:#b8892b; letter-spacing:.06em; margin-right:5px;}
+#lyj-st .lyj-st-dfield b{color:#2b2620; font-weight:700;}
+#lyj-st .lyj-st-dfield.wide{grid-column:1 / -1;}
+
+/* ---- 任务 ---- */
+#lyj-st .lyj-st-questwrap{padding:6px 0 18px;}
+#lyj-st .lyj-st-quest{border-bottom:1px solid rgba(120,100,70,.16);}
+#lyj-st .lyj-st-quest-line{
+  display:flex; align-items:center; flex-wrap:wrap; gap:7px;
+  padding:8px 22px; cursor:pointer; font-size:12px;
+  transition:background .16s ease;
+}
+#lyj-st .lyj-st-quest-line:hover{background:rgba(184,137,43,.08);}
+#lyj-st .lyj-st-quest.on .lyj-st-quest-line{background:rgba(184,137,43,.12);}
+#lyj-st .lyj-st-quest-line::after{content:'▸'; margin-left:auto; font-size:10.5px; color:#b8892b; opacity:.7;}
+#lyj-st .lyj-st-quest.on .lyj-st-quest-line::after{content:'▾';}
+#lyj-st .lyj-st-quest-name{font-weight:700; color:#2b2620; letter-spacing:.06em;}
+#lyj-st .lyj-st-quest-src{color:#6b6152;}
+#lyj-st .lyj-st-quest-time{color:#6b6152;}
+#lyj-st .lyj-st-qchip{
+  font-size:11px; padding:1px 9px; border-radius:3px;
+  color:#3a4a52; border:1px solid rgba(58,74,82,.45); background:rgba(58,74,82,.07);
+}
+#lyj-st .lyj-st-qchip.done{color:#8c8271; border-color:rgba(140,130,113,.45); background:rgba(140,130,113,.1);}
+#lyj-st .lyj-st-qchip.fail{color:#a83232; border-color:rgba(168,50,50,.45); background:rgba(168,50,50,.06);}
+
+/* ---- 世界：声望 / 通缉 ---- */
+#lyj-st .lyj-st-rep{padding:10px 22px 11px; position:relative; border-top:1px solid rgba(120,100,70,.22);}
+#lyj-st .lyj-st-rep-title{font-size:11.5px; color:#b8892b; letter-spacing:.14em; margin-bottom:6px;}
+#lyj-st .lyj-st-rep-body{display:flex; flex-wrap:wrap; align-items:center; gap:6px;}
+#lyj-st .lyj-st-repchip{
+  font-size:11.5px; padding:2px 9px; border-radius:3px; color:#6b6152;
+  border:1px solid rgba(120,100,70,.3); background:#f7f1e3;
+}
+#lyj-st .lyj-st-repchip b{margin-left:5px; font-weight:700;}
+#lyj-st .lyj-st-repchip.pos b{color:#b8892b;}
+#lyj-st .lyj-st-repchip.neg b{color:#a83232;}
+#lyj-st .lyj-st-repchip.zero b{color:#8c8271;}
+#lyj-st .lyj-st-want{position:relative; display:flex; align-items:center; gap:9px; padding:10px 22px 17px; border-top:1px solid rgba(120,100,70,.22);}
+#lyj-st .lyj-st-want-label{font-size:11.5px; color:#b8892b; letter-spacing:.14em;}
+#lyj-st .lyj-st-wantbar{
+  position:relative; flex:1 1 auto; max-width:220px; height:9px; border-radius:3px;
+  background:#ded3bd; border:1px solid rgba(120,100,70,.25); overflow:hidden;
+}
+#lyj-st .lyj-st-wantfill{display:block; height:100%; background:linear-gradient(90deg,#c9a24a,#a83232);}
+#lyj-st .lyj-st-want-num{font-size:12.5px; font-weight:700; color:#a83232; min-width:28px; text-align:right;}
+
+/* ---- 回退态 ---- */
+#lyj-st .lyj-st-fb{padding:10px 14px; font-size:11.5px; color:#8c8271; letter-spacing:.12em; text-align:center;}
+#lyj-st .lyj-st-fb-g{color:#b8892b; margin-right:6px;}
+#lyj-st.lyj-st-min{
+  max-width:520px; background-image:linear-gradient(168deg,#f2ead9,#e9dfc9);
+  box-shadow:0 0 0 1px rgba(201,180,140,.45);
+}
+
+@media (max-width:560px){
+  #lyj-st{max-width:100%; border-radius:4px;}
+  #lyj-st .lyj-st-stance-word{font-size:20px; letter-spacing:.14em;}
+  #lyj-st .lyj-st-stance-hint{display:none;}
+  #lyj-st .lyj-st-stance{padding-left:22px; padding-right:22px;}
+  #lyj-st .lyj-st-bar-val{min-width:80px; font-size:11px;}
+  #lyj-st .lyj-st-head,#lyj-st .lyj-st-bars,#lyj-st .lyj-st-prof,#lyj-st .lyj-st-fx,#lyj-st .lyj-st-own,#lyj-st .lyj-st-foot,#lyj-st .lyj-st-rep,#lyj-st .lyj-st-want,#lyj-st .lyj-st-rel-line,#lyj-st .lyj-st-quest-line,#lyj-st .lyj-st-detail{padding-left:16px; padding-right:16px;}
+  #lyj-st .lyj-st-tabs{gap:2px; padding:7px 8px 0;}
+  #lyj-st .lyj-st-tab{min-width:46px; font-size:11px; letter-spacing:.01em; padding:5px 2px 6px;}
+}
+@media (prefers-reduced-motion: reduce){
+  #lyj-st .lyj-st-pose-shift{animation:none;}
+  #lyj-st .lyj-st-panel.on{animation:none;}
+  #lyj-st .lyj-st-tab{transition:none;}
+  #lyj-st .lyj-st-bar-fill{transition:none;}
+}
+</style>
+</head>
+<body style="margin:0;padding:0;background:transparent;">
+<div id="lyj-st" class="lyj-st lyj-st-min">
+  <div class="lyj-st-fb"><span class="lyj-st-fb-g">⟡</span> 未接入变量，状态栏不可用</div>
+</div>
+<script>
+(function () {
+  'use strict';
+
+  var LYJ = window.LYJ || null;
+  var root = document.getElementById('lyj-st');
+  if (!root) return;
+
+  /* 灵石折算基准价（固定口径，不受潮汐影响） */
+  var STONE_RATE = { '下品': 3, '中品': 280, '上品': 26000 };
+  /* 标签页：默认「状态」 */
+  var TAB_KEY = 'lyj-st-tab';
+  var TABS = ['state', 'people', 'items', 'world', 'quest'];
+  var TAB_DEFS = [
+    { id: 'state', label: '◆ 状态' },
+    { id: 'people', label: '◆ 人物' },
+    { id: 'items', label: '◆ 所有物' },
+    { id: 'world', label: '◆ 世界' },
+    { id: 'quest', label: '◆ 任务' }
+  ];
+  var tab = 'state';
+  var lastKey = null;
+  var memUsable = null;
+  var MAX_ITEMS = 24;
+  var MAX_RELS = 20;
+  var SKILL_CATS = ['内法', '外法', '兼法', '术业'];
+
+  /* ---------------- 标签记忆（全 try/catch 包住） ---------------- */
+  function store(){
+    try { return (window.localStorage && typeof window.localStorage.getItem === 'function') ? window.localStorage : null; }
+    catch (e) { return null; }
+  }
+  function syncTab(){
+    if (memUsable === false) return;
+    try {
+      var s = store();
+      if (!s){ memUsable = false; return; }
+      var v = s.getItem(TAB_KEY);
+      memUsable = true;
+      if (v === null || v === undefined) return;
+      v = String(v);
+      if (TABS.indexOf(v) > -1) tab = v;
+    } catch (e) { memUsable = false; }
+  }
+  function writeTab(v){
+    try {
+      var s = store();
+      if (!s){ memUsable = false; return; }
+      s.setItem(TAB_KEY, String(v));
+    } catch (e) { memUsable = false; }
+  }
+
+  /* ---------------- 工具 ---------------- */
+  function esc(s){
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  /* 映射表子值：bridge 已完成取值与拆包；此处仅兜住「子值本身仍是 [值,说明] 对」的形态 */
+  function objOf(v){
+    if (v === null || v === undefined || typeof v !== 'object') return null;
+    if (!Array.isArray(v)) return v;
+    if (v.length === 2 && typeof v[1] === 'string' && v[0] && typeof v[0] === 'object' && !Array.isArray(v[0])) return v[0];
+    return null;
+  }
+  function pick(obj, keys){
+    for (var i = 0; i < keys.length; i++){ if (obj[keys[i]] !== undefined) return obj[keys[i]]; }
+    return undefined;
+  }
+  function fmtN(n){
+    n = LYJ.num(n, 0);
+    if (!isFinite(n)) return '0';
+    var v = Math.round(n), neg = v < 0, s = String(Math.abs(v));
+    s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + s;
+  }
+  function clip(s, n){
+    s = String(s === null || s === undefined ? '' : s);
+    return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+  function layerNum(s){
+    var t = String(s || '');
+    var m = t.match(/[0-9]+/);
+    if (m) return parseInt(m[0], 10);
+    var cn = '零一二三四五六七八九';
+    var m2 = t.match(/[零一二三四五六七八九]/);
+    if (m2) return cn.indexOf(m2[0]);
+    return 0;
+  }
+  function routeOf(raw, inner, outer){
+    if (raw === '主修内炼' || raw === '主修外引' || raw === '两者兼修') return raw;
+    var d = inner - outer;
+    if (Math.abs(d) <= 1) return '两者兼修';
+    return d > 0 ? '主修内炼' : '主修外引';
+  }
+  /* 好感度配色：≥60 暖金 / 21~59 竹青 / -20~20 灰 / ≤-21 朱砂 */
+  function favClass(v){
+    if (v === null || v === undefined || !isFinite(v)) return 'fav-c';
+    if (v >= 60) return 'fav-a';
+    if (v >= 21) return 'fav-b';
+    if (v >= -20) return 'fav-c';
+    return 'fav-d';
+  }
+
+  /* ---------------- 条目归一（数字 / 字符串 / 对象 三形态） ---------------- */
+  function describe(name, raw){
+    var o = { name: LYJ.str(name, ''), qty: null, rank: null, cat: '', note: '', empty: false };
+    var v = raw;
+    if (v === null || v === undefined){ o.empty = true; return o; }
+    if (typeof v === 'number'){ o.qty = isFinite(v) ? v : 0; return o; }
+    if (typeof v === 'boolean'){ o.qty = v ? 1 : 0; return o; }
+    if (typeof v === 'string'){
+      var s = v.replace(/\s+/g, ' ').trim();
+      if (s === '' || s === '无' || s === '空'){ o.empty = true; return o; }
+      if (/^[0-9]+$/.test(s)){ o.qty = parseInt(s, 10); return o; }
+      o.note = s;
+      return o;
+    }
+    var obj = objOf(v);
+    if (obj){
+      var q = pick(obj, ['数量', '个数', 'count']);
+      var r = pick(obj, ['阶位', '阶', '等级', 'rank']);
+      var c = pick(obj, ['类别', '类', '分类', 'type']);
+      var d = pick(obj, ['说明', '描述', '备注', 'note']);
+      if (q !== undefined) o.qty = LYJ.num(q, 0);
+      if (r !== undefined){
+        var rs = LYJ.str(r, '');
+        if (rs && !/^[0-9]+$/.test(rs)) o.note = o.note || rs;
+        else o.rank = LYJ.num(r, 0);
+      }
+      if (c !== undefined) o.cat = LYJ.str(c, '');
+      if (d !== undefined) o.note = LYJ.str(d, '') || o.note;
+      if (o.qty === null && o.rank === null && !o.cat && !o.note){
+        var ks = Object.keys(obj), parts = [];
+        for (var i = 0; i < ks.length && parts.length < 3; i++){
+          var sv = obj[ks[i]];
+          if (sv === null || sv === undefined || typeof sv === 'object') continue;
+          parts.push(String(ks[i]) + ' ' + String(sv));
+        }
+        if (parts.length) o.note = parts.join(' · ');
+        else o.empty = true;
+      }
+      return o;
+    }
+    if (Array.isArray(v)){
+      var nums = [], notes = [];
+      for (var a = 0; a < v.length; a++){
+        var av = v[a];
+        if (av === null || av === undefined) continue;
+        if (typeof av === 'number') nums.push(av);
+        else if (typeof av === 'string'){ var t2 = av.trim(); if (t2) notes.push(t2); }
+        else {
+          var sub = objOf(av);
+          if (sub){
+            if (sub['数量'] !== undefined) nums.push(LYJ.num(sub['数量'], 0));
+            var sd2 = LYJ.str(sub['说明'], '');
+            if (sd2) notes.push(sd2);
+          }
+        }
+      }
+      if (nums.length) o.qty = nums[0];
+      if (notes.length) o.note = notes.join(' · ');
+      if (o.qty === null && !o.note) o.empty = true;
+      return o;
+    }
+    o.empty = true;
+    return o;
+  }
+  function slotValue(o){
+    if (o.note && o.rank !== null && o.rank > 0) return o.note + ' · ' + o.rank + '阶';
+    if (o.note) return o.note;
+    if (o.rank !== null && o.rank > 0 && o.qty !== null && o.qty > 1) return o.rank + '阶 × ' + o.qty;
+    if (o.rank !== null && o.rank > 0) return o.rank + '阶';
+    if (o.qty !== null) return String(o.qty);
+    return '';
+  }
+  function chipText(o){
+    if (o.qty !== null && o.qty > 1) return { n: o.name, q: '×' + o.qty };
+    if (o.rank !== null && o.rank > 0) return { n: o.name, q: '·' + o.rank + '阶' };
+    return { n: o.name, q: '' };
+  }
+
+  /* ---------------- 建模（取值全部走 bridge） ---------------- */
+  function mapEntries(map){
+    var out = [];
+    if (!map || typeof map !== 'object' || Array.isArray(map)) return out;
+    var ks = Object.keys(map);
+    for (var i = 0; i < ks.length; i++) out.push({ key: String(ks[i]), val: LYJ.get(map, ks[i], null) });
+    return out;
+  }
+  function capOf(up){
+    var o = objOf(up);
+    if (o){
+      var b = LYJ.num(o['基础'], 0), x = LYJ.num(o['额外'], 0);
+      return { base: b, extra: x, total: b + x };
+    }
+    var n = LYJ.num(up, 0);
+    return { base: n, extra: 0, total: n };
+  }
+  function fxList(sd){
+    var out = [];
+    var es = mapEntries(LYJ.get(sd, '主角.状态效果', null));
+    for (var i = 0; i < es.length; i++){
+      var name = LYJ.str(es[i].key, '');
+      if (!name) continue;
+      var v = es[i].val;
+      var layer = 0, left = 0;
+      var o = objOf(v);
+      if (o){
+        layer = LYJ.num(pick(o, ['层数']), 0);
+        var lf = pick(o, ['剩余', '剩余回合', '回合']);
+        if (lf !== undefined) left = LYJ.num(lf, 0);
+      } else if (typeof v === 'number'){ layer = v; }
+      else if (typeof v === 'string'){
+        var s = v.replace(/\s+/g, ' ').trim();
+        if (s && s !== '无') out.push({ name: s, layer: 0, left: 0 });
+        continue;
+      }
+      out.push({ name: name, layer: layer, left: left });
+    }
+    return out;
+  }
+  function relOf(key, raw, idx){
+    var o = { idx: idx, name: LYJ.str(key, ''), sex: '', role: '', stage: '', fav: null, here: false, hasHere: false,
+      where: '', realm: '', route: '', letters: '', last: '', note: '' };
+    var v = objOf(raw);
+    if (!v){
+      if (typeof raw === 'number' && isFinite(raw)) o.fav = raw;
+      else if (typeof raw === 'string') o.note = LYJ.str(raw, '');
+      return o;
+    }
+    if (!o.name) o.name = LYJ.str(pick(v, ['姓名', '名字']), '');
+    o.sex = LYJ.str(v['性别'], '');
+    o.role = LYJ.str(v['身份'], '');
+    o.stage = LYJ.str(pick(v, ['情分阶段', '情分']), '');
+    if (v['好感度'] !== undefined) o.fav = LYJ.num(v['好感度'], null);
+    else if (v['好感'] !== undefined) o.fav = LYJ.num(v['好感'], null);
+    if (v['在场'] !== undefined){ o.hasHere = true; o.here = LYJ.bool(v['在场'], false); }
+    o.where = LYJ.str(v['所属'], '');
+    o.realm = LYJ.str(v['境界'], '');
+    o.route = LYJ.str(v['路线'], '');
+    o.letters = LYJ.str(pick(v, ['性格字母', '性格']), '');
+    o.last = LYJ.str(pick(v, ['上次见面', '最后见面']), '');
+    o.note = LYJ.str(pick(v, ['备注', '说明']), '');
+    return o;
+  }
+  function questOf(key, raw, idx){
+    var o = { idx: idx, name: LYJ.str(key, ''), client: '', goal: '', place: '', due: '', pay: '', status: '' };
+    var v = objOf(raw);
+    if (!v){
+      if (typeof raw === 'string') o.goal = LYJ.str(raw, '');
+      return o;
+    }
+    o.client = LYJ.str(pick(v, ['委托方', '雇主']), '');
+    o.goal = LYJ.str(pick(v, ['目标', '目的']), '');
+    o.place = LYJ.str(v['地点'], '');
+    o.due = LYJ.str(pick(v, ['时限', '期限']), '');
+    o.pay = LYJ.str(pick(v, ['报酬', '酬劳']), '');
+    o.status = LYJ.str(v['状态'], '');
+    return o;
+  }
+  function skillsOf(sd){
+    var out = [];
+    var es = mapEntries(LYJ.get(sd, '主角.招式', null));
+    for (var i = 0; i < es.length; i++){
+      var k = es[i].key;
+      var isCat = SKILL_CATS.indexOf(k) > -1;
+      var sub = objOf(es[i].val);
+      if (isCat && sub){
+        var inner = mapEntries(sub);
+        for (var j = 0; j < inner.length; j++){
+          var inf = describe(inner[j].key, inner[j].val);
+          if (inf.empty) continue;
+          out.push({ name: inf.name || inner[j].key, cat: k, rank: inf.rank === null ? 0 : inf.rank });
+        }
+        continue;
+      }
+      var info = describe(k, es[i].val);
+      if (info.empty) continue;
+      var cat = (info.cat && SKILL_CATS.indexOf(info.cat) > -1) ? info.cat : (isCat ? k : '其它');
+      out.push({ name: info.name || k, cat: cat, rank: info.rank === null ? 0 : info.rank });
+    }
+    return out;
+  }
+  function groupSkills(list){
+    var order = SKILL_CATS.concat(['其它']);
+    var groups = [];
+    for (var i = 0; i < order.length; i++){
+      var items = [];
+      for (var j = 0; j < list.length; j++){ if (list[j].cat === order[i]) items.push(list[j]); }
+      if (items.length) groups.push({ cat: order[i], items: items });
+    }
+    return groups;
+  }
+  function buildModel(sd){
+    var inner = LYJ.num(LYJ.get(sd, '主角.内熟', 0), 0);
+    var outer = LYJ.num(LYJ.get(sd, '主角.外熟', 0), 0);
+    var layerTxt = LYJ.str(LYJ.get(sd, '主角.生命层级', ''), '');
+    var pose = LYJ.str(LYJ.get(sd, '主角.姿态', ''), '');
+    if (pose !== '内持' && pose !== '外放' && pose !== '换气') pose = pose || '内持';
+    var ln = layerNum(layerTxt);
+    var st1 = LYJ.num(LYJ.get(sd, '主角.灵石.下品', 0), 0);
+    var st2 = LYJ.num(LYJ.get(sd, '主角.灵石.中品', 0), 0);
+    var st3 = LYJ.num(LYJ.get(sd, '主角.灵石.上品', 0), 0);
+    var stoneTotal = st1 + st2 + st3;
+    var stoneGold = st1 * STONE_RATE['下品'] + st2 * STONE_RATE['中品'] + st3 * STONE_RATE['上品'];
+    /* 人物：在场优先 → 好感降序 → 写入序 */
+    var rels = [];
+    var relRaw = LYJ.get(sd, '关系列表', null);
+    if (relRaw && typeof relRaw === 'object'){
+      if (Array.isArray(relRaw)){
+        for (var ri = 0; ri < relRaw.length; ri++){
+          var rv = objOf(relRaw[ri]);
+          var rn = rv ? LYJ.str(pick(rv, ['姓名', '名字']), '') : '';
+          rels.push(relOf(rn, relRaw[ri], ri));
+        }
+      } else {
+        var rk = Object.keys(relRaw);
+        for (var rj = 0; rj < rk.length; rj++) rels.push(relOf(rk[rj], LYJ.get(relRaw, rk[rj], null), rj));
+      }
+    }
+    rels.sort(function (a, b) {
+      if (a.here !== b.here) return a.here ? -1 : 1;
+      var av = (a.fav === null || !isFinite(a.fav)) ? -Infinity : a.fav;
+      var bv = (b.fav === null || !isFinite(b.fav)) ? -Infinity : b.fav;
+      if (av !== bv) return bv - av;
+      return a.idx - b.idx;
+    });
+    /* 任务：进行中优先 → 写入序 */
+    var quests = [];
+    var qRaw = LYJ.get(sd, '任务列表', null);
+    if (qRaw && typeof qRaw === 'object'){
+      if (Array.isArray(qRaw)){
+        for (var qi = 0; qi < qRaw.length; qi++) quests.push(questOf('', qRaw[qi], qi));
+      } else {
+        var qk = Object.keys(qRaw);
+        for (var qj = 0; qj < qk.length; qj++) quests.push(questOf(qk[qj], LYJ.get(qRaw, qk[qj], null), qj));
+      }
+    }
+    quests.sort(function (a, b) {
+      var ap = (a.status === '进行中') ? 0 : 1;
+      var bp = (b.status === '进行中') ? 0 : 1;
+      if (ap !== bp) return ap - bp;
+      return a.idx - b.idx;
+    });
+    /* 声望：运行时遍历所有实际存在的键 */
+    var reps = [];
+    var pf = mapEntries(LYJ.get(sd, '声望', null));
+    for (var pi = 0; pi < pf.length; pi++){
+      var pv = pf[pi].val;
+      var pvo = objOf(pv);
+      var val = pvo ? LYJ.num(pick(pvo, ['值', '声望', '好感']), 0) : LYJ.num(pv, 0);
+      reps.push({ name: pf[pi].key, val: val });
+    }
+    /* 所拥有之物 */
+    var equip = [], relics = [], bag = [];
+    var eList = mapEntries(LYJ.get(sd, '主角.装备', null));
+    for (var ei = 0; ei < eList.length; ei++){
+      var eo = describe(eList[ei].key, eList[ei].val);
+      if (!eo.empty) equip.push({ key: eList[ei].key, info: eo });
+    }
+    var rList = mapEntries(LYJ.get(sd, '主角.气器', null));
+    for (var ri2 = 0; ri2 < rList.length; ri2++){
+      var ro = describe(rList[ri2].key, rList[ri2].val);
+      if (!ro.empty) relics.push({ key: rList[ri2].key, info: ro });
+    }
+    var bList = mapEntries(LYJ.get(sd, '主角.背包', null));
+    for (var bi = 0; bi < bList.length; bi++){
+      var bo = describe(bList[bi].key, bList[bi].val);
+      if (!bo.empty) bag.push({ key: bList[bi].key, info: bo });
+    }
+    return {
+      time: LYJ.str(LYJ.get(sd, '世界.时间', ''), ''),
+      place: LYJ.str(LYJ.get(sd, '世界.地点', ''), ''),
+      weather: LYJ.str(LYJ.get(sd, '世界.天气', ''), ''),
+      tide: LYJ.str(LYJ.get(sd, '世界.潮汐', ''), ''),
+      name: LYJ.str(LYJ.get(sd, '主角.姓名', '无名'), '无名'),
+      race: LYJ.str(LYJ.get(sd, '主角.种族', ''), ''),
+      gen: LYJ.str(LYJ.get(sd, '主角.根器', ''), ''),
+      route: routeOf(LYJ.str(LYJ.get(sd, '主角.路线', ''), ''), inner, outer),
+      layerTxt: layerTxt,
+      title: LYJ.str(LYJ.get(sd, '主角.境界称号', ''), ''),
+      level: LYJ.num(LYJ.get(sd, '主角.等级', 0), 0),
+      hp: LYJ.num(LYJ.get(sd, '主角.生命值.当前', 0), 0),
+      hpMax: capOf(LYJ.get(sd, '主角.生命值.上限', null)),
+      qi: LYJ.num(LYJ.get(sd, '主角.气.当前', 0), 0),
+      qiMax: capOf(LYJ.get(sd, '主角.气.上限', null)),
+      ss: LYJ.num(LYJ.get(sd, '主角.神识值.当前', 0), 0),
+      ssMax: capOf(LYJ.get(sd, '主角.神识值.上限', null)),
+      inner: inner, outer: outer, pts: LYJ.num(LYJ.get(sd, '主角.熟练点', 0), 0),
+      pose: pose, shift: LYJ.num(LYJ.get(sd, '主角.换气剩余', 0), 0),
+      fx: fxList(sd),
+      stab: LYJ.num(LYJ.get(sd, '主角.气海.稳定度', 100), 100),
+      crack: LYJ.num(LYJ.get(sd, '主角.气海.裂痕', 0), 0),
+      gold: LYJ.num(LYJ.get(sd, '主角.金钱.金币', 0), 0),
+      st1: st1, st2: st2, st3: st3,
+      stoneTotal: stoneTotal, stoneGold: stoneGold,
+      equip: equip, relics: relics, bag: bag,
+      skillGroups: groupSkills(skillsOf(sd)),
+      rels: rels, quests: quests, reps: reps,
+      wanted: LYJ.num(LYJ.get(sd, '世界.通缉度', 0), 0),
+      relN: rels.length,
+      cap: (ln > 0 && ln <= 9) ? ln : 9
+    };
+  }
+
+  /* ---------------- 渲染 ---------------- */
+  function barHTML(kind, label, cur, cap){
+    var max = cap.total;
+    var pct = max > 0 ? Math.round(cur / max * 100) : 0;
+    if (!isFinite(pct)) pct = 0;
+    if (pct < 0) pct = 0;
+    if (pct > 100) pct = 100;
+    var s = '';
+    s += '<div class="lyj-st-bar lyj-st-bar-' + kind + '">';
+    s += '<span class="lyj-st-bar-label">' + esc(label) + '</span>';
+    s += '<span class="lyj-st-bar-track"><span class="lyj-st-bar-fill" style="width:' + pct + '%"></span>';
+    s += '<span class="lyj-st-bar-pct">' + pct + '%</span></span>';
+    s += '<span class="lyj-st-bar-val"><b>' + esc(String(cur)) + '</b> / ' + esc(String(max));
+    if (cap.extra > 0) s += '<span class="lyj-st-bar-ex">+' + esc(String(cap.extra)) + '</span>';
+    s += '</span>';
+    s += '</div>';
+    return s;
+  }
+  function dotsHTML(v, capN){
+    var s = '<span class="lyj-st-dots">';
+    for (var i = 1; i <= 9; i++){
+      var on = i <= v;
+      var lock = i > capN;
+      s += '<span class="lyj-st-dot' + (on ? ' on' : '') + (lock ? ' lock' : '') + '">' + (on ? '●' : '○') + '</span>';
+    }
+    s += '</span>';
+    return s;
+  }
+  function fxText(f){
+    if (f.layer > 0 && f.left > 0) return f.name + '×' + f.layer + '(剩' + f.left + ')';
+    if (f.layer > 0) return f.name + '×' + f.layer;
+    if (f.left > 0) return f.name + '(剩' + f.left + ')';
+    return f.name;
+  }
+  function fItem(label, val){
+    return '<span class="lyj-st-f"><i>' + esc(label) + '</i><b>' + esc(val) + '</b></span>';
+  }
+  function tagHTML(label, val){
+    return '<span class="lyj-st-tag">' + esc(label) + '<b>' + esc(val || '—') + '</b></span>';
+  }
+  function listHTML(items, kind){
+    var capped = items.length > MAX_ITEMS ? items.slice(0, MAX_ITEMS) : items;
+    var H = [];
+    for (var i = 0; i < capped.length; i++){
+      var o = capped[i].info;
+      if (kind === 'slot'){
+        var sv = slotValue(o);
+        H.push('<span class="lyj-st-slot"><i>' + esc(capped[i].key || o.name || '物品') + '</i>：<b>' + esc(sv || '—') + '</b></span>');
+      } else if (kind === 'skill'){
+        H.push('<span class="lyj-st-skill">' + esc(o.name || '—') + (o.rank !== null && o.rank > 0 ? ' · ' + esc(String(o.rank)) + '阶' : '') + '</span>');
+      } else {
+        var c = chipText(o);
+        var lbl = c.n || o.note || '—';
+        H.push('<span class="lyj-st-chip2">' + esc(lbl) + (c.q ? '<b>' + esc(c.q) + '</b>' : '') + '</span>');
+      }
+    }
+    if (items.length > MAX_ITEMS) H.push('<span class="lyj-st-more">…等 ' + esc(String(items.length)) + ' 项</span>');
+    return H.join('');
+  }
+  function sectionHTML(title, body, empty){
+    var H = [];
+    H.push('<div class="lyj-st-own-sec">');
+    H.push('<div class="lyj-st-own-title">' + esc(title) + '</div>');
+    H.push('<div class="lyj-st-own-body">');
+    H.push(empty ? '<span class="lyj-st-none">无</span>' : body);
+    H.push('</div>');
+    H.push('</div>');
+    return H.join('');
+  }
+  function dField(label, val, wide){
+    if (!val) return '';
+    return '<span class="lyj-st-dfield' + (wide ? ' wide' : '') + '"><i>' + esc(label) + '</i><b>' + esc(val) + '</b></span>';
+  }
+  function relRowHTML(r){
+    var H = [];
+    var hasFav = !(r.fav === null || r.fav === undefined || !isFinite(r.fav));
+    var favCls = favClass(r.fav);
+    var pct = hasFav ? Math.min(100, Math.abs(r.fav) / 200 * 100) : 0;
+    var dir = (hasFav && r.fav < 0) ? 'neg' : 'pos';
+    H.push('<div class="lyj-st-rel" data-lyj-i="' + esc(String(r.idx)) + '">');
+    H.push('<div class="lyj-st-rel-line">');
+    H.push('<span class="lyj-st-rel-name">' + esc(r.name || '未详') + '</span>');
+    H.push('<span class="lyj-st-rel-dot">·</span>');
+    H.push('<span class="lyj-st-rel-sex">' + esc(r.sex || '未详') + '</span>');
+    H.push('<span class="lyj-st-rel-dot">·</span>');
+    H.push('<span class="lyj-st-rel-role">' + esc(clip(r.role || '未详', 8)) + '</span>');
+    if (r.stage){
+      H.push('<span class="lyj-st-rel-dot">·</span>');
+      H.push('<span class="lyj-st-rel-stage">' + esc(r.stage) + '</span>');
+    }
+    H.push('<span class="lyj-st-rel-fav ' + favCls + '">' + (hasFav ? esc(String(r.fav)) : '未详') + '</span>');
+    H.push('<span class="lyj-st-favbar"><i class="lyj-st-favfill ' + favCls + ' ' + dir + '" style="width:' + pct.toFixed(1) + '%"></i></span>');
+    H.push('</div>');
+    H.push('<div class="lyj-st-detail">');
+    H.push(dField('所属', r.where, true));
+    H.push(dField('境界', r.realm));
+    H.push(dField('路线', r.route));
+    H.push(dField('性格字母', r.letters, true));
+    if (r.hasHere) H.push(dField('在场', r.here ? '是' : '否'));
+    H.push(dField('上次见面', r.last, true));
+    H.push(dField('备注', r.note, true));
+    H.push('</div>');
+    H.push('</div>');
+    return H.join('');
+  }
+  function questRowHTML(q){
+    var H = [];
+    var cls = q.status === '已完成' ? 'done' : (q.status === '已失败' ? 'fail' : '');
+    H.push('<div class="lyj-st-quest" data-lyj-i="' + esc(String(q.idx)) + '">');
+    H.push('<div class="lyj-st-quest-line">');
+    H.push('<span class="lyj-st-quest-name">' + esc(q.name || '未详') + '</span>');
+    if (q.client){ H.push('<span class="lyj-st-rel-dot">·</span><span class="lyj-st-quest-src">' + esc(q.client) + '</span>'); }
+    if (q.due){ H.push('<span class="lyj-st-rel-dot">·</span><span class="lyj-st-quest-time">' + esc(q.due) + '</span>'); }
+    if (q.status) H.push('<span class="lyj-st-qchip ' + cls + '">' + esc(q.status) + '</span>');
+    H.push('</div>');
+    H.push('<div class="lyj-st-detail">');
+    H.push(dField('目标', q.goal, true));
+    H.push(dField('地点', q.place));
+    H.push(dField('报酬', q.pay));
+    H.push('</div>');
+    H.push('</div>');
+    return H.join('');
+  }
+
+  /* ① 状态 */
+  function panelState(m){
+    var H = [];
+    H.push('<div class="lyj-st-bars">');
+    H.push(barHTML('hp', '生命', m.hp, m.hpMax));
+    H.push(barHTML('qi', '真气', m.qi, m.qiMax));
+    H.push(barHTML('ss', '神识', m.ss, m.ssMax));
+    H.push('</div>');
+    var d = m.inner - m.outer;
+    var badge, balCls;
+    if (Math.abs(d) <= 1){ badge = '兼修'; balCls = ' lyj-st-bal'; }
+    else if (d > 0){ badge = '偏内 +' + d; balCls = ''; }
+    else { badge = '偏外 +' + (-d); balCls = ''; }
+    H.push('<div class="lyj-st-prof">');
+    H.push('<div class="lyj-st-prof-head"><span>◆ 熟练</span><span class="lyj-st-prof-pt">熟练点 ' + esc(String(m.pts)) + '</span></div>');
+    H.push('<div class="lyj-st-prof-row"><span class="lyj-st-prof-name">内熟</span>' + dotsHTML(m.inner, m.cap) + '<span class="lyj-st-prof-num">' + esc(String(m.inner)) + '</span></div>');
+    H.push('<div class="lyj-st-prof-mid"><span class="lyj-st-prof-badge' + balCls + '">' + esc(badge) + '</span></div>');
+    H.push('<div class="lyj-st-prof-row"><span class="lyj-st-prof-name">外熟</span>' + dotsHTML(m.outer, m.cap) + '<span class="lyj-st-prof-num">' + esc(String(m.outer)) + '</span></div>');
+    H.push('<div class="lyj-st-prof-foot">上限 ' + esc(String(m.cap)) + ' 格（随境界层数提升）</div>');
+    H.push('</div>');
+    H.push('<div class="lyj-st-fx">');
+    H.push('<span class="lyj-st-fx-label">状态</span>');
+    if (m.fx.length){
+      for (var i = 0; i < m.fx.length; i++){
+        var f = m.fx[i];
+        var bad = /破绽|气竭|重伤|流血|中毒|失血|失控|反噬|禁制|虚弱|力竭/.test(f.name);
+        H.push('<span class="lyj-st-chip' + (bad ? ' bad' : '') + '">' + esc(fxText(f)) + '</span>');
+      }
+    } else {
+      H.push('<span class="lyj-st-fx-none">无</span>');
+    }
+    H.push('</div>');
+    H.push('<div class="lyj-st-foot">');
+    H.push(fItem('气海', String(m.stab) + '%'));
+    H.push(fItem('裂痕', String(m.crack)));
+    H.push('</div>');
+    return H.join('');
+  }
+
+  /* ② 人物 */
+  function panelPeople(m){
+    if (!m.rels.length) return '<div class="lyj-st-empty">尚无往来之人</div>';
+    var capped = m.rels.length > MAX_RELS ? m.rels.slice(0, MAX_RELS) : m.rels;
+    var H = ['<div class="lyj-st-relwrap">'];
+    for (var i = 0; i < capped.length; i++) H.push(relRowHTML(capped[i]));
+    if (m.rels.length > MAX_RELS) H.push('<div class="lyj-st-more">…等 ' + esc(String(m.rels.length)) + ' 人</div>');
+    H.push('</div>');
+    return H.join('');
+  }
+
+  /* ③ 所有物 */
+  function panelItems(m){
+    var H = [];
+    H.push('<div class="lyj-st-own">');
+    H.push(sectionHTML('装备', listHTML(m.equip, 'slot'), !m.equip.length));
+    H.push(sectionHTML('器物', listHTML(m.relics, 'chip'), !m.relics.length));
+    H.push(sectionHTML('背包', listHTML(m.bag, 'chip'), !m.bag.length));
+    H.push('<div class="lyj-st-own-sec">');
+    H.push('<div class="lyj-st-own-title">招式</div>');
+    H.push('<div class="lyj-st-own-body">');
+    if (!m.skillGroups.length){
+      H.push('<span class="lyj-st-none">无</span>');
+    } else {
+      for (var g = 0; g < m.skillGroups.length; g++){
+        var grp = m.skillGroups[g];
+        H.push('<span class="lyj-st-skill-cat">' + esc(grp.cat) + '</span>');
+        H.push(listHTML(grp.items.map(function (x) { return { key: x.name, info: { name: x.name, qty: null, rank: x.rank, cat: x.cat, note: '', empty: false } }; }), 'skill'));
+      }
+    }
+    H.push('</div>');
+    H.push('</div>');
+    H.push('</div>');
+    return H.join('');
+  }
+
+  /* ④ 世界 */
+  function panelWorld(m){
+    var H = [];
+    H.push('<div class="lyj-st-foot">');
+    H.push(fItem('时间', m.time || '—'));
+    H.push(fItem('地点', m.place || '—'));
+    H.push(fItem('天气', m.weather || '—'));
+    H.push(fItem('潮汐', m.tide || '—'));
+    H.push('</div>');
+    H.push('<div class="lyj-st-foot">');
+    H.push(fItem('金币', String(m.gold)));
+    if (m.stoneTotal > 0) H.push(fItem('灵石', '下' + m.st1 + ' 中' + m.st2 + ' 上' + m.st3));
+    else H.push(fItem('灵石', '无'));
+    if (m.stoneGold > 0) H.push(fItem('折算', '≈ ' + fmtN(m.stoneGold) + ' 金（基准价）'));
+    else H.push(fItem('折算', '无'));
+    H.push('</div>');
+    H.push('<div class="lyj-st-rep">');
+    H.push('<div class="lyj-st-rep-title">声望</div>');
+    H.push('<div class="lyj-st-rep-body">');
+    if (m.reps.length){
+      for (var i = 0; i < m.reps.length; i++){
+        var r = m.reps[i];
+        var c = r.val > 0 ? 'pos' : (r.val < 0 ? 'neg' : 'zero');
+        var sign = r.val > 0 ? '+' : '';
+        H.push('<span class="lyj-st-repchip ' + c + '">' + esc(r.name) + '<b>' + esc(sign + String(r.val)) + '</b></span>');
+      }
+    } else {
+      H.push('<span class="lyj-st-none">无</span>');
+    }
+    H.push('</div>');
+    H.push('</div>');
+    var wp = m.wanted;
+    if (!isFinite(wp)) wp = 0;
+    wp = Math.max(0, Math.min(100, wp));
+    H.push('<div class="lyj-st-want">');
+    H.push('<span class="lyj-st-want-label">通缉度</span>');
+    H.push('<span class="lyj-st-wantbar"><i class="lyj-st-wantfill" style="width:' + Math.round(wp) + '%"></i></span>');
+    H.push('<span class="lyj-st-want-num">' + esc(String(m.wanted)) + '</span>');
+    H.push('</div>');
+    return H.join('');
+  }
+
+  /* ⑤ 任务 */
+  function panelQuest(m){
+    if (!m.quests.length) return '<div class="lyj-st-empty">眼下没有在办的事</div>';
+    var H = ['<div class="lyj-st-questwrap">'];
+    for (var i = 0; i < m.quests.length; i++) H.push(questRowHTML(m.quests[i]));
+    H.push('</div>');
+    return H.join('');
+  }
+
+  function panelHTML(id, inner){
+    return '<div class="lyj-st-panel' + (tab === id ? ' on' : '') + '" data-lyj-panel="' + id + '">' + inner + '</div>';
+  }
+  function markup(m){
+    var H = [];
+    var poseKey = m.pose === '外放' ? 'out' : (m.pose === '换气' ? 'shift' : 'in');
+    var hintMap = {
+      'in': '真气收于体内 · 护体厚 · 回气快 · 不可外法',
+      'out': '真气推于体外 · 远程爆发 · 控场 · 不可内法',
+      'shift': '由一姿态转入另一姿态 · 此回合护体为零'
+    };
+    var sep = '<span class="lyj-st-sep">｜</span>';
+    var dotSep = '<span class="lyj-st-sep">·</span>';
+
+    /* 常驻抬头 */
+    H.push('<div class="lyj-st-head">');
+    H.push('<div class="lyj-st-head-main">');
+    H.push('<div class="lyj-st-name"><span class="lyj-st-glyph">❖</span>' + esc(m.name) + '</div>');
+    H.push('<div class="lyj-st-tags">');
+    H.push(tagHTML('种族', m.race));
+    H.push(sep);
+    H.push(tagHTML('根器', m.gen));
+    H.push(sep);
+    H.push('<span class="lyj-st-tag lyj-st-route">路线<b>' + esc(m.route) + '</b></span>');
+    H.push('</div>');
+    H.push('<div class="lyj-st-realm"><b>' + esc(m.layerTxt || '—') + '</b>' + dotSep + esc(m.title || '—') + dotSep + esc(String(m.level)) + ' 级</div>');
+    H.push('</div>');
+    H.push('</div>');
+
+    /* 常驻姿态条（切标签也始终可见） */
+    H.push('<div class="lyj-st-stance lyj-st-pose-' + poseKey + '">');
+    H.push('<div class="lyj-st-stance-row">');
+    H.push('<span class="lyj-st-stance-glyph">' + (poseKey === 'shift' ? '⟡' : '◆') + '</span>');
+    H.push('<span class="lyj-st-stance-word">' + esc(m.pose) + '</span>');
+    H.push('<span class="lyj-st-stance-hint">' + hintMap[poseKey] + '</span>');
+    if (poseKey === 'shift') H.push('<span class="lyj-st-stance-warn">护体归零 · 破绽</span>');
+    H.push('</div>');
+    if (poseKey === 'shift' && m.shift > 0){
+      H.push('<div class="lyj-st-stance-sub">本回合不能出手<span class="lyj-st-stance-rest">换气剩余 ' + esc(String(m.shift)) + '</span></div>');
+    }
+    H.push('</div>');
+
+    /* 标签栏 */
+    H.push('<div class="lyj-st-tabs">');
+    for (var t = 0; t < TAB_DEFS.length; t++){
+      var td = TAB_DEFS[t];
+      H.push('<div class="lyj-st-tab' + (tab === td.id ? ' on' : '') + '" data-lyj-tab="' + td.id + '">' + td.label + '</div>');
+    }
+    H.push('</div>');
+
+    /* 五个面板 */
+    H.push('<div class="lyj-st-panels">');
+    H.push(panelHTML('state', panelState(m)));
+    H.push(panelHTML('people', panelPeople(m)));
+    H.push(panelHTML('items', panelItems(m)));
+    H.push(panelHTML('world', panelWorld(m)));
+    H.push(panelHTML('quest', panelQuest(m)));
+    H.push('</div>');
+
+    return H.join('');
+  }
+  function fallbackHTML(){
+    return '<div class="lyj-st-fb"><span class="lyj-st-fb-g">⟡</span> 未接入变量，状态栏不可用</div>';
+  }
+
+  /* ---------------- 标签切换 + 二级展开（事件委托，只挂一次） ---------------- */
+  var clickBound = false;
+  function hasCls(el, c){
+    try {
+      if (el.classList && typeof el.classList.contains === 'function') return el.classList.contains(c);
+      var cn = (el.className === undefined || el.className === null) ? '' : String(el.className);
+      return cn.split(/\s+/).indexOf(c) > -1;
+    } catch (e) { return false; }
+  }
+  function closestBy(node, cls, max){
+    for (var i = 0; i < max && node && node !== root; i++){
+      if (hasCls(node, cls)) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+  function bindClick(){
+    if (clickBound || !root || typeof root.addEventListener !== 'function') return;
+    clickBound = true;
+    try {
+      root.addEventListener('click', function (e){
+        var t = e && e.target;
+        var el = closestBy(t, 'lyj-st-tab', 6);
+        if (el){ setTab(el.getAttribute('data-lyj-tab')); return; }
+        el = closestBy(t, 'lyj-st-rel', 5);
+        if (el){ toggleRow('lyj-st-rel', el); return; }
+        el = closestBy(t, 'lyj-st-quest', 5);
+        if (el){ toggleRow('lyj-st-quest', el); return; }
+      });
+    } catch (e) {}
+  }
+  function setTab(id){
+    if (TABS.indexOf(id) < 0 || id === tab) return;
+    tab = id;
+    writeTab(tab);
+    applyTab();
+  }
+  /* 只切类名，不重建 innerHTML，保证面板淡入过渡 */
+  function applyTab(){
+    if (!root) return;
+    try {
+      var tabs = root.querySelectorAll('.lyj-st-tab');
+      tabs = tabs ? [].slice.call(tabs) : [];
+      for (var i = 0; i < tabs.length; i++){
+        var tid = tabs[i].getAttribute('data-lyj-tab');
+        if (tid === tab) tabs[i].classList.add('on'); else tabs[i].classList.remove('on');
+      }
+      var panels = root.querySelectorAll('.lyj-st-panel');
+      panels = panels ? [].slice.call(panels) : [];
+      for (var j = 0; j < panels.length; j++){
+        var pid = panels[j].getAttribute('data-lyj-panel');
+        if (pid === tab) panels[j].classList.add('on'); else panels[j].classList.remove('on');
+      }
+      root.setAttribute('data-lyj-tab', tab);
+    } catch (e) {}
+  }
+  /* 二级展开：同一时刻只展开一个 */
+  function toggleRow(cls, el){
+    if (!root || !el) return;
+    var list = [];
+    try { var q = root.querySelectorAll('.' + cls); list = q ? [].slice.call(q) : []; } catch (e) { list = []; }
+    var willOpen = !hasCls(el, 'on');
+    for (var i = 0; i < list.length; i++){
+      var open = (list[i] === el) && willOpen;
+      try {
+        if (open) list[i].classList.add('on'); else list[i].classList.remove('on');
+        var d = list[i].querySelector('.lyj-st-detail');
+        if (d){ if (open) d.classList.add('on'); else d.classList.remove('on'); }
+      } catch (e) {}
+    }
+  }
+  function rowEl(cls, idx){
+    if (!root) return null;
+    var list = [];
+    try { var q = root.querySelectorAll('.' + cls); list = q ? [].slice.call(q) : []; } catch (e) { list = []; }
+    for (var i = 0; i < list.length; i++){
+      if (String(list[i].getAttribute('data-lyj-i')) === String(idx)) return list[i];
+    }
+    return list.length ? list[0] : null;
+  }
+
+  /* ---------------- 渲染入口 ---------------- */
+  function showFallback(){
+    if (lastKey === 'fallback') return;
+    lastKey = 'fallback';
+    try { root.setAttribute('data-lyj-state', 'fallback'); } catch (e) {}
+    root.className = 'lyj-st lyj-st-min';
+    root.innerHTML = fallbackHTML();
+  }
+  function render(sd){
+    var usable = true;
+    try { if (LYJ && typeof LYJ.ok === 'function') usable = (LYJ.ok() === true); } catch (e) { usable = false; }
+    if (!usable || !sd || typeof sd !== 'object'){ showFallback(); return; }
+    var m;
+    try { m = buildModel(sd); } catch (e) { showFallback(); return; }
+    var key = null;
+    try { key = JSON.stringify(m); } catch (e) { key = null; }
+    if (key !== null && key === lastKey){
+      applyTab();
+      return;
+    }
+    lastKey = key;
+    try { root.setAttribute('data-lyj-state', 'live'); } catch (e) {}
+    root.className = 'lyj-st';
+    root.innerHTML = markup(m);
+    applyTab();
+  }
+
+  /* ---------------- 启动 ---------------- */
+  syncTab();
+  bindClick();
+  if (!LYJ || typeof LYJ.onRefresh !== 'function'){
+    showFallback();
+  } else {
+    /* 先同步取一次当前消息的 stat_data 首屏，之后交给 bridge 的刷新订阅 */
+    try {
+      var seed = (typeof LYJ.statData === 'function') ? LYJ.statData() : null;
+      if (seed) render(seed);
+    } catch (e) {}
+    try {
+      LYJ.onRefresh(function (sd){ render(sd); });
+    } catch (e) { showFallback(); }
+  }
+
+  try {
+    window.__lyjStRender = function (sd) { render(sd); return true; };
+    window.__lyjStTab = function (id) { setTab(id); return true; };
+    window.__lyjStTabNow = function () { return tab; };
+    window.__lyjStRow = function (kind, idx) {
+      var cls = (kind === 'quest') ? 'lyj-st-quest' : 'lyj-st-rel';
+      var el = rowEl(cls, idx);
+      if (el) toggleRow(cls, el);
+      return !!el;
+    };
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
