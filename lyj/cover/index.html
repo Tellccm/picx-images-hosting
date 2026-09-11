@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>灵渊纪 · 守与放 · 卷首</title>
+<script src="../lyj-bridge.js"></script>
+<style>
+/* ===== 《灵渊纪：守与放》卷首页 · 宣纸水墨 ===== */
+#lyj-home{
+  position:relative;
+  box-sizing:border-box;
+  width:100%; max-width:680px; margin:0 auto;
+  padding:16px 18px 14px;
+  font-family:"Songti SC","STSong","SimSun","Noto Serif CJK SC",serif;
+  font-size:13px; line-height:1.75; color:#2b2620;
+  background-color:#f2ead9;
+  background-image:
+    radial-gradient(rgba(120,100,70,.05) 1px, transparent 1px),
+    linear-gradient(168deg,#f2ead9 0%,#f2ead9 46%,#e9dfc9 100%);
+  background-size:4px 4px,100% 100%;
+  border:1px solid #c9b48c;
+  border-radius:3px;
+  box-shadow:0 0 0 1px rgba(201,180,140,.45);
+  overflow:hidden;
+}
+#lyj-home *{box-sizing:border-box;}
+
+/* ---- 四角卷云：外层 14px 圆弧 + 内层 7px 反向错位卷云头 ---- */
+#lyj-home .lyj-home-head,
+#lyj-home .lyj-home-foot,
+#lyj-home .lyj-home-sec-h,
+#lyj-home .lyj-home-div,
+#lyj-home .lyj-home-sum{position:relative;}
+#lyj-home .lyj-home-head::before,
+#lyj-home .lyj-home-head::after{
+  content:''; position:absolute; width:14px; height:14px; z-index:3;
+  border:1px solid #b8892b; opacity:.55; pointer-events:none;
+}
+#lyj-home .lyj-home-head::before{top:-11px; left:-13px; border-color:#b8892b transparent transparent #b8892b; border-radius:50% 0 0 50%;}
+#lyj-home .lyj-home-head::after{top:-11px; right:-13px; border-color:#b8892b #b8892b transparent transparent; border-radius:0 50% 0 0;}
+#lyj-home .lyj-home-foot::before,
+#lyj-home .lyj-home-foot::after{
+  content:''; position:absolute; width:14px; height:14px; z-index:3;
+  border:1px solid #b8892b; opacity:.55; pointer-events:none;
+}
+#lyj-home .lyj-home-foot::before{bottom:-9px; left:-13px; border-color:transparent transparent #b8892b #b8892b; border-radius:0 0 0 50%;}
+#lyj-home .lyj-home-foot::after{bottom:-9px; right:-13px; border-color:transparent #b8892b #b8892b transparent; border-radius:0 0 50% 0;}
+/* 内层卷云头：7px，反向着色，错位叠在外层弧里 */
+#lyj-home .lyj-home-title::before,
+#lyj-home .lyj-home-foot-sub::before,
+#lyj-home .lyj-home-sec-h::after,
+#lyj-home .lyj-home-sum::before,
+#lyj-home .lyj-home-sum::after{
+  content:''; position:absolute; width:7px; height:7px;
+  border:1px solid #b8892b; opacity:.32; pointer-events:none;
+}
+#lyj-home .lyj-home-title::before{left:-7px; top:-4px; border-color:transparent #b8892b #b8892b transparent; border-radius:0 0 50% 0;}
+#lyj-home .lyj-home-foot-sub::before{right:-7px; bottom:-4px; border-color:#b8892b transparent transparent #b8892b; border-radius:50% 0 0 50%;}
+#lyj-home .lyj-home-sec-h::after{right:0; top:2px; border-color:transparent #b8892b #b8892b transparent; border-radius:0 0 50% 0;}
+#lyj-home .lyj-home-sum::before{left:3px; top:3px; border-color:transparent transparent #b8892b #b8892b; border-radius:0 0 0 50%;}
+#lyj-home .lyj-home-sum::after{right:3px; bottom:3px; border-color:#b8892b #b8892b transparent transparent; border-radius:0 50% 0 0;}
+/* 分隔线上的双卷云 */
+#lyj-home .lyj-home-div{
+  height:1px; margin:12px 0;
+  background:linear-gradient(90deg,rgba(184,137,43,0) 0%,rgba(184,137,43,.5) 14%,rgba(184,137,43,.5) 86%,rgba(184,137,43,0) 100%);
+}
+#lyj-home .lyj-home-div::before,
+#lyj-home .lyj-home-div::after{
+  content:''; position:absolute; top:-5px; width:10px; height:10px;
+  border:1px solid #b8892b; opacity:.6; pointer-events:none;
+}
+#lyj-home .lyj-home-div::before{left:0; border-color:#b8892b transparent transparent #b8892b; border-radius:50% 0 0 50%;}
+#lyj-home .lyj-home-div::after{right:0; border-color:#b8892b #b8892b transparent transparent; border-radius:0 50% 0 0;}
+
+/* ---- 抬头 ---- */
+#lyj-home .lyj-home-title{
+  position:relative;
+  margin:0; padding:0;
+  font-size:19px; font-weight:700; letter-spacing:.14em; line-height:1.5;
+  color:#2b2620;
+}
+#lyj-home .lyj-home-glyph{color:#b8892b; font-size:15px; margin:0 2px;}
+/* 朱砂小方印：纯 CSS 伪元素，不进 DOM 文本 */
+#lyj-home .lyj-home-title::after{
+  content:'靈'; display:inline-block;
+  margin-left:10px; padding:0 3px 1px 4px;
+  font-size:10px; font-weight:700; line-height:1.42; letter-spacing:0;
+  color:#f2ead9; background:#a83232; border-radius:2px;
+  transform:rotate(-2deg) translateY(-3px);
+  box-shadow:0 0 0 1px rgba(168,50,50,.35);
+}
+#lyj-home .lyj-home-sub{
+  position:relative; margin:5px 0 0;
+  font-size:11.5px; letter-spacing:.12em; color:#8c8271;
+}
+
+/* ---- 区块标题 ---- */
+#lyj-home .lyj-home-sec{margin-top:16px;}
+#lyj-home .lyj-home-sec-h{
+  margin:0 0 7px; padding-left:11px;
+  font-size:12.5px; font-weight:700; letter-spacing:.18em; color:#3a4a52;
+}
+#lyj-home .lyj-home-sec-h::before{
+  content:''; position:absolute; left:1px; top:5px; width:4px; height:12px;
+  background:#b8892b; opacity:.8;
+}
+
+/* ---- 世界观 ---- */
+#lyj-home .lyj-home-lore{list-style:none; margin:0; padding:0;}
+#lyj-home .lyj-home-lore li{
+  position:relative; padding:3px 0 3px 15px;
+  font-size:12.5px; line-height:1.8; color:#3f382e;
+}
+#lyj-home .lyj-home-lore li::before{
+  content:'◆'; position:absolute; left:0; top:4px;
+  font-size:8px; line-height:1.8; color:#b8892b; opacity:.75;
+}
+#lyj-home .lyj-home-lore b{color:#2b2620; font-weight:700;}
+#lyj-home .lyj-home-lore b.lyj-home-warnx{color:#a83232;}
+
+/* ---- 按钮 ---- */
+#lyj-home .lyj-home-actions{display:flex; flex-wrap:wrap; gap:9px; margin:2px 0 9px;}
+#lyj-home .lyj-home-btn{
+  flex:1 1 190px; min-width:0; min-height:38px; padding:9px 14px;
+  font-family:inherit; font-size:13.5px; letter-spacing:.08em; line-height:1.3;
+  color:#2b2620; background:linear-gradient(180deg,#f7f1e4,#efe5d1);
+  border:1px solid #c9b48c; border-radius:3px;
+  box-shadow:0 0 0 1px rgba(201,180,140,.35);
+  cursor:pointer; transition:filter .15s,border-color .15s;
+}
+#lyj-home .lyj-home-btn-main{
+  color:#f2ead9; background:linear-gradient(180deg,#40525a,#33434b); border-color:#2c3a41;
+}
+#lyj-home .lyj-home-btn:hover{filter:brightness(1.05);}
+#lyj-home .lyj-home-btn:disabled,
+#lyj-home .lyj-home-btn[disabled]{opacity:.5; cursor:default; filter:none;}
+#lyj-home .lyj-home-status{
+  margin:0; min-height:1.7em; font-size:12px; letter-spacing:.02em; color:#6b6152;
+}
+#lyj-home .lyj-home-status.lyj-home-ok{color:#5c7a52;}
+#lyj-home .lyj-home-status.lyj-home-bad{color:#a83232;}
+#lyj-home .lyj-home-manual{margin-top:7px;}
+#lyj-home .lyj-home-manual-box{
+  display:block; width:100%; padding:7px 9px; resize:none;
+  font-family:inherit; font-size:13px; line-height:1.6; color:#2b2620;
+  background:#f7f1e4; border:1px dashed #c9b48c; border-radius:3px;
+}
+#lyj-home .lyj-home-manual-tip{margin:4px 0 0; font-size:11px; line-height:1.7; color:#8c8271;}
+
+/* ---- 可选内容 ---- */
+#lyj-home .lyj-home-dlc{min-height:1.7em;}
+#lyj-home .lyj-home-muted{font-size:12px; color:#8c8271;}
+#lyj-home .lyj-home-dlc-row{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:8px 0; border-top:1px dashed rgba(184,137,43,.28);
+}
+#lyj-home .lyj-home-dlc-row:first-child{border-top:0;}
+#lyj-home .lyj-home-dlc-main{flex:1 1 auto; min-width:0;}
+#lyj-home .lyj-home-dlc-name{font-size:13px; letter-spacing:.04em; color:#2b2620;}
+#lyj-home .lyj-home-dlc-tag{
+  display:inline-block; margin:0 6px 1px 0; padding:0 5px;
+  font-size:10.5px; line-height:1.65; letter-spacing:.06em;
+  color:#3a4a52; border:1px solid rgba(58,74,82,.35); border-radius:2px;
+}
+#lyj-home .lyj-home-dlc-hint{margin-top:2px; font-size:11.5px; line-height:1.65; color:#8c8271;}
+#lyj-home .lyj-home-dlc-side{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:3px;}
+#lyj-home .lyj-home-dlc-state{font-size:11px; letter-spacing:.06em; color:#5c7a52;}
+#lyj-home .lyj-home-switch{position:relative; display:inline-block; width:38px; height:20px;}
+#lyj-home .lyj-home-cb{
+  position:absolute; left:0; top:0; width:100%; height:100%; margin:0;
+  opacity:0; z-index:2; cursor:pointer;
+}
+#lyj-home .lyj-home-knob{
+  position:absolute; left:0; top:0; right:0; bottom:0; z-index:1;
+  border-radius:10px; border:1px solid rgba(120,100,70,.35);
+  background:rgba(140,130,113,.35); transition:background .15s;
+}
+#lyj-home .lyj-home-knob::after{
+  content:''; position:absolute; left:2px; top:2px; width:14px; height:14px;
+  border-radius:50%; background:#f7f1e4; border:1px solid rgba(120,100,70,.35);
+  transition:transform .15s;
+}
+#lyj-home .lyj-home-cb:checked + .lyj-home-knob{background:rgba(92,122,82,.85);}
+#lyj-home .lyj-home-cb:checked + .lyj-home-knob::after{transform:translateX(17px);}
+#lyj-home .lyj-home-note{margin:8px 0 0; font-size:11px; line-height:1.7; color:#8c8271;}
+
+/* ---- 开局摘要 ---- */
+#lyj-home .lyj-home-sum{
+  padding:8px 12px; border:1px solid rgba(201,180,140,.75); border-radius:3px;
+  background:rgba(247,241,228,.5);
+}
+#lyj-home .lyj-home-sum-row{display:flex; gap:10px; font-size:12.5px; padding:2px 0;}
+#lyj-home .lyj-home-sum-k{flex:0 0 42px; letter-spacing:.1em; color:#8c8271;}
+#lyj-home .lyj-home-sum-v{flex:1 1 auto; min-width:0; color:#2b2620; word-break:break-all;}
+
+/* ---- 环境自检 ---- */
+#lyj-home .lyj-home-env{display:flex; flex-wrap:wrap; gap:3px 14px; font-size:11.5px; letter-spacing:.03em;}
+#lyj-home .lyj-home-mark{color:#5c7a52;}
+#lyj-home .lyj-home-mark.lyj-home-bad{color:#a83232;}
+#lyj-home .lyj-home-hint{margin:6px 0 0; font-size:11px; line-height:1.7; color:#8c8271;}
+
+/* ---- 页脚 ---- */
+#lyj-home .lyj-home-foot{
+  margin-top:14px; padding-top:9px;
+  border-top:1px solid rgba(120,100,70,.22);
+  font-size:11px; letter-spacing:.06em; color:#8c8271;
+}
+#lyj-home .lyj-home-foot-line{margin:0 0 3px;}
+#lyj-home .lyj-home-foot-sub{position:relative; margin:0; font-size:10.5px; color:#8c8271;}
+
+#lyj-home .lyj-home-hide{display:none;}
+
+@media (max-width:430px){
+  #lyj-home{padding:11px 11px 10px; font-size:12.5px;}
+  #lyj-home .lyj-home-title{font-size:17px; letter-spacing:.1em;}
+  #lyj-home .lyj-home-head::before{top:-6px; left:-6px;}
+  #lyj-home .lyj-home-head::after{top:-6px; right:-6px;}
+  #lyj-home .lyj-home-foot::before{bottom:-5px; left:-6px;}
+  #lyj-home .lyj-home-foot::after{bottom:-5px; right:-6px;}
+  #lyj-home .lyj-home-btn{flex:1 1 100%; font-size:13px;}
+  #lyj-home .lyj-home-lore li{font-size:12px;}
+  #lyj-home .lyj-home-sum-k{flex:0 0 38px;}
+}
+</style>
+</head>
+<body style="margin:0;background:transparent">
+
+<div id="lyj-home">
+
+  <!-- 1. 抬头 -->
+  <header class="lyj-home-head">
+    <h1 class="lyj-home-title"><span class="lyj-home-glyph">❖</span> 灵渊纪 · 守与放 <span class="lyj-home-glyph">❖</span></h1>
+    <p class="lyj-home-sub">一个寻常的修仙世界 · 真气只有两种用法</p>
+  </header>
+
+  <div class="lyj-home-div"></div>
+
+  <!-- 2. 世界观引导 -->
+  <section class="lyj-home-sec">
+    <h2 class="lyj-home-sec-h">世界</h2>
+    <ol class="lyj-home-lore">
+      <li>天地之间有灵气。它不认人，也不管人拿它做什么。</li>
+      <li>灵气纳进体内、炼成真气、蓄于气海。真气收在体内用，叫<b>内炼</b>：护体厚，能贴身近战，回气快——使不出外法。</li>
+      <li>真气推出去用，叫<b>外引</b>：打得远，爆得狠，控得住场——护体薄，不回气，也使不出内法。</li>
+      <li>两种之间必有一次<b class="lyj-home-warnx">换气</b>。换气那一息，<b class="lyj-home-warnx">护体归零</b>；被命中，就是<b class="lyj-home-warnx">破绽</b>。不看境界，只看时机。</li>
+      <li>凡人<b>气海未开</b>，一生蓄不住真气，只能引动最稀薄的那一层灵气，使出几手<b>微型魔法</b>：点灯、生火、净水、驱虫、烘干、止血、催芽。够糊口，不够争斗。</li>
+    </ol>
+  </section>
+
+  <div class="lyj-home-div"></div>
+
+  <!-- 3. 开始游戏 -->
+  <section class="lyj-home-sec">
+    <h2 class="lyj-home-sec-h">开局</h2>
+    <div class="lyj-home-actions">
+      <button type="button" id="lyj-home-btn-custom" class="lyj-home-btn lyj-home-btn-main">填写开局设定</button>
+      <button type="button" id="lyj-home-btn-random" class="lyj-home-btn">跳过设定，随机开局</button>
+    </div>
+    <p class="lyj-home-status" id="lyj-home-status">点「填写开局设定」开始；也可直接随一条预写开场进入。</p>
+    <div class="lyj-home-manual lyj-home-hide" id="lyj-home-manual">
+      <textarea class="lyj-home-manual-box" id="lyj-home-manual-text" rows="2" readonly>【开局文书】</textarea>
+      <p class="lyj-home-manual-tip">自动发送不可用时：复制上面的文字，自己发一条消息即可。</p>
+    </div>
+  </section>
+
+  <div class="lyj-home-div"></div>
+
+  <!-- 4. 可选内容（DLC 开关） -->
+  <section class="lyj-home-sec">
+    <h2 class="lyj-home-sec-h">可选内容</h2>
+    <div class="lyj-home-dlc" id="lyj-home-dlc"><p class="lyj-home-muted">正在读取可选内容…</p></div>
+    <p class="lyj-home-note">可选内容默认关闭。开启后即刻生效，无需重开对话。</p>
+  </section>
+
+  <div class="lyj-home-div"></div>
+
+  <!-- 5. 开局摘要 -->
+  <section class="lyj-home-sec">
+    <h2 class="lyj-home-sec-h">开局摘要</h2>
+    <div class="lyj-home-sum">
+      <div class="lyj-home-sum-row"><span class="lyj-home-sum-k">姓名</span><span class="lyj-home-sum-v" id="lyj-home-sum-name">—</span></div>
+      <div class="lyj-home-sum-row"><span class="lyj-home-sum-k">境界</span><span class="lyj-home-sum-v" id="lyj-home-sum-realm">—</span></div>
+      <div class="lyj-home-sum-row"><span class="lyj-home-sum-k">姿态</span><span class="lyj-home-sum-v" id="lyj-home-sum-pose">—</span></div>
+    </div>
+  </section>
+
+  <div class="lyj-home-div"></div>
+
+  <!-- 6. 环境自检 -->
+  <section class="lyj-home-sec">
+    <h2 class="lyj-home-sec-h">环境自检</h2>
+    <div class="lyj-home-env">
+      <span class="lyj-home-mark" id="lyj-home-env-th">● TavernHelper：检测中…</span>
+      <span class="lyj-home-mark" id="lyj-home-env-mvu">● MVU：检测中…</span>
+      <span class="lyj-home-mark" id="lyj-home-env-book">● 世界书：检测中…</span>
+      <span class="lyj-home-mark" id="lyj-home-env-bridge">● 桥接版本：检测中…</span>
+    </div>
+    <p class="lyj-home-hint lyj-home-hide" id="lyj-home-env-hint"></p>
+  </section>
+
+  <!-- 7. 页脚 -->
+  <footer class="lyj-home-foot">
+    <p class="lyj-home-foot-line">灵渊纪：守与放 · 卷首 v0.1</p>
+    <p class="lyj-home-foot-sub">点下方「填写开局设定」开始；也可直接切换到预写开场。</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var L = null;             // LYJ 桥（可能尚未加载）
+  var bookName = null;      // 当前角色绑定的主世界书
+  var bookResolved = false; // 世界书是否已探明
+
+  /* ---------------- 小工具 ---------------- */
+  function el(id) {
+    try { return document.getElementById(id); } catch (e) { return null; }
+  }
+  function setText(id, text) {
+    var n = el(id);
+    if (n) n.textContent = (text === null || text === undefined) ? '' : String(text);
+    return n;
+  }
+  function cls(node, name, on) {
+    if (!node || !node.classList) return;
+    try { if (on) node.classList.add(name); else node.classList.remove(name); } catch (e) {}
+  }
+  function hide(id, on) {
+    var n = el(id);
+    if (!n) return null;
+    cls(n, 'lyj-home-hide', !!on);
+    return n;
+  }
+  function msg(err) {
+    var m = '';
+    try { m = (err && err.message) ? err.message : String(err || ''); } catch (e) { m = ''; }
+    m = m.replace(/\s+/g, ' ').trim();
+    if (!m) m = '未知错误';
+    return m.length > 120 ? m.slice(0, 120) + '…' : m;
+  }
+  function setStatus(text, tone) {
+    var n = el('lyj-home-status');
+    if (!n) return;
+    n.textContent = (text === null || text === undefined) ? '' : String(text);
+    cls(n, 'lyj-home-ok', tone === 'ok');
+    cls(n, 'lyj-home-bad', tone === 'bad');
+  }
+  function setBusy(node, on) {
+    if (!node) return;
+    try { node.disabled = !!on; } catch (e) {}
+  }
+  function pick(node) {
+    for (var i = 1; i < arguments.length; i++) {
+      var id = arguments[i];
+      if (id) { var n = el(id); if (n) return n; }
+    }
+    return null;
+  }
+
+  /* ---------------- 桥调用封装：任何异常都不许冒泡成白屏 ---------------- */
+  function useSync(name, args, fallback) {
+    try {
+      if (L && typeof L[name] === 'function') return L[name].apply(L, args);
+    } catch (e) {}
+    return fallback;
+  }
+  function useAsync(name, args) {
+    return new Promise(function (resolve, reject) {
+      var fn = (L && typeof L[name] === 'function') ? L[name] : null;
+      if (!fn) { reject(new Error('桥接缺少 ' + name + '()')); return; }
+      var out;
+      try { out = fn.apply(L, args); } catch (err) { reject(err); return; }
+      if (out && typeof out.then === 'function') out.then(resolve, reject);
+      else resolve(out);
+    });
+  }
+  function numOr(raw) {
+    if (raw === null || raw === undefined || raw === '') return null;
+    var n = useSync('num', [raw, NaN], NaN);
+    if (typeof n === 'number' && isFinite(n)) return n;
+    var f = parseFloat(String(raw));
+    return isFinite(f) ? f : null;
+  }
+  function strOr(raw) {
+    var s = useSync('str', [raw, ''], '');
+    if (s === null || s === undefined || typeof s === 'object') return '';
+    return String(s).replace(/\s+/g, ' ').trim();
+  }
+  function pickPath(sd, path) {
+    return useSync('get', [sd, path, null], null);
+  }
+
+  /* ---------------- 5. 开局摘要（只读，随数据刷新） ---------------- */
+  function renderSummary(sd) {
+    var d = (sd && typeof sd === 'object') ? sd : {};
+
+    var name = strOr(pickPath(d, '主角.姓名'));
+    setText('lyj-home-sum-name', name || '—');
+
+    var tier = strOr(pickPath(d, '主角.生命层级'));
+    var title = strOr(pickPath(d, '主角.境界称号'));
+    var realm = [tier, title].filter(function (s) { return s; }).join(' · ');
+    setText('lyj-home-sum-realm', realm || '—');
+
+    var pose = strOr(pickPath(d, '主角.姿态'));
+    var cur = numOr(pickPath(d, '主角.气.当前'));
+    var base = numOr(pickPath(d, '主角.气.上限.基础'));
+    var extra = numOr(pickPath(d, '主角.气.上限.额外'));
+    var qi = '';
+    if (cur !== null || base !== null) {
+      var c = (cur === null) ? 0 : cur;
+      var cap = (base === null ? 0 : base) + (extra === null ? 0 : extra);
+      qi = '真气 ' + c + ' / ' + cap;
+    }
+    var line = [pose, qi].filter(function (s) { return s; }).join(' · ');
+    setText('lyj-home-sum-pose', line || '—');
+  }
+
+  /* ---------------- 6. 环境自检 ---------------- */
+  function mark(id, good, text) {
+    var n = el(id);
+    if (!n) return;
+    n.textContent = '● ' + text;
+    cls(n, 'lyj-home-bad', !good);
+  }
+  function renderEnv() {
+    var bad = 0;
+
+    var th = useSync('TavernHelper', [], null);
+    if (th) { mark('lyj-home-env-th', true, 'TavernHelper：就绪'); }
+    else { mark('lyj-home-env-th', false, 'TavernHelper：未找到'); bad++; }
+
+    var win = useSync('topWin', [], null);
+    var mvu = null;
+    try {
+      if (win && win.Mvu) mvu = win.Mvu;
+      else if (typeof window !== 'undefined' && window.Mvu) mvu = window.Mvu;
+    } catch (e) { mvu = null; }
+    if (mvu) { mark('lyj-home-env-mvu', true, 'MVU：已加载'); }
+    else { mark('lyj-home-env-mvu', false, 'MVU：未加载'); bad++; }
+
+    if (bookResolved) {
+      if (bookName) { mark('lyj-home-env-book', true, '世界书：' + bookName); }
+      else { mark('lyj-home-env-book', false, '世界书：未绑定'); bad++; }
+    } else {
+      mark('lyj-home-env-book', true, '世界书：读取中…');
+    }
+
+    var ver = null;
+    try { if (L && L.version !== null && L.version !== undefined) ver = String(L.version); } catch (e) { ver = null; }
+    if (ver) { mark('lyj-home-env-bridge', true, '桥接版本：' + ver); }
+    else { mark('lyj-home-env-bridge', false, '桥接版本：未知'); bad++; }
+
+    var hint = el('lyj-home-env-hint');
+    if (hint) {
+      if (bad > 0) {
+        hint.textContent = '若状态栏不显示，多为 MVU 未安装或未启用。';
+        cls(hint, 'lyj-home-hide', false);
+      } else {
+        hint.textContent = '';
+        cls(hint, 'lyj-home-hide', true);
+      }
+    }
+  }
+
+  /* ---------------- 4. 可选内容（DLC） ---------------- */
+  function sayToDlc(text) {
+    var box = el('lyj-home-dlc');
+    if (!box) return;
+    box.textContent = '';
+    var p = document.createElement('p');
+    p.className = 'lyj-home-muted';
+    p.textContent = text;
+    box.appendChild(p);
+  }
+
+  // [DLC][类别][名称]可读标题(说明-更多说明) → 标题 / 说明 / 类别
+  function parseDlc(rawName) {
+    var raw = String(rawName === null || rawName === undefined ? '' : rawName).trim();
+    var body = raw.replace(/^\[DLC\]\s*/i, '');
+    var cut = body.lastIndexOf(']');
+    var head = cut >= 0 ? body.slice(0, cut + 1) : '';
+    var tail = cut >= 0 ? body.slice(cut + 1) : body;
+
+    var tags = [];
+    var re = /\[([^\]]+)\]/g;
+    var m;
+    while ((m = re.exec(head)) !== null) {
+      var t = m[1].trim();
+      if (t) tags.push(t);
+    }
+
+    var title = tail.trim();
+    var hint = '';
+    var pm = /[（(]([^（）()]*)[）)]\s*$/.exec(title);
+    if (pm) {
+      hint = pm[1].trim();
+      title = title.slice(0, pm.index).trim();
+    }
+    if (!title) title = body.trim() || raw;
+    if (hint.length > 60) hint = hint.slice(0, 60) + '…';
+
+    return { title: title, hint: hint, tag: tags.join(' · ') };
+  }
+
+  function buildRows(list) {
+    var box = el('lyj-home-dlc');
+    if (!box) return;
+    box.textContent = '';
+
+    for (var i = 0; i < list.length; i++) {
+      (function (entry) {
+        var info = parseDlc(entry.name);
+
+        var row = document.createElement('div');
+        row.className = 'lyj-home-dlc-row';
+
+        var main = document.createElement('div');
+        main.className = 'lyj-home-dlc-main';
+
+        var nameLine = document.createElement('div');
+        nameLine.className = 'lyj-home-dlc-name';
+
+        if (info.tag) {
+          var tag = document.createElement('span');
+          tag.className = 'lyj-home-dlc-tag';
+          tag.textContent = info.tag;
+          nameLine.appendChild(tag);
+        }
+        var titleNode = document.createElement('span');
+        titleNode.className = 'lyj-home-dlc-title';
+        titleNode.textContent = info.title;
+        nameLine.appendChild(titleNode);
+        main.appendChild(nameLine);
+
+        if (info.hint) {
+          var hint = document.createElement('div');
+          hint.className = 'lyj-home-dlc-hint';
+          hint.textContent = info.hint;
+          main.appendChild(hint);
+        }
+        row.appendChild(main);
+
+        var side = document.createElement('div');
+        side.className = 'lyj-home-dlc-side';
+
+        var label = document.createElement('label');
+        label.className = 'lyj-home-switch';
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'lyj-home-cb';
+        cb.checked = !!entry.enabled;
+        try { cb.setAttribute('data-entry', String(entry.name)); } catch (e) {}
+        try { cb.setAttribute('value', String(entry.name)); } catch (e) {}
+
+        var knob = document.createElement('span');
+        knob.className = 'lyj-home-knob';
+
+        label.appendChild(cb);
+        label.appendChild(knob);
+        side.appendChild(label);
+
+        var state = document.createElement('span');
+        state.className = 'lyj-home-dlc-state';
+        state.textContent = entry.enabled ? '已开启' : '已关闭';
+        side.appendChild(state);
+
+        row.appendChild(side);
+        box.appendChild(row);
+
+        if (cb.addEventListener) {
+          cb.addEventListener('change', function () { onToggle(entry.name, cb, state); });
+        }
+      })(list[i]);
+    }
+  }
+
+  function onToggle(entryName, cb, state) {
+    var next = !!cb.checked;
+    if (cb.disabled) return;
+    cb.disabled = true;
+    state.textContent = '写入中…';
+
+    useAsync('setWorldbookEnabled', [bookName, [{ name: entryName, enabled: next }]])
+      .then(function (okFlag) {
+        if (okFlag === true) state.textContent = next ? '已开启' : '已关闭';
+        else { cb.checked = !next; state.textContent = '⚠️ 写入失败'; }
+      })
+      .catch(function () {
+        cb.checked = !next;
+        state.textContent = '⚠️ 写入失败';
+      })
+      .then(function () { cb.disabled = false; });
+  }
+
+  function loadDlc() {
+    return useAsync('worldbookNames', [])
+      .then(function (book) {
+        bookName = book ? String(book) : null;
+        bookResolved = true;
+        renderEnv();
+        if (!bookName) { sayToDlc('未绑定世界书，无法列出可选内容'); return null; }
+        return useAsync('worldbookEntries', [bookName]);
+      })
+      .then(function (list) {
+        if (!bookName) return;
+        var dlc = [];
+        var arr = Array.isArray(list) ? list : [];
+        for (var i = 0; i < arr.length; i++) {
+          var e = arr[i] || {};
+          var n = String(e.name === null || e.name === undefined ? '' : e.name).trim();
+          if (/^\[DLC\]/i.test(n)) dlc.push({ name: n, enabled: !!e.enabled });
+        }
+        if (!dlc.length) { sayToDlc('本卡当前没有可选内容'); return; }
+        buildRows(dlc);
+      })
+      .catch(function (err) {
+        bookResolved = true;
+        renderEnv();
+        sayToDlc('⚠️ 可选内容读取失败：' + msg(err));
+      });
+  }
+
+  /* ---------------- 3. 开始游戏 ---------------- */
+  function showManual(on) {
+    var box = hide('lyj-home-manual', !on);
+    var ta = el('lyj-home-manual-text');
+    if (ta) {
+      try { ta.value = '【开局文书】'; } catch (e) {}
+    }
+    return box;
+  }
+
+  function onCustomStart() {
+    var btn = el('lyj-home-btn-custom');
+    setBusy(btn, true);
+    setStatus('正在送出开局设定请求…', '');
+
+    var envOk = false;
+    try { envOk = !!(L && typeof L.ok === 'function' && L.ok()); } catch (e) { envOk = false; }
+
+    var p = envOk
+      ? useAsync('sendAsUser', ['【开局文书】']).then(function (r) { return r === true; },
+          function () { return false; })
+      : Promise.resolve(false);
+
+    p.then(function (sent) {
+      if (sent) {
+        hide('lyj-home-manual', true);
+        setStatus('✅ 已送出，请看下面弹出的开局设定页', 'ok');
+      } else {
+        showManual(true);
+        setStatus('⚠️ 未能自动发送。请手动发送下面文本框里的内容：【开局文书】', 'bad');
+      }
+    }).then(function () { setBusy(btn, false); },
+      function (err) {
+        showManual(true);
+        setStatus('⚠️ 送出失败：' + msg(err), 'bad');
+        setBusy(btn, false);
+      });
+  }
+
+  function onRandomStart() {
+    var btn = el('lyj-home-btn-random');
+    setBusy(btn, true);
+    setStatus('正在切换到预写开场…', '');
+
+    var lastErr = null;
+    var cands = [1, 0];
+    var i = 0;
+
+    function next() {
+      if (i >= cands.length) throw new Error(lastErr ? msg(lastErr) : '没有可用的预写开场');
+      var idx = cands[i++];
+      return useAsync('selectGreeting', [idx]).then(function (r) {
+        if (r === false) throw new Error('切换被拒绝');
+        return idx;
+      }, function (err) {
+        lastErr = err;
+        return next();
+      });
+    }
+
+    Promise.resolve().then(next).then(function (used) {
+      setStatus('✅ 已切换到预写开场（第 ' + (used + 1) + ' 条）', 'ok');
+      setBusy(btn, false);
+    }, function (err) {
+      setStatus('⚠️ 开场切换失败：' + msg(err), 'bad');
+      setBusy(btn, false);
+    });
+  }
+
+  function bindStart() {
+    var custom = el('lyj-home-btn-custom');
+    var random = el('lyj-home-btn-random');
+    if (custom && custom.addEventListener) custom.addEventListener('click', onCustomStart);
+    if (random && random.addEventListener) random.addEventListener('click', onRandomStart);
+  }
+
+  /* ---------------- 桥未就绪 ---------------- */
+  function noBridge() {
+    mark('lyj-home-env-th', false, 'TavernHelper：桥未加载');
+    mark('lyj-home-env-mvu', false, 'MVU：未检测');
+    mark('lyj-home-env-book', false, '世界书：未检测');
+    mark('lyj-home-env-bridge', false, '桥接版本：未加载');
+    var hint = el('lyj-home-env-hint');
+    if (hint) {
+      hint.textContent = '若状态栏不显示，多为 MVU 未安装或未启用。';
+      cls(hint, 'lyj-home-hide', false);
+    }
+    sayToDlc('桥接未就绪，无法读取可选内容');
+    setStatus('⚠️ 未检测到酒馆桥接（lyj-bridge.js）。请在酒馆聊天中打开本页。', 'bad');
+  }
+
+  function boot(LYJ) {
+    L = LYJ;
+    renderSummary(useSync('statData', [], {}));
+    renderEnv();
+    loadDlc();
+    try {
+      if (typeof LYJ.onRefresh === 'function') {
+        LYJ.onRefresh(function (sd) {
+          try { renderSummary(sd); renderEnv(); } catch (e) {}
+        });
+      }
+    } catch (e) {
+      setStatus('⚠️ 数据刷新绑定失败：' + msg(e), 'bad');
+    }
+  }
+
+  function waitLYJ(timeoutMs) {
+    return new Promise(function (resolve) {
+      var t0 = Date.now();
+      (function tick() {
+        var got = null;
+        try { got = window.LYJ; } catch (e) { got = null; }
+        if (got && typeof got === 'object') { resolve(got); return; }
+        if (Date.now() - t0 > (timeoutMs || 5000)) { resolve(null); return; }
+        setTimeout(tick, 100);
+      })();
+    });
+  }
+
+  /* ---------------- 启动 ---------------- */
+  try {
+    bindStart();
+    renderSummary({});
+    renderEnv();
+  } catch (e) {}
+
+  waitLYJ(5000).then(function (LYJ) {
+    try {
+      if (!LYJ) { noBridge(); return; }
+      boot(LYJ);
+    } catch (e) {
+      setStatus('⚠️ 首页初始化失败：' + msg(e), 'bad');
+    }
+  }, function () {
+    try { noBridge(); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
