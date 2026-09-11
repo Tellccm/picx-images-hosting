@@ -1,0 +1,934 @@
+<!doctype html>
+<!-- ============================================================
+     《灵渊纪：守与放》开局前端 v1（开局文书独立页）
+     用法：发布到 CDN（lyj/charter/index.html），由角色卡正则用
+           $('body').load(url) 载入消息 iframe，整页即「开局文书」这一页。
+     结构：完整 HTML 文档；取数与发送统一走同级 ../lyj-bridge.js（全局 LYJ），
+           页面自身不再访问 TavernHelper / 酒馆输入框 DOM。
+     ============================================================ -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>灵渊纪 · 入界</title>
+<script src="../lyj-bridge.js"></script>
+<style>
+html,body{margin:0; padding:0; background:transparent;}
+#lyj-open{
+  position:relative;
+  width:100%; max-width:680px; margin:0 auto;
+  font-family:'Songti SC','STSong','SimSun','Noto Serif CJK SC',serif;
+  font-size:13px; line-height:1.7; color:#2b2620;
+  background-color:#f2ead9;
+  background-image:
+    radial-gradient(rgba(120,100,70,.05) 1px, transparent 1px),
+    linear-gradient(168deg,#f2ead9,#e9dfc9);
+  background-size:4px 4px,100% 100%;
+  border:1px solid #c9b48c;
+  border-radius:2px;
+  box-shadow:0 3px 10px rgba(90,70,40,.10);
+  overflow:hidden;
+}
+#lyj-open,#lyj-open *{box-sizing:border-box;}
+/* 双线书框：内退 4px 的第二道细线 */
+#lyj-open::before{
+  content:''; position:absolute; left:4px; right:4px; top:4px; bottom:4px;
+  border:1px solid rgba(201,180,140,.62); border-radius:1px;
+  pointer-events:none;
+}
+/* 四角卷云头：36x36 方框贴住四角，以角心为圆心画三道 1px 弧线，方框自身裁出四分之一弧 */
+#lyj-open::after,
+#lyj-open .lyj-head::after,
+#lyj-open .lyj-foot::before,
+#lyj-open .lyj-foot::after{
+  content:''; position:absolute; width:36px; height:36px; pointer-events:none;
+  background-repeat:no-repeat; background-size:100% 100%;
+}
+#lyj-open::after{
+  left:0; top:0;
+  background-image:
+    radial-gradient(circle at 0 0, transparent 6px, rgba(184,137,43,.55) 6px, rgba(184,137,43,.55) 7px, transparent 7px),
+    radial-gradient(circle at 0 0, transparent 11px, rgba(184,137,43,.38) 11px, rgba(184,137,43,.38) 12px, transparent 12px),
+    radial-gradient(circle at 0 0, transparent 16px, rgba(184,137,43,.22) 16px, rgba(184,137,43,.22) 17px, transparent 17px);
+}
+#lyj-open .lyj-head::after{
+  right:0; top:0;
+  background-image:
+    radial-gradient(circle at 100% 0, transparent 6px, rgba(184,137,43,.55) 6px, rgba(184,137,43,.55) 7px, transparent 7px),
+    radial-gradient(circle at 100% 0, transparent 11px, rgba(184,137,43,.38) 11px, rgba(184,137,43,.38) 12px, transparent 12px),
+    radial-gradient(circle at 100% 0, transparent 16px, rgba(184,137,43,.22) 16px, rgba(184,137,43,.22) 17px, transparent 17px);
+}
+#lyj-open .lyj-foot::before{
+  left:0; bottom:0;
+  background-image:
+    radial-gradient(circle at 0 100%, transparent 6px, rgba(184,137,43,.55) 6px, rgba(184,137,43,.55) 7px, transparent 7px),
+    radial-gradient(circle at 0 100%, transparent 11px, rgba(184,137,43,.38) 11px, rgba(184,137,43,.38) 12px, transparent 12px),
+    radial-gradient(circle at 0 100%, transparent 16px, rgba(184,137,43,.22) 16px, rgba(184,137,43,.22) 17px, transparent 17px);
+}
+#lyj-open .lyj-foot::after{
+  right:0; bottom:0;
+  background-image:
+    radial-gradient(circle at 100% 100%, transparent 6px, rgba(184,137,43,.55) 6px, rgba(184,137,43,.55) 7px, transparent 7px),
+    radial-gradient(circle at 100% 100%, transparent 11px, rgba(184,137,43,.38) 11px, rgba(184,137,43,.38) 12px, transparent 12px),
+    radial-gradient(circle at 100% 100%, transparent 16px, rgba(184,137,43,.22) 16px, rgba(184,137,43,.22) 17px, transparent 17px);
+}
+#lyj-open .lyj-head{
+  position:relative; padding:15px 18px 13px; text-align:center;
+  background:linear-gradient(180deg,rgba(201,180,140,.16),rgba(201,180,140,.04));
+  border-bottom:1px solid rgba(201,180,140,.72);
+}
+/* 标题：墨字，首尾两个 ❖ 用背景裁字上鎏金 */
+#lyj-open .lyj-title{
+  position:relative; display:inline-block;
+  font-size:19px; font-weight:700; letter-spacing:.34em;
+  color:#2b2620;
+  background-image:
+    linear-gradient(#b8892b,#b8892b),
+    linear-gradient(#b8892b,#b8892b),
+    linear-gradient(#2b2620,#2b2620);
+  background-size:1.05em 100%,1.05em 100%,100% 100%;
+  background-position:left center,right center,0 0;
+  background-repeat:no-repeat,no-repeat,no-repeat;
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+/* 朱砂小方印，落在标题右侧 */
+#lyj-open .lyj-title::after{
+  content:'靈';
+  position:absolute; left:100%; top:50%; margin-left:.6em;
+  width:22px; height:22px; line-height:22px; text-align:center;
+  font-size:12px; font-weight:700; letter-spacing:0;
+  color:#f2ead9; -webkit-text-fill-color:#f2ead9;
+  background-color:#a83232; background-image:none;
+  border-radius:2px;
+  transform:translateY(-50%) rotate(-2deg);
+}
+#lyj-open .lyj-sub{
+  font-size:11.5px; color:#6b6152; letter-spacing:.2em; margin-top:5px;
+}
+#lyj-open .lyj-lore{
+  margin:13px 18px 0; padding:10px 13px;
+  font-size:12px; color:#6b6152; line-height:1.9;
+  background:rgba(201,180,140,.16);
+  border-left:2px solid #b8892b;
+  border-radius:0 2px 2px 0;
+}
+#lyj-open .lyj-lore b{color:#7a4a2b; font-weight:700;}
+#lyj-open .lyj-lore i{color:#3a4a52; font-style:normal;}
+#lyj-open .lyj-body{padding:4px 18px 0;}
+#lyj-open .lyj-sec{
+  position:relative; margin:16px 0 8px; padding-bottom:7px;
+  font-size:12.5px; font-weight:700; letter-spacing:.16em; color:#b8892b;
+}
+/* 小节标题下的云纹分隔线：中间一道细线，两端各收两圈云头 */
+#lyj-open .lyj-sec::after{
+  content:''; display:block; position:absolute; left:0; right:0; bottom:0; height:7px;
+  pointer-events:none;
+  background-image:
+    radial-gradient(circle at 3px 50%, rgba(184,137,43,.9) 1.4px, transparent 2px),
+    radial-gradient(circle at 3px 50%, rgba(184,137,43,.42) 3.2px, transparent 3.9px),
+    radial-gradient(circle at 100% 50%, rgba(184,137,43,.9) 1.4px, transparent 2px),
+    radial-gradient(circle at 100% 50%, rgba(184,137,43,.42) 3.2px, transparent 3.9px),
+    linear-gradient(90deg, rgba(184,137,43,0), rgba(184,137,43,.5) 8%, rgba(184,137,43,.5) 92%, rgba(184,137,43,0));
+  background-repeat:no-repeat;
+  background-size:100% 7px,100% 7px,100% 7px,100% 7px,100% 1px;
+  background-position:0 0,0 0,0 0,0 0,0 50%;
+}
+#lyj-open .lyj-sec span{color:#8c8271; font-weight:400; letter-spacing:.06em; font-size:11px;}
+#lyj-open .lyj-row{display:flex; flex-wrap:wrap; gap:8px;}
+#lyj-open .lyj-opt{
+  position:relative;
+  display:block; text-align:left; cursor:pointer;
+  flex:1 1 200px; min-width:150px;
+  font-family:inherit; font-size:12.5px; line-height:1.5;
+  padding:7px 11px 7px 19px; border-radius:2px;
+  border:1px solid rgba(107,97,82,.42);
+  background:rgba(255,252,244,.55);
+  color:#2b2620;
+  transition:border-color .16s ease, background .16s ease, opacity .16s ease, color .16s ease;
+}
+/* 未选中：牙白底 + 淡墨描边 + 墨字；选中：鎏金描边 + 极淡鎏金底 + 左侧小朱砂点 */
+#lyj-open .lyj-opt::before{
+  content:''; position:absolute; left:8px; top:50%; margin-top:-3px;
+  width:5px; height:5px; border-radius:50%;
+  background:#a83232; opacity:0;
+  transition:opacity .16s ease;
+}
+#lyj-open .lyj-opt:hover{border-color:rgba(184,137,43,.7); background:rgba(255,252,244,.92);}
+#lyj-open .lyj-opt .lyj-on1{font-weight:700; color:inherit;}
+#lyj-open .lyj-opt .lyj-on2{display:block; font-size:11px; color:#8c8271; margin-top:2px;}
+#lyj-open .lyj-opt.on{
+  border-color:#b8892b;
+  background:rgba(184,137,43,.10);
+  color:#2b2620;
+}
+#lyj-open .lyj-opt.on::before{opacity:1;}
+#lyj-open .lyj-opt.on .lyj-on2{color:#6b6152;}
+#lyj-open .lyj-opt.lyj-pref{border-color:rgba(58,74,82,.5); color:#3a4a52;}
+#lyj-open .lyj-opt.lyj-pref .lyj-on2{color:#8c8271;}
+#lyj-open .lyj-opt.lyj-dim{opacity:.6;}
+#lyj-open .lyj-opt.on.lyj-pref{border-color:#b8892b; color:#2b2620;}
+#lyj-open .lyj-inp{
+  width:100%; font-family:inherit; font-size:13px;
+  padding:8px 11px; border-radius:2px;
+  border:1px solid rgba(107,97,82,.42);
+  background:rgba(255,252,244,.72); color:#2b2620; outline:none;
+  transition:border-color .16s ease;
+}
+#lyj-open .lyj-inp::placeholder{color:#a99f8c;}
+#lyj-open .lyj-inp:focus{border-color:#b8892b;}
+#lyj-open .lyj-tip{font-size:11px; color:#8c8271; margin-top:6px;}
+#lyj-open .lyj-tip.warn{color:#7a4a2b;}
+#lyj-open .lyj-grp{margin-top:9px;}
+#lyj-open .lyj-grp-h{
+  font-size:11.5px; color:#3a4a52; letter-spacing:.12em; margin:0 0 6px;
+}
+#lyj-open .lyj-grp-h.hot{color:#7a4a2b;}
+#lyj-open .lyj-foot{
+  position:relative;
+  margin-top:16px; padding:13px 18px 16px;
+  border-top:1px solid rgba(201,180,140,.72);
+  display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+}
+/* 主按钮：朱砂底 + 牙白字，像落一枚印 */
+#lyj-open .lyj-btn{
+  font-family:inherit; font-size:13.5px; font-weight:700; letter-spacing:.12em;
+  color:#f2ead9; cursor:pointer; padding:10px 24px; border-radius:2px;
+  border:1px solid #8f2a2a;
+  background-color:#a83232;
+  transition:background-color .16s ease, opacity .16s ease;
+}
+#lyj-open .lyj-btn:hover{background-color:#962c2c;}
+#lyj-open .lyj-btn:disabled{opacity:.5; cursor:not-allowed;}
+#lyj-open .lyj-meta{font-size:11px; color:#8c8271;}
+#lyj-open .lyj-status{
+  display:none; margin:0 18px 15px; padding:9px 12px;
+  font-size:12px; border-radius:2px; line-height:1.7;
+}
+#lyj-open .lyj-status.err{
+  display:block; color:#a83232;
+  border:1px solid rgba(168,50,50,.5); background:rgba(168,50,50,.06);
+}
+#lyj-open .lyj-status.ok{
+  display:block; color:#3a4a52;
+  border:1px solid rgba(184,137,43,.5); background:rgba(184,137,43,.08);
+}
+#lyj-open .lyj-manual{display:none; margin:0 18px 15px;}
+#lyj-open .lyj-manual textarea{
+  width:100%; min-height:132px; font-family:ui-monospace,Consolas,monospace;
+  font-size:11.5px; line-height:1.7; color:#2b2620;
+  padding:9px 11px; border-radius:2px; resize:vertical;
+  border:1px solid rgba(107,97,82,.42); background:rgba(255,252,244,.8); outline:none;
+}
+#lyj-open .lyj-attrs{margin-top:2px;}
+#lyj-open .lyj-attr{
+  display:flex; align-items:center; gap:10px;
+  margin-top:6px; padding:5px 10px; border-radius:2px;
+  border:1px solid rgba(107,97,82,.35);
+  background:rgba(255,252,244,.5);
+}
+#lyj-open .lyj-attr-n{flex:1 1 auto; font-size:12.5px; color:#2b2620; letter-spacing:.18em;}
+#lyj-open .lyj-attr-v{min-width:36px; text-align:center; font-size:14.5px; font-weight:700; color:#7a4a2b;}
+#lyj-open .lyj-step{
+  width:32px; height:26px; padding:0; cursor:pointer;
+  font-family:inherit; font-size:15px; font-weight:700; line-height:1; color:#2b2620;
+  border-radius:2px; border:1px solid rgba(43,38,32,.55);
+  background:rgba(255,252,244,.85);
+  transition:background-color .16s ease, opacity .16s ease;
+}
+#lyj-open .lyj-step:hover{background:rgba(184,137,43,.12);}
+#lyj-open .lyj-step:disabled{opacity:.25; cursor:not-allowed;}
+#lyj-open .lyj-count{font-size:11px; font-weight:700; letter-spacing:.06em;}
+#lyj-open .lyj-count.bad{color:#a83232;}
+#lyj-open .lyj-count.good{color:#3a4a52;}
+@media (max-width:520px){
+  #lyj-open .lyj-opt{flex:1 1 100%; min-width:0;}
+  #lyj-open .lyj-title{font-size:17px; letter-spacing:.24em;}
+  #lyj-open .lyj-body{padding:4px 13px 0;}
+  #lyj-open .lyj-lore{margin:12px 13px 0;}
+  #lyj-open .lyj-foot{padding:12px 13px 15px;}
+  #lyj-open .lyj-status,#lyj-open .lyj-manual{margin-left:13px; margin-right:13px;}
+}
+</style>
+</head>
+<body>
+
+<div id="lyj-open">
+  <div class="lyj-head">
+    <div class="lyj-title">❖ 灵渊纪 · 入界 ❖</div>
+    <div class="lyj-sub">《灵渊纪：守与放》开局设定</div>
+  </div>
+
+  <div class="lyj-lore">
+    此界天地间有<b>灵气</b>。纳灵气入体，炼成真气，蓄于气海。<br>
+    真气收在体内叫<b>内炼</b>：护体厚、能近战、回气快，但用不了外法。真气推出体外塑成术叫<i>外引</i>：远程、爆发、控场，但护体薄、不回气，用不了内法。<br>
+    从一种换到另一种的那一息，护体归零，被命中即为「破绽」。<br>
+    <b>凡人</b>气海未开，蓄不住真气，只能引动天地间那一点极稀薄的灵气使几手<b>微型魔法</b>——点灯、生火、净水、驱虫、烘干衣物、传声、止血、催芽。够糊口，不够争斗。
+  </div>
+
+  <div class="lyj-body">
+
+    <div class="lyj-sec">一 · 姓名</div>
+    <input id="lyj-name" class="lyj-inp" type="text" maxlength="24" placeholder="报上名来" autocomplete="off">
+
+    <div class="lyj-sec">二 · 性别</div>
+    <div class="lyj-row">
+      <button type="button" class="lyj-opt" data-field="gender" data-val="男">男</button>
+      <button type="button" class="lyj-opt" data-field="gender" data-val="女">女</button>
+      <button type="button" class="lyj-opt" data-field="gender" data-val="其他">其他</button>
+    </div>
+
+    <div class="lyj-sec">三 · 年龄 <span>（14 ~ 200）</span></div>
+    <input id="lyj-age" class="lyj-inp" type="number" min="14" max="200" step="1" value="18">
+
+    <div class="lyj-sec">四 · 出身</div>
+    <div class="lyj-row">
+      <button type="button" class="lyj-opt" data-field="origin" data-val="宗门·外门弟子"><span class="lyj-on1">宗门·外门弟子</span><span class="lyj-on2">拜在某一大宗门下，师承有名有姓，但穷。</span></button>
+      <button type="button" class="lyj-opt" data-field="origin" data-val="宗门·内门弟子"><span class="lyj-on1">宗门·内门弟子</span><span class="lyj-on2">资源不缺，但一举一动都被盯着。</span></button>
+      <button type="button" class="lyj-opt" data-field="origin" data-val="散修·主修内炼"><span class="lyj-on1">散修·主修内炼</span><span class="lyj-on2">以守为路，靠给人护院、镇宅、押货糊口。</span></button>
+      <button type="button" class="lyj-opt" data-field="origin" data-val="散修·主修外引"><span class="lyj-on1">散修·主修外引</span><span class="lyj-on2">以放为路，接驱邪、寻物、开路之类的活。</span></button>
+      <button type="button" class="lyj-opt" data-field="origin" data-val="散修·兼修"><span class="lyj-on1">散修·兼修</span><span class="lyj-on2">两路都学了个半，专接最没人愿意接的活。</span></button>
+      <button type="button" class="lyj-opt" data-field="origin" data-val="凡人出身"><span class="lyj-on1">凡人出身</span><span class="lyj-on2">气海未开，只会几手微型魔法，而后某天忽然开了海，或者只开了半边。</span></button>
+      <button type="button" class="lyj-opt" data-field="origin" data-val="妖裔"><span class="lyj-on1">妖裔</span><span class="lyj-on2">万妖岭流出的开智妖族，半人半兽，靠本能调气。</span></button>
+      <button type="button" class="lyj-opt" data-field="origin" data-val="器偶"><span class="lyj-on1">器偶</span><span class="lyj-on2">被炼器师造出来的人，生来没有气海，只能外放，法律上不算人。</span></button>
+    </div>
+
+    <div class="lyj-sec">五 · 根器</div>
+    <div class="lyj-row">
+      <button type="button" class="lyj-opt" data-field="root" data-val="气量型"><span class="lyj-on1">气量型</span><span class="lyj-on2">气海天生宽大，上限高，但回气慢。</span></button>
+      <button type="button" class="lyj-opt" data-field="root" data-val="流速型"><span class="lyj-on1">流速型</span><span class="lyj-on2">进出都快，换气利落，但上限偏低。</span></button>
+      <button type="button" class="lyj-opt" data-field="root" data-val="精控型"><span class="lyj-on1">精控型</span><span class="lyj-on2">外法塑形精准，威力加成。</span></button>
+      <button type="button" class="lyj-opt" data-field="root" data-val="厚壁型"><span class="lyj-on1">厚壁型</span><span class="lyj-on2">护体天生厚实，内持更强。</span></button>
+      <button type="button" class="lyj-opt" data-field="root" data-val="空根"><span class="lyj-on1">空根</span><span class="lyj-on2">天生无气海，只能靠身体与器物；但免疫一切破气手段。凡人大多是气海未开，而空根是开不了。</span></button>
+    </div>
+
+    <div class="lyj-sec">六 · 配比倾向 <span>（决定下方招式的主推类别）</span></div>
+    <div class="lyj-row">
+      <button type="button" class="lyj-opt" data-field="ratio" data-val="主修内炼"><span class="lyj-on1">主修内炼（修仙）</span><span class="lyj-on2">以守为路，先站三年桩。</span></button>
+      <button type="button" class="lyj-opt" data-field="ratio" data-val="主修外引"><span class="lyj-on1">主修外引（魔法）</span><span class="lyj-on2">以放为路，先学一手能打出去的东西。</span></button>
+      <button type="button" class="lyj-opt" data-field="ratio" data-val="两者兼修"><span class="lyj-on1">两者兼修</span><span class="lyj-on2">靠换气节奏取胜，上限最高，失误也最致命。</span></button>
+    </div>
+
+    <div class="lyj-sec">七 · 起始招式 <span id="lyj-skill-count">已选 0/2</span></div>
+    <div class="lyj-tip">恰好选 2 个。点第三个会把最早选的挤掉，再点一次可取消。</div>
+    <div class="lyj-tip warn" id="lyj-skill-hint" style="display:none;">跨类起手更难，但上限更高。</div>
+
+    <div class="lyj-grp">
+      <div class="lyj-grp-h" id="lyj-h-in">◆ 内主型</div>
+      <div class="lyj-row">
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="in" data-val="铁骨桩"><span class="lyj-on1">铁骨桩</span><span class="lyj-on2">立势蓄气，护体加倍，本回合不能移动。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="in" data-val="龟息诀"><span class="lyj-on1">龟息诀</span><span class="lyj-on2">闭气归藏，数息内不露气机，回气翻倍。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="in" data-val="崩山劲"><span class="lyj-on1">崩山劲</span><span class="lyj-on2">气沉一处再炸出，近身一击专破护体。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="in" data-val="反震诀"><span class="lyj-on1">反震诀</span><span class="lyj-on2">接招时弹回三成力，余下七成照旧自己吃。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="in" data-val="卸力借步"><span class="lyj-on1">卸力借步</span><span class="lyj-on2">顺来力挪半步，化去冲击并抢回站位。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="in" data-val="明王不动印"><span class="lyj-on1">明王不动印</span><span class="lyj-on2">结印定身，短时免控、免退、免破气。</span></button>
+      </div>
+    </div>
+
+    <div class="lyj-grp">
+      <div class="lyj-grp-h" id="lyj-h-out">◆ 外主型</div>
+      <div class="lyj-row">
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="out" data-val="穿云刺"><span class="lyj-on1">穿云刺</span><span class="lyj-on2">气凝成一线射出，穿甲而不留宽口。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="out" data-val="烈阳环"><span class="lyj-on1">烈阳环</span><span class="lyj-on2">环身推火，范围灼烧，需一息预热。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="out" data-val="缚风索"><span class="lyj-on1">缚风索</span><span class="lyj-on2">气化风索缠足锁腕，控为主，杀有限。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="out" data-val="落石印"><span class="lyj-on1">落石印</span><span class="lyj-on2">高空凝石砸下，起手慢，压制极重。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="out" data-val="霜台"><span class="lyj-on1">霜台</span><span class="lyj-on2">地面结霜成台，减速、封路、逼人犯错。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="out" data-val="碎星落"><span class="lyj-on1">碎星落</span><span class="lyj-on2">把气一次倾泻到底，威猛之后护体近空。</span></button>
+      </div>
+    </div>
+
+    <div class="lyj-grp">
+      <div class="lyj-grp-h" id="lyj-h-bal">◆ 均衡型</div>
+      <div class="lyj-row">
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="bal" data-val="呼吸换气术"><span class="lyj-on1">呼吸换气术</span><span class="lyj-on2">一守一放之间换气，姿态切换不留破绽。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="bal" data-val="双流贯气"><span class="lyj-on1">双流贯气</span><span class="lyj-on2">气分两路，一手护体一手外放，各打七折。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="bal" data-val="叠浪斩"><span class="lyj-on1">叠浪斩</span><span class="lyj-on2">三连斩层层叠加，每一层都比上一层更重。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="bal" data-val="气机同调"><span class="lyj-on1">气机同调</span><span class="lyj-on2">踩住对手的气机节律，提前一步知其出手。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="bal" data-val="破绽反打"><span class="lyj-on1">破绽反打</span><span class="lyj-on2">专打对方换气那一瞬，护体为空的一息。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="bal" data-val="一息归元"><span class="lyj-on1">一息归元</span><span class="lyj-on2">把散出去的气收回，短时重建护体。</span></button>
+      </div>
+    </div>
+
+    <div class="lyj-grp">
+      <div class="lyj-grp-h" id="lyj-h-odd">⟡ 偏门</div>
+      <div class="lyj-row">
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="odd" data-val="引气符"><span class="lyj-on1">引气符</span><span class="lyj-on2">纸上引气，可替人供气，也可抽人气机。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="odd" data-val="蓄气符"><span class="lyj-on1">蓄气符</span><span class="lyj-on2">把气封在符中，事后一次性调用。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="odd" data-val="丹火诀"><span class="lyj-on1">丹火诀</span><span class="lyj-on2">以气化火炼物，兼作贴身火攻。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="odd" data-val="淬体丹方"><span class="lyj-on1">淬体丹方</span><span class="lyj-on2">不是招式，是药方，慢工改体质。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="odd" data-val="器灵共鸣"><span class="lyj-on1">器灵共鸣</span><span class="lyj-on2">与有灵的器物共振，借它的力。</span></button>
+        <button type="button" class="lyj-opt" data-field="skill" data-cat="odd" data-val="阵基术"><span class="lyj-on1">阵基术</span><span class="lyj-on2">落桩定基，圈内的规矩由你定。</span></button>
+      </div>
+    </div>
+
+    <div class="lyj-sec">八 · 五维属性 <span id="lyj-attr-count" class="lyj-count good">已分配 50 / 50</span></div>
+    <div class="lyj-tip">每项 8 ~ 12，五项合计必须为 50（默认每项 10）。</div>
+    <div class="lyj-attrs">
+      <div class="lyj-attr">
+        <span class="lyj-attr-n">体魄</span>
+        <button type="button" class="lyj-step" data-attr="体魄" data-d="-1">−</button>
+        <span class="lyj-attr-v" id="lyj-v-体魄">10</span>
+        <button type="button" class="lyj-step" data-attr="体魄" data-d="1">+</button>
+      </div>
+      <div class="lyj-attr">
+        <span class="lyj-attr-n">身法</span>
+        <button type="button" class="lyj-step" data-attr="身法" data-d="-1">−</button>
+        <span class="lyj-attr-v" id="lyj-v-身法">10</span>
+        <button type="button" class="lyj-step" data-attr="身法" data-d="1">+</button>
+      </div>
+      <div class="lyj-attr">
+        <span class="lyj-attr-n">根骨</span>
+        <button type="button" class="lyj-step" data-attr="根骨" data-d="-1">−</button>
+        <span class="lyj-attr-v" id="lyj-v-根骨">10</span>
+        <button type="button" class="lyj-step" data-attr="根骨" data-d="1">+</button>
+      </div>
+      <div class="lyj-attr">
+        <span class="lyj-attr-n">悟性</span>
+        <button type="button" class="lyj-step" data-attr="悟性" data-d="-1">−</button>
+        <span class="lyj-attr-v" id="lyj-v-悟性">10</span>
+        <button type="button" class="lyj-step" data-attr="悟性" data-d="1">+</button>
+      </div>
+      <div class="lyj-attr">
+        <span class="lyj-attr-n">道心</span>
+        <button type="button" class="lyj-step" data-attr="道心" data-d="-1">−</button>
+        <span class="lyj-attr-v" id="lyj-v-道心">10</span>
+        <button type="button" class="lyj-step" data-attr="道心" data-d="1">+</button>
+      </div>
+    </div>
+
+    <div class="lyj-sec">九 · 装备 <span>（三组各选一）</span></div>
+
+    <div class="lyj-grp">
+      <div class="lyj-grp-h">◆ 兵刃</div>
+      <div class="lyj-row">
+        <button type="button" class="lyj-opt" data-field="weapon" data-val="凡铁刀"><span class="lyj-on1">凡铁刀</span><span class="lyj-on2">威力 +0，判定 +1，耐用。</span></button>
+        <button type="button" class="lyj-opt" data-field="weapon" data-val="精钢剑"><span class="lyj-on1">精钢剑</span><span class="lyj-on2">威力 +1，判定 +0，需有力气才挥得动。需体魄 ≥ 11。</span></button>
+        <button type="button" class="lyj-opt" data-field="weapon" data-val="短棍"><span class="lyj-on1">短棍</span><span class="lyj-on2">威力 −1，判定 +1，轻便，换气不受器物拖累。</span></button>
+        <button type="button" class="lyj-opt" data-field="weapon" data-val="空手"><span class="lyj-on1">空手</span><span class="lyj-on2">无加成，但姿态切换最利落，判定 +1。</span></button>
+      </div>
+    </div>
+
+    <div class="lyj-grp">
+      <div class="lyj-grp-h">◆ 护具</div>
+      <div class="lyj-row">
+        <button type="button" class="lyj-opt" data-field="armor" data-val="布衣"><span class="lyj-on1">布衣</span><span class="lyj-on2">减伤 0，轻便。</span></button>
+        <button type="button" class="lyj-opt" data-field="armor" data-val="皮甲"><span class="lyj-on1">皮甲</span><span class="lyj-on2">减伤 +1，身法 −1。需体魄 ≥ 10。</span></button>
+        <button type="button" class="lyj-opt" data-field="armor" data-val="轻甲"><span class="lyj-on1">轻甲</span><span class="lyj-on2">减伤 +2，身法 −2。需体魄 ≥ 12。</span></button>
+      </div>
+    </div>
+
+    <div class="lyj-grp">
+      <div class="lyj-grp-h">◆ 随物</div>
+      <div class="lyj-row">
+        <button type="button" class="lyj-opt" data-field="trinket" data-val="三块下品灵石"><span class="lyj-on1">三块下品灵石</span><span class="lyj-on2">既是钱，也能吸掉补气。</span></button>
+        <button type="button" class="lyj-opt" data-field="trinket" data-val="一张一阶引气符"><span class="lyj-on1">一张一阶引气符</span><span class="lyj-on2">撕开就能放出一招外法，不需要外放姿态。</span></button>
+        <button type="button" class="lyj-opt" data-field="trinket" data-val="一包金创药"><span class="lyj-on1">一包金创药</span><span class="lyj-on2">止血、疗外伤。</span></button>
+        <button type="button" class="lyj-opt" data-field="trinket" data-val="一本残卷"><span class="lyj-on1">一本残卷</span><span class="lyj-on2">某项熟练度的一次性突破机会。</span></button>
+      </div>
+    </div>
+
+    <div class="lyj-sec">十 · 开局地点</div>
+    <div class="lyj-row">
+      <button type="button" class="lyj-opt" data-field="place" data-val="玄霄剑宗 · 山门外"><span class="lyj-on1">玄霄剑宗 · 山门外</span><span class="lyj-on2">剑修大宗，山门规矩森严，来客先问来路。</span></button>
+      <button type="button" class="lyj-opt" data-field="place" data-val="镇岳宗 · 镇岳山"><span class="lyj-on1">镇岳宗 · 镇岳山</span><span class="lyj-on2">整座山就是护山大阵，弟子多主修内炼。</span></button>
+      <button type="button" class="lyj-opt" data-field="place" data-val="明理阁 · 藏书楼前"><span class="lyj-on1">明理阁 · 藏书楼前</span><span class="lyj-on2">天下论道之所，书多，话也多。</span></button>
+      <button type="button" class="lyj-opt" data-field="place" data-val="合真院 · 答问山"><span class="lyj-on1">合真院 · 答问山</span><span class="lyj-on2">唯一正经教「换气」的地方，答不上来就下山。</span></button>
+      <button type="button" class="lyj-opt" data-field="place" data-val="落霞坊市"><span class="lyj-on1">落霞坊市</span><span class="lyj-on2">散修聚集地，三教九流，什么活都有人接。</span></button>
+      <button type="button" class="lyj-opt" data-field="place" data-val="大肃王朝的一座凡人城镇"><span class="lyj-on1">大肃王朝的一座凡人城镇</span><span class="lyj-on2">气海未开者居多，靠几手微型魔法过日子。</span></button>
+      <button type="button" class="lyj-opt" data-field="place" data-val="云篆秘境 · 入口"><span class="lyj-on1">云篆秘境 · 入口</span><span class="lyj-on2">十年一度开门，名额由各宗门分。</span></button>
+    </div>
+
+    <div class="lyj-sec">十一 · 开局缘由</div>
+    <div class="lyj-row">
+      <button type="button" class="lyj-opt" data-field="reason" data-val="逃难">逃难</button>
+      <button type="button" class="lyj-opt" data-field="reason" data-val="求学">求学</button>
+      <button type="button" class="lyj-opt" data-field="reason" data-val="寻仇">寻仇</button>
+      <button type="button" class="lyj-opt" data-field="reason" data-val="谋生">谋生</button>
+      <button type="button" class="lyj-opt" data-field="reason" data-val="追查">追查</button>
+      <button type="button" class="lyj-opt" data-field="reason" data-val="自定义">自定义</button>
+    </div>
+    <div id="lyj-reason-wrap" style="display:none; margin-top:8px;">
+      <input id="lyj-reason-custom" class="lyj-inp" type="text" maxlength="80" placeholder="写下你自己的缘由" autocomplete="off">
+    </div>
+
+    <div class="lyj-sec">十二 · 备注 <span>（可选）</span></div>
+    <input id="lyj-note" class="lyj-inp" type="text" maxlength="120" placeholder="任何你想补充的设定，可留空" autocomplete="off">
+
+  </div>
+
+  <div class="lyj-status" id="lyj-status"></div>
+
+  <div class="lyj-manual" id="lyj-manual">
+    <textarea id="lyj-manual-text" readonly></textarea>
+  </div>
+
+  <div class="lyj-foot">
+    <span class="lyj-meta">⌘ 确认后将以此设定作为玩家消息发出</span>
+    <button type="button" class="lyj-btn" id="lyj-submit">❖ 以此开局 ❖</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  window.__LYJ_OPENINGS = [{"name":"【守】站得住的人","priority":5,"cond":{"path":["主修内炼"]},"scene":"你到的时候，那扇门还没开。\n\n门前站着三个人。他们都没看你，只是各自站着——一个在抖腿，一个在数砖，一个靠墙闭着眼。你也站着。这件事你练了很多年，站着对你来说从来不是难事。\n\n门开了。出来的人只说了一句：「一个一个进。进去之后站着，站到我说停。」\n\n第一个人先进去。半刻钟后出来，脸色发白，扶着门框喘气。第二个人进去得更快，出来得也更快。轮到你时，门里什么都没有——一个空院子，院中央一块石板，石板上有一道浅浅的脚印。\n\n「站这儿。」他说，「你现在可以选：站到这只脚印上，还是站到院子另一边去。」\n\n他看得出来你会数脚印的深浅。他也知道，你选了哪一边，他就知道你这些年练的是什么。\n\n你还没动。"},{"name":"【放】先出手的人","priority":5,"cond":{"path":["主修外引"]},"scene":"对方比你先看见了。\n\n那人在你背后十步远的地方开始凝气——你听见了。塑形时的风声很轻，但很稳。等你转过去，他的手已经抬到胸口，掌心里那团东西正在成形。\n\n十步。这个距离对他有利。\n\n周围的人开始往两边退。有人喊了一句「街上不许——」，话没说完就咽了回去。这条街的规矩他不打算守，规矩也拦不住他。\n\n你的手已经摸到自己腰间。你比他慢了一息。但先动手的人，通常要到第二息才会露出真正的空当。\n\n他还没放。他在等你先动。"},{"name":"【转】两脚都站的人","priority":5,"cond":{"path":["两者兼修"]},"scene":"你两边都学过，这在这里不是什么光彩的事。\n\n带你入门的两个人都说过同一句话：别去碰另一边。你碰了。你花的时间比谁都多，进步比谁都慢，到最后两边都没把你当成自己人。\n\n但今天这个局，对你不利——对方比你高一层，站在三丈外，姿态已经亮出来了：内持。护体厚得像一堵墙。他会等你上去，用你的气把你自己耗死。\n\n这是一个只有换气才打得动的局。而他不知道你两边都碰过。\n\n你先动了。三步之后，你会做出那个所有人都不敢做的动作。"},{"name":"【宗门·外门】靠边站的那一个","priority":14,"cond":{"origin":["宗门·外门弟子"],"place":["玄霄剑宗 · 山门外","镇岳宗 · 镇岳山","明理阁 · 藏书楼前"]},"scene":"天还没亮，你已经在扫山道了。\n\n外门弟子的日子就是这样：早课、杂役、分丹药时排在最后。上个月你在藏经堂外站了两个时辰，只为了让管书的老头多看你一眼——他最后说了一句「你气还没沉，先回去站桩」。你没跟他争。你连争的资格都没有。\n\n今天不一样。今天有内门收人的试手名额，一个。消息是别人嘴里漏出来的，没人通知你。\n\n你去得比谁都早。到的时候，试手场外已经站了三十几个人，其中一半是内门弟子的随侍，在替自家主子占位子。\n\n场门开了。念名单的执事翻了翻手里的册子，从第一个念起。你听着，一直听到最后一个名字——没有你。\n\n你往前走了一步。执事抬眼看你，眉头皱了一下：「你是哪一房的？册子上没有你。」\n\n三十几个人都转过头来看你。"},{"name":"【宗门·内门】被看着的人","priority":14,"cond":{"origin":["宗门·内门弟子"],"place":["玄霄剑宗 · 山门外","镇岳宗 · 镇岳山","明理阁 · 藏书楼前"]},"scene":"内门不缺东西。丹药按月发，灵脉随你挑时候去，连练功的院子都单独给你留一间。\n\n代价是你每一次出手都有人记着。\n\n今天教习让你当众演一遍。下面坐着三个人：一个是本脉的师叔，一个是执掌戒律的执事堂的人，还有一个你不认识，穿的是别家的服色——多半是来观礼的客人。\n\n教习说：「照你平时的来，不必藏。」\n\n这句话在这里从来不是真话。放得好，会被人记一笔「此子可虑」；放得不好，也会被记一笔。你站在场中，手已经抬起来了。"},{"name":"【散修·内炼】镖局的活","priority":10,"cond":{"origin":["散修·主修内炼"]},"scene":"你想接镖行的活，得先过一关。\n\n后院空地上画着一条线，线那边站着一个五十来岁的老镖师，脸上没表情。掌柜抱着手站在廊下，说得很清楚：「三车货，十六天路，钱不多，但稳。我看的不是你能不能打，是你能不能顶。站够二十息，就签。」\n\n老镖师还没动，但是他站的那条桩，你看得出是用几十年换来的。\n\n你站到线这边。二十息，很短。二十息，也很长——尤其当对面那个人比你多活了三十年、多挨了三十年的打。\n\n掌柜的脚在地上点了一下。计时开始。"},{"name":"【散修·外引】一次做完的活","priority":10,"cond":{"origin":["散修·主修外引"]},"scene":"委托挂在下街的木牌上，写明只有一天。\n\n城西有座旧宅，宅子里夜里会出声。主家搬走两年了，房子卖不掉，只能出钱请人去看看。价钱是三块下品灵石，当场付一半，做完结清。\n\n行会里没人接。因为上一个接的人，第三天被人从宅子里抬出来——人是活的，但话说不清楚了。\n\n执事把木牌从钉子上摘下来递给你，又多问了一句：「就你一个人？」\n\n你把牌接了。牌上还留着上一个人的汗渍，已经干了。"},{"name":"【散修·兼修】没人肯接的活","priority":10,"cond":{"origin":["散修·兼修"]},"scene":"那块木牌在下街钉了三个月，边角被来往的人摸得发黑。\n\n活是这样：进一趟秘境，走一条已经废了的旧路，把一个人带回来。人在里面，活着还是死着，没人知道。回来才给钱，进去要先垫一半。\n\n行会的执事把牌子递给你时，停了一下：「你确定？前面两个人进去了，都没回来。你要是也进去，就得自己算清楚——你身上那点钱，够不够买命回来。」\n\n你看着牌子上那行字。写字的人手很稳。"},{"name":"【凡人】开海那一天","priority":10,"cond":{"origin":["凡人出身"]},"scene":"你在地里。\n\n天忽然静了。风停在半空，你听见远处的水声、牲口嚼草的声音、甚至隔壁村有人在骂孩子，一句一句都听得清清楚楚。然后有什么东西从脊背底下往上冲，你跪了下去，手抠进土里。\n\n等你爬起来，掌心里有一小团亮着的东西。它不烫，但你能感觉到它在走，像有根线从手心里穿过去。\n\n村口的老瞎子说过这事：开海的人，当天夜里得一个人待着。他说不是怕你走火，是怕别的东西闻见。\n\n太阳快下去了。这一夜你有很多事要办，但第一件是想明白——明天早上，你要不要让人知道。"},{"name":"【空根】没有气海的人","priority":20,"cond":{"root":["空根"]},"scene":"你和别人不一样的地方，是你看不见那层东西。\n\n别人内持的时候，你能感觉到他们的呼吸沉下去、脚下的土被压出印子，但你做不出来。你练的是另一套——把力气、把判断、把每一次呼吸的时机，卡在别人以为你不行的那个瞬间。\n\n今天有一场比试，对手刚开海，立基二层，走路都带着点得意。他站定，开始内持。\n\n你把刀反过来拿，用的是刀背。\n\n他笑了。\n\n你也笑了——因为你刚刚发现，他的桩站得比你想象中还要差。"},{"name":"【器偶】醒来第一件事","priority":20,"cond":{"origin":["器偶"]},"scene":"你睁开眼的时候，胸口那块东西开始转了。\n\n有人在说话，说的是这批货送去哪里、买家出多少、路上要在哪个驿站歇脚。他们没有避着你——在造你出来的人眼里，你还不算醒。\n\n你听得懂他们说的每一句话。你也知道自己这双手能拧断什么。\n\n门口的车已经套好了。造你的人拿着登记牌走过来，牌子上有一串编号，写着你的规格和主人。他在你面前停下，伸手要拉你胸口的衣襟，把牌子挂上去。"},{"name":"【妖裔】化形劫前夜","priority":20,"cond":{"origin":["妖裔"]},"scene":"今夜子时，你身上有一道坎要过。\n\n这是你第三次觉得自己快过去了，也是第一次觉得自己可能过不去。本相在往外顶——耳廓发烫，指节底下发硬，牙根发酸。万妖岭上把这一关叫劫，但老妖说过，劫不是雷，是你自己认不认自己已经变成了人。\n\n镇上的人天一黑就关门落锁。他们不知道今晚这条街上有什么，只知道这几天来了个不太像人的过客。\n\n街口有人走过来了，脚步很慢，手里提着灯。灯是微器，自己亮的。"},{"name":"【老手】开海开得太晚","priority":20,"cond":{"origin":["凡人出身","散修·主修内炼","散修·主修外引","散修·兼修"],"ageMin":35},"scene":"同龄人的孩子都已经进宗门了，你才开海。\n\n三十几岁的手，骨头早就长定了，气海撑起来也比别人慢。你试过问宗门收不收，人家看了你一眼，说「过了年岁」。\n\n今天你站在下街，手里攥着今天刚挣来的两块灵石。木牌上挂着的活都不适合你——太重的你扛不住，太险的你跑不动。但有一张牌是别人嫌它没赚头才没撕的：替一位老人守墓三个月，管饭，给一点钱。\n\n那块牌的角还没被人摸黑。\n\n你把手里那两块灵石，又攥紧了些。"},{"name":"【厚壁】替人顶刀的人","priority":20,"cond":{"path":["主修内炼"],"root":["厚壁型"]},"scene":"队里六个人，你是站最前面的那个。\n\n雇主临走只说了一句：「货重要，人也要紧，但货先。」\n\n后面的人都在看你。他们不认识你，只知道你被派到了最前面，说明这一队里最能顶住的就是你。今晚要过一段没有灯的官道，两边是荒坡，坡上有东西。\n\n出发前，领队把你的护具又检查了一遍，然后把自己备用的手套塞给你，说：「你手冷得快。」"},{"name":"【精控】把术削到最细的人","priority":20,"cond":{"path":["主修外引"],"root":["精控型"]},"scene":"你不喜欢浪费。\n\n一个三阶的术，你用一阶的气就能做出来，效果只差两分。这件事在书院里被当成邪门——术谱上写的就是那个数，你改了，就是错的。\n\n现在有一场比试，对手的气是你的两倍。他打算用消耗把你拖垮，这是最稳的打法，他也没打算冒险。\n\n他不知道的是：你出的每一招都比账面便宜，而他每挡一次，都比账面贵。\n\n看台上有人已经开始下注了。"},{"name":"【流速】换气比别人快半息","priority":20,"cond":{"path":["两者兼修"],"root":["流速型"]},"scene":"你的长处不在威力，在\"中间\"。\n\n从收到放、从放到收，别人要停一下，你不用。\n\n今天场子里是两个人打你一个。对面一守一放，配合得很熟，摆明了要用换气那一下吃你——一个顶着你，一个等你转身。\n\n他们摆好了，一前一后。你数着他们的呼吸。\n\n他们换气会比你慢半息。\n\n半息，够你做一件事。"},{"name":"【只余一张符】最后一张","priority":15,"cond":{"gear":["一张一阶引气符"]},"scene":"你身上只剩一张引气符。\n\n它是你的最后一张，撕了就没有了。\n\n现在的情况是：对面三个人，你一个人，距离十步。你没有把握——三个人里哪怕只有一个比你差，另外两个也不是站着看的。\n\n你摸到符纸的边角，纸已经被汗浸软了一点。\n\n你可以现在就撕。它会给你一次出手的机会，一次。之后你就只是一个普通人，站在三个修者面前。\n\n街那头的人开始往前走了。"},{"name":"【合真院】答问山的石阶","priority":12,"cond":{"place":["合真院 · 答问山"]},"scene":"答问山的石阶一共三百六十级，每一级刻着一句话。\n\n你往上走的时候，已经有人下来了——脸色不好看，看也不看你。再往上，阶面上有一摊没干的水痕，像是有人在这里坐了很久。\n\n阶顶是个小院，院里一个人正在扫地。他抬头看了你一眼，把扫帚靠在墙上。\n\n「来学换气的？」他问，「先别急着说你都会什么。站这儿，把两边各来一遍，慢慢地来。我看看你换的时候漏了多少。」\n\n他退开三步，抱起手。\n\n你站在他刚扫过的地上，风从阶底下上来，把院子里那点落叶又吹了回来。"},{"name":"【凡人城镇】一桩小事","priority":12,"cond":{"place":["大肃王朝的一座凡人城镇"]},"scene":"这是个没什么事的镇子。\n\n镇口的灯是匠人做的微器，日头一暗自己就亮；井口那块净石三天换一次水；粮仓的驱虫符贴了两年还没失效。镇上的人过着最普通的日子——你也是。\n\n今天出了一点小事。有人半夜看见西边废宅的墙上有光，光是一圈一圈的，像有人在里面画什么东西。差役来看了两次，第二次多站了一会儿，说：「不是人的事。」让各家晚上别出门。\n\n晚上，镇口那盏灯自己亮了。西边废宅的墙，也开始亮了。\n\n你是这镇上唯一算得上「能动手」的人。"},{"name":"【云篆秘境】赶在关门前","priority":12,"cond":{"place":["云篆秘境 · 入口"]},"scene":"秘境开门是有时辰的。过了这个时辰，入口会自己合上，谁也不等。\n\n你到的时候，门口已经聚了十几个人——有人带了两口箱子，有人带了一个孩子，还有个老头抱着一个装药材的藤筐，正蹲在地上数自己还剩几块灵石。\n\n守门的弟子在收名牌，念到一个名字放一个人。你前面还有四个。从门缝里飘出来的灵气很浓，浓得让人心里发慌——那种浓度，在第一层的人身上是要胀经脉的。\n\n念到你的名字时，守门弟子多看了你一眼：\n\n「进去多深，自己算。」"},{"name":"【玄霄剑宗】山门外的石阶","priority":12,"cond":{"place":["玄霄剑宗 · 山门外"]},"scene":"玄霄峰下三千级石阶，两侧插着历代宗主的剑，剑尖一律朝下。\n\n你到的时候，石阶上已经坐了二十几个人，都在等。守山弟子每一刻钟放五个人上去，上去的考一样东西：站。不是站桩，是站在剑气里站住。\n\n轮到你前面那一位时，他上去了不到百级就被送了下来——不是没站住，是站得太用力，剑气把他弹开了。\n\n守山弟子把他扶到边上，说了句：「宗主要的是稳，不是狠。」\n\n然后他抬头看你：「下一个。」\n\n他看了你手里的东西一眼，又看你的鞋——石阶上下的鞋是不一样的，上面那三千级，磨得快。"},{"name":"【镇岳宗】过第一关","priority":12,"cond":{"place":["镇岳宗 · 镇岳山"]},"scene":"镇岳宗入门只考一样：站桩。\n\n演武场上一字排开三十六块石板，每块上面站一个人。场边执事手里捏着一炷香，香烧完还没倒的，才算过。\n\n你旁边那位已经站了一个多时辰。他的膝盖在抖，但没倒。香还剩一小截。\n\n日头正毒，场上没有人说话。你听见自己脚下石板的温度，正一点一点往上走。\n\n场边有人在低声数还剩下几个人。\n\n站在最西头的那个人忽然矮了半截——他没倒，只是把重心压下去了一寸。执事看了他一眼，把香往旁边挪了半寸，让风吹不到。\n\n「这一炷，」他头也不回地说，「比往年长。」"},{"name":"【明理阁】九层楼下的牌子","priority":12,"cond":{"place":["明理阁 · 藏书楼前"]},"scene":"明理阁门口立着一块木牌，写着当日的考题与价目。\n\n一阶考二十金，三阶八百金。往上还有四阶、五阶，后面那两行字被人用手指抹过，看不清了。\n\n牌子底下坐着个记账的书吏，头也不抬，手边一摞空白的条子。旁边有个少年刚从楼里出来，手里攥着一张写「未过」的条子。他站在门口看了一眼牌子，把条子揉成一团扔在地上，走了。\n\n书吏这才抬起头，看了你一眼。\n\n「报名，还是问事？」\n\n他的笔停着。你注意到他手边那摞条子有两色：一色写「未过」，一色写「待补」。后一色比前一色薄得多。"},{"name":"【玄霄剑宗】留剑三年","priority":22,"cond":{"path":["两者兼修"],"root":["精控型","流速型"],"place":["玄霄剑宗 · 山门外"]},"scene":"问剑会在秋分那天下场。\n\n你走到最后一场，台上只剩你和另一个人。他是第三层，你是第一层——差两层，台上台下都看得出来。台下没有人押你。\n\n你们的规则很简单：谁先把对方的护体打散，谁赢。打到第三十息，你们都没破防，于是他换了姿态，从内持转外放。\n\n换气的那一息，护体为零。\n\n你也换了。但你比他早停了半息——你的内熟和外熟是齐的，他差着两格。\n\n那半息里，你只做了一件事。\n\n台下有人站起来。宗主没站，他只是把手里的茶盏放下了，声音很轻，但全场都听见了。\n\n「山上留剑三年。」他说，「你的剑，叫什么名字？」"}];
+
+  /* ---------- 取数与发送统一走共用 bridge（head 引入 ../lyj-bridge.js → 全局 LYJ） ---------- */
+
+  var root = document.getElementById('lyj-open');
+  if (!root) return;
+
+  /* ---------- 状态 ---------- */
+  var ATTRS = ['体魄', '身法', '根骨', '悟性', '道心'];
+  var PREF = { '主修内炼': 'in', '主修外引': 'out', '两者兼修': 'bal' };
+  var state = {
+    name: '', gender: '', age: '18',
+    origin: '', root: '', ratio: '',
+    skills: [], place: '', reason: '', reasonCustom: '', note: '',
+    attrs: { '体魄': 10, '身法': 10, '根骨': 10, '悟性': 10, '道心': 10 },
+    weapon: '', armor: '', trinket: ''
+  };
+
+  var elName   = document.getElementById('lyj-name');
+  var elAge    = document.getElementById('lyj-age');
+  var elCustom = document.getElementById('lyj-reason-custom');
+  var elNote   = document.getElementById('lyj-note');
+  var elStatus = document.getElementById('lyj-status');
+  var elManual = document.getElementById('lyj-manual');
+  var elManualText = document.getElementById('lyj-manual-text');
+  var elSubmit = document.getElementById('lyj-submit');
+  var elCount  = document.getElementById('lyj-skill-count');
+  var elHint   = document.getElementById('lyj-skill-hint');
+  var elReasonWrap = document.getElementById('lyj-reason-wrap');
+  var elAttrCount = document.getElementById('lyj-attr-count');
+
+  var REASON_CUSTOM_TEXT = '自定义';
+
+  /* ---------- 重绘 ---------- */
+  function paint(){
+    var fields = ['gender', 'origin', 'root', 'ratio', 'place', 'reason', 'skill'];
+    for (var f = 0; f < fields.length; f++) {
+      var field = fields[f];
+      var list = root.querySelectorAll('.lyj-opt[data-field="' + field + '"]');
+      for (var i = 0; i < list.length; i++) {
+        var el = list[i];
+        var val = el.getAttribute('data-val');
+        var on = (field === 'skill') ? (state.skills.indexOf(val) > -1) : (state[field] === val);
+        var cls = 'lyj-opt';
+        if (field === 'skill') {
+          var cat = el.getAttribute('data-cat');
+          var pref = state.ratio ? PREF[state.ratio] : '';
+          if (pref && pref === cat) cls += ' lyj-pref';
+          else if (pref && cat !== 'odd') cls += ' lyj-dim';
+        }
+        if (on) cls += ' on';
+        el.className = cls;
+      }
+    }
+
+    var hotMap = { 'in': PREF[state.ratio] === 'in', 'out': PREF[state.ratio] === 'out', 'bal': PREF[state.ratio] === 'bal' };
+    var heads = { 'in': 'lyj-h-in', 'out': 'lyj-h-out', 'bal': 'lyj-h-bal' };
+    for (var k in heads) {
+      var h = document.getElementById(heads[k]);
+      if (!h) continue;
+      var base = (k === 'in' ? '◆ 内主型' : k === 'out' ? '◆ 外主型' : '◆ 均衡型');
+      h.className = 'lyj-grp-h' + (hotMap[k] ? ' hot' : '');
+      h.innerHTML = base + (hotMap[k] ? ' <span style="font-size:10.5px;">· 本配比主力</span>' : '');
+    }
+
+    if (elCount) elCount.textContent = '已选 ' + state.skills.length + '/2';
+
+    var crossed = false;
+    if (state.skills.length === 2) {
+      var c0 = catOf(state.skills[0]);
+      var c1 = catOf(state.skills[1]);
+      var pref2 = state.ratio ? PREF[state.ratio] : '';
+      crossed = (c0 !== c1) || !!(pref2 && (c0 !== pref2 || c1 !== pref2));
+    }
+    if (elHint) elHint.style.display = crossed ? 'block' : 'none';
+
+    if (elReasonWrap) elReasonWrap.style.display = (state.reason === REASON_CUSTOM_TEXT) ? 'block' : 'none';
+
+    paintAttrs();
+    paintGear();
+  }
+
+  function catOf(name){
+    var el = root.querySelector('.lyj-opt[data-field="skill"][data-val="' + name + '"]');
+    return el ? el.getAttribute('data-cat') : '';
+  }
+
+  /* ---------- 交互 ---------- */
+  root.addEventListener('click', function (e) {
+    var el = e.target;
+    if (!el || !el.closest) return;
+    var btn = el.closest('.lyj-opt');
+    if (!btn) return;
+    var field = btn.getAttribute('data-field');
+    var val = btn.getAttribute('data-val');
+    if (!field) return;
+
+    if (field === 'skill') {
+      var at = state.skills.indexOf(val);
+      if (at > -1) {
+        state.skills.splice(at, 1);
+      } else if (state.skills.length < 2) {
+        state.skills.push(val);
+      } else {
+        state.skills.shift();
+        state.skills.push(val);
+      }
+    } else {
+      state[field] = val;
+      if (field === 'reason' && val !== REASON_CUSTOM_TEXT) elCustom.value = '';
+    }
+    hideStatus();
+    paint();
+  });
+
+  /* ---------- 数值分配交互（− / +） ---------- */
+  root.addEventListener('click', function (e) {
+    var el = e.target;
+    if (!el || !el.closest) return;
+    var step = el.closest('.lyj-step');
+    if (!step) return;
+    var attr = step.getAttribute('data-attr');
+    var d = Number(step.getAttribute('data-d'));
+    if (!attr || !state.attrs.hasOwnProperty(attr) || (d !== 1 && d !== -1)) return;
+    var v = num(state.attrs[attr]) + d;
+    if (v < 8) v = 8;
+    if (v > 12) v = 12;
+    state.attrs[attr] = v;
+    paintAttrs();
+    refreshGearNotice();
+  });
+
+  /* ---------- 状态区 ---------- */
+  function hideStatus(){
+    elStatus.className = 'lyj-status';
+    elStatus.textContent = '';
+    elManual.style.display = 'none';
+  }
+  function showStatus(msg, kind){
+    elStatus.className = 'lyj-status ' + (kind || 'err');
+    elStatus.textContent = msg;
+  }
+
+  /* ---------- 收集与校验 ---------- */
+  function collect(){
+    state.name = (elName.value || '').trim();
+    state.age = (elAge.value || '').trim();
+    state.reasonCustom = (elCustom.value || '').trim();
+    state.note = (elNote.value || '').trim();
+  }
+
+  function num(v){ var n = Number(v); return isNaN(n) ? 0 : n; }
+
+  function attrSum(){
+    var sum = 0;
+    for (var i = 0; i < ATTRS.length; i++) sum += num(state.attrs[ATTRS[i]]);
+    return sum;
+  }
+
+  /* 装备条件（不满足仍可选，但禁止提交） */
+  var GEAR_REQ = {
+    '精钢剑': { attr: '体魄', min: 11 },
+    '皮甲':   { attr: '体魄', min: 10 },
+    '轻甲':   { attr: '体魄', min: 12 }
+  };
+
+  function gearWarn(){
+    var out = [];
+    var picked = [state.weapon, state.armor, state.trinket];
+    for (var i = 0; i < picked.length; i++) {
+      var req = GEAR_REQ[picked[i]];
+      if (!req) continue;
+      if (num(state.attrs[req.attr]) < req.min) out.push(picked[i] + '需' + req.attr + ' ≥ ' + req.min);
+    }
+    return out;
+  }
+
+  function paintAttrs(){
+    for (var i = 0; i < ATTRS.length; i++) {
+      var a = ATTRS[i];
+      var v = num(state.attrs[a]);
+      var show = document.getElementById('lyj-v-' + a);
+      if (show) show.textContent = String(v);
+      var minus = root.querySelector('.lyj-step[data-attr="' + a + '"][data-d="-1"]');
+      var plus  = root.querySelector('.lyj-step[data-attr="' + a + '"][data-d="1"]');
+      if (minus) minus.disabled = (v <= 8);
+      if (plus)  plus.disabled  = (v >= 12);
+    }
+    var sum = attrSum();
+    if (elAttrCount) {
+      elAttrCount.textContent = '已分配 ' + sum + ' / 50';
+      elAttrCount.className = 'lyj-count ' + (sum === 50 ? 'good' : 'bad');
+    }
+  }
+
+  function paintGear(){
+    var fields = ['weapon', 'armor', 'trinket'];
+    for (var f = 0; f < fields.length; f++) {
+      var field = fields[f];
+      var list = root.querySelectorAll('.lyj-opt[data-field="' + field + '"]');
+      for (var i = 0; i < list.length; i++) {
+        var el = list[i];
+        var on = (state[field] === el.getAttribute('data-val'));
+        el.className = on ? 'lyj-opt on' : 'lyj-opt';
+      }
+    }
+    refreshGearNotice();
+  }
+
+  var gearNoticeOn = false;
+  function refreshGearNotice(){
+    var w = gearWarn();
+    if (w.length) {
+      showStatus('⚠️ ' + w.join('；'), 'err');
+      gearNoticeOn = true;
+    } else if (gearNoticeOn) {
+      hideStatus();
+      gearNoticeOn = false;
+    }
+  }
+
+  function validate(){
+    var miss = [];
+    var ageNum = Number(state.age);
+    if (!state.name) miss.push('姓名');
+    if (!state.gender) miss.push('性别');
+    if (!state.age || isNaN(ageNum) || ageNum < 14 || ageNum > 200) miss.push('年龄（14~200）');
+    if (!state.origin) miss.push('出身');
+    if (!state.root) miss.push('根器');
+    if (!state.ratio) miss.push('配比倾向');
+    if (state.skills.length !== 2) miss.push('起始招式（需选 2 个）');
+    var sum = attrSum();
+    if (sum !== 50) miss.push('数值分配（五项合计需为 50，当前 ' + sum + '）');
+    if (!state.weapon) miss.push('兵刃');
+    if (!state.armor) miss.push('护具');
+    if (!state.trinket) miss.push('随物');
+    var gw = gearWarn();
+    for (var i = 0; i < gw.length; i++) miss.push(gw[i]);
+    if (!state.place) miss.push('开局地点');
+    if (!state.reason) miss.push('开局缘由');
+    if (state.reason === REASON_CUSTOM_TEXT && !state.reasonCustom) miss.push('开局缘由（自定义内容）');
+    return miss;
+  }
+
+  /* ---------- 开局场景匹配 ---------- */
+  function buildGearAll(){
+    var arr = [];
+    var picked = [state.weapon, state.armor, state.trinket];
+    for (var i = 0; i < picked.length; i++) { if (picked[i]) arr.push(picked[i]); }
+    // 仍是字符串数组；indexOf 按「包含关系」判断，供注入的 cond.gear 使用
+    arr.indexOf = function (needle) {
+      var t = String(needle == null ? '' : needle);
+      if (!t) return -1;
+      for (var j = 0; j < this.length; j++) {
+        if (String(this[j]).indexOf(t) > -1) return j;
+      }
+      return -1;
+    };
+    return arr;
+  }
+
+  function matchState(){
+    return {
+      ratio: state.ratio,
+      origin: state.origin,
+      root: state.root,
+      place: state.place,
+      age: state.age,
+      attrs: {
+        '体魄': num(state.attrs['体魄']),
+        '身法': num(state.attrs['身法']),
+        '根骨': num(state.attrs['根骨']),
+        '悟性': num(state.attrs['悟性']),
+        '道心': num(state.attrs['道心'])
+      },
+      gearAll: buildGearAll()
+    };
+  }
+
+  function matchOpening(o, s) {
+    var c = (o && o.cond) || {};
+    if (c.path   && c.path.length   && c.path.indexOf(s.ratio)  < 0) return false;
+    if (c.origin && c.origin.length && c.origin.indexOf(s.origin) < 0) return false;
+    if (c.root   && c.root.length   && c.root.indexOf(s.root)   < 0) return false;
+    if (c.place  && c.place.length  && c.place.indexOf(s.place)  < 0) return false;
+    if (c.ageMin && Number(s.age) < c.ageMin) return false;
+    if (c.ageMax && Number(s.age) > c.ageMax) return false;
+    if (c.gear && c.gear.length) {
+      for (var i = 0; i < c.gear.length; i++) {
+        if (s.gearAll.indexOf(c.gear[i]) < 0) return false;
+      }
+    }
+    if (c.attrs) {
+      for (var k in c.attrs) {
+        if (Number(s.attrs[k] || 0) < c.attrs[k]) return false;
+      }
+    }
+    return true;
+  }
+
+  function pickOpening(s){
+    var all = (typeof window !== 'undefined' && window.__LYJ_OPENINGS) || [];
+    var hits = [];
+    for (var i = 0; i < all.length; i++) {
+      if (matchOpening(all[i], s)) hits.push({ o: all[i], i: i });
+    }
+    hits.sort(function (a, b) {
+      var pa = num(a.o && a.o.priority), pb = num(b.o && b.o.priority);
+      if (pb !== pa) return pb - pa;
+      return a.i - b.i;   // priority 相等时保持数组原顺序
+    });
+    return hits.length ? hits[0].o : null;
+  }
+
+  function tidyScene(t){
+    var s = String(t == null ? '' : t);
+    s = s.replace(/^(?:[ \t]*\r?\n)+/, '');   // 去掉开头空行
+    s = s.replace(/(?:\r?\n[ \t]*)+$/, '');   // 去掉结尾空行
+    return s;
+  }
+
+  var FALLBACK_SCENE = '（未找到匹配的开局预选，请按上面的设定自行安排开场。）';
+
+  function buildText(){
+    var age = String(parseInt(state.age, 10));
+    var lines = [];
+    lines.push('【开局设定】');
+    lines.push('姓名：' + state.name + ' ｜ 性别：' + state.gender + ' ｜ 年龄：' + age);
+    lines.push('出身：' + state.origin);
+    lines.push('根器：' + state.root);
+    lines.push('主修：' + state.ratio);
+    lines.push('属性：体魄 ' + state.attrs['体魄'] + ' ｜ 身法 ' + state.attrs['身法'] + ' ｜ 根骨 ' + state.attrs['根骨'] + ' ｜ 悟性 ' + state.attrs['悟性'] + ' ｜ 道心 ' + state.attrs['道心']);
+    lines.push('起始招式：' + state.skills.join('、'));
+    lines.push('装备：兵刃 ' + state.weapon + ' ｜ 护具 ' + state.armor + ' ｜ 随物 ' + state.trinket);
+    lines.push('开局地点：' + state.place);
+    lines.push('开局缘由：' + (state.reason === REASON_CUSTOM_TEXT ? state.reasonCustom : state.reason));
+    if (state.note) lines.push('备注：' + state.note);
+
+    var op = pickOpening(matchState());
+    var opName = (op && op.name) ? String(op.name) : '无';
+    var scene = op ? tidyScene(op.scene) : FALLBACK_SCENE;
+
+    lines.push('');
+    lines.push('【开局场景】（' + opName + '）');
+    lines.push('');
+    lines.push(scene);
+    lines.push('');
+    lines.push('——请以此开局。');
+    return lines.join('\n');
+  }
+
+  /* ---------- 发送：共用 bridge（createChatMessages → sendMessageAsUser → sendMessage） ---------- */
+  function hasBridge(name){
+    if (typeof LYJ === 'undefined' || !LYJ) return false;
+    return typeof LYJ[name] === 'function';
+  }
+
+  function bridgeOk(){
+    if (!hasBridge('ok')) return false;
+    try { return !!LYJ.ok(); } catch (e) { return false; }
+  }
+
+  function tryClipboard(text){
+    try {
+      if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      }
+    } catch (e) {}
+  }
+
+  /* 该开局预选声明的开场编号；未声明就不切，避免误切到别的开场白 */
+  function greetingIndexOf(op){
+    if (!op) return null;
+    var raw = op.greeting;
+    if (raw === undefined || raw === null) raw = op.swipe;
+    if (raw === undefined || raw === null) raw = op.swipe_id;
+    if (raw === undefined || raw === null) raw = op.greetingIndex;
+    if (raw === undefined || raw === null) return null;
+    var n = hasBridge('num') ? LYJ.num(raw, -1) : Number(raw);
+    if (!isFinite(n) || n < 0) return null;
+    return Math.floor(n);
+  }
+
+  /* 切开场白：失败把 err.message 交回调用方显示，不中断发送 */
+  async function switchGreeting(op){
+    var n = greetingIndexOf(op);
+    if (n === null) return '';
+    if (!hasBridge('selectGreeting')) return '开场切换不可用（未载入 bridge）';
+    try { await LYJ.selectGreeting(n); return ''; }
+    catch (e) { return (e && e.message) ? String(e.message) : String(e); }
+  }
+
+  function showManual(text){
+    elManualText.value = text;
+    elManual.style.display = 'block';
+    tryClipboard(text);
+  }
+
+  async function sendAsPlayer(text){
+    if (!hasBridge('sendAsUser')) return false;
+    try { return (await LYJ.sendAsUser(text)) === true; }
+    catch (e) { console.log('[灵渊纪开局] sendAsUser 失败', e); return false; }
+  }
+
+  /* ---------- 提交 ---------- */
+  var busy = false;
+  async function submit(){
+    if (busy) return;
+    collect();
+    var miss = validate();
+    if (miss.length) {
+      showStatus('⚠️ 还差：' + miss.join('、'), 'err');
+      elManual.style.display = 'none';
+      return;
+    }
+    var text = buildText();
+    busy = true;
+    elSubmit.disabled = true;
+    var old = elSubmit.textContent;
+    elSubmit.textContent = '正在入界……';
+    showStatus('⟡ 正在发送开局设定……', 'ok');
+
+    var greetErr = '';
+    try {
+      greetErr = await switchGreeting(pickOpening(matchState()));
+    } catch (e) {
+      greetErr = (e && e.message) ? String(e.message) : String(e);
+    }
+
+    var sent = false;
+    try {
+      sent = await sendAsPlayer(text);
+    } catch (e) {
+      console.log('[灵渊纪开局] 发送异常', e);
+      sent = false;
+    }
+    if (sent && bridgeOk()) {
+      showStatus(greetErr
+        ? '✅ 已发送，请查看下一条回复｜⚠️ 开场切换失败：' + greetErr
+        : '✅ 已发送，请查看下一条回复', greetErr ? 'err' : 'ok');
+      elManual.style.display = 'none';
+    } else {
+      showStatus('⚠️ 自动发送不可用，请手动复制后发送' + (greetErr ? '｜⚠️ 开场切换失败：' + greetErr : ''), 'err');
+      showManual(text);
+    }
+    elSubmit.textContent = old;
+    elSubmit.disabled = false;
+    busy = false;
+  }
+
+  elSubmit.addEventListener('click', function () { submit(); });
+  elName.addEventListener('input', function () { state.name = (elName.value || '').trim(); });
+  elAge.addEventListener('input', function () { state.age = (elAge.value || '').trim(); });
+  elNote.addEventListener('input', function () { state.note = (elNote.value || '').trim(); });
+
+  paint();
+})();
+</script>
+</body>
+</html>
