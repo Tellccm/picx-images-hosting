@@ -118,7 +118,8 @@ body{
 .char.yiyi .hintp{color:var(--yi-ink)}
 
 /* 开局 Tab 选项卡 */
-.tabs{display:flex;gap:8px;margin-top:12px}
+/* 4 个常规开局 flex:1 → flex-basis:0%，换行只在 .tab.after（100% 独占一行）发生 */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .tab{flex:1;padding:11px 6px;text-align:center;border:none;border-radius:14px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.6);cursor:pointer;font-family:inherit;transition:all .2s;color:var(--muted)}
 .tab:hover{transform:translateY(-1px)}
 .tab .t-t{font-family:var(--serif);font-size:16px;letter-spacing:.03em}
@@ -127,6 +128,10 @@ body{
 .tab.active .t-t{color:var(--deep)}
 .tab.xmas.active{border-color:var(--xmas-accent);box-shadow:0 6px 18px var(--xmas-glow);color:var(--xmas-accent)}
 .tab.xmas.active .t-t{color:var(--xmas-accent)}
+/* 一周年后日谈（独占一行，不挤压原 4 个开局） */
+.tab.after{flex:1 1 100%;background:linear-gradient(120deg,rgba(255,240,243,.7),rgba(243,214,192,.62));border-color:rgba(201,168,106,.45)}
+.tab.after.active{border-color:var(--xue-accent);box-shadow:0 6px 18px rgba(201,168,106,.26);color:#a8842f}
+.tab.after.active .t-t{color:#a8842f}
 .panels{margin-top:12px}
 .panel{display:none}
 .panel.show{display:block;animation:fade .3s ease}
@@ -150,6 +155,9 @@ body{
 .enter:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(255,107,139,.4)}
 .enter:disabled{opacity:.6;cursor:default;transform:none}
 .panel.xmas .enter{background:linear-gradient(120deg,var(--xmas-green),var(--xmas-accent));box-shadow:0 8px 20px var(--xmas-glow)}
+/* 一周年后日谈面板 */
+.panel.after .p-idx{color:var(--xue-accent)}
+.panel.after .enter{background:linear-gradient(120deg,#c9a86a,#e08a9e);box-shadow:0 8px 20px rgba(201,168,106,.3)}
 .opening-status{display:none;text-align:center;font-size:13px;color:var(--muted);padding:10px 14px;border:1px solid rgba(255,255,255,.7);border-radius:12px;background:rgba(255,255,255,.55);margin:12px 0}
 .hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.16em;margin-top:18px}
 </style>
@@ -208,6 +216,7 @@ body{
     <button class="tab" data-tab="2" type="button"><div class="t-t">妹妹的突击</div><div class="t-date">4月4日 · 中午</div></button>
     <button class="tab" data-tab="3" type="button"><div class="t-t">晨间修罗场</div><div class="t-date">4月6日 · 早上</div></button>
     <button class="tab xmas" data-tab="4" type="button"><div class="t-t">圣诞节日</div><div class="t-date">12月25日 · 晚上</div></button>
+    <button class="tab after" data-tab="5" type="button"><div class="t-t">一周年后日谈</div><div class="t-date">一年后 · 4月1日 · 上午</div></button>
   </div>
   <div class="panels">
     <div class="panel show" data-panel="1">
@@ -246,6 +255,14 @@ body{
         </figure>
         <p>「当当——！圣诞快乐，笨蛋老哥！」今晚的依依格外大胆主动，和雪球一起把自己"打包"成礼物送给你。</p>
         <button class="enter" type="button" data-swipe="4">进入圣诞特殊开局</button>
+      </div>
+    </div>
+    <div class="panel after" data-panel="5">
+      <div class="p-body glass">
+        <div class="p-head"><span class="p-idx">After Story · Opening 05</span><span class="p-title">一周年后日谈</span><span class="p-time">2021年4月1日 · 上午 · 晴天 09:45</span></div>
+        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user-雪球-苏依依—后日谈立绘.1apr5fsj40.webp" alt="一周年后日谈"></div>
+        <p>雪球化形满一周年的清晨。依依的连载漫画挂上了一周年特别篇横幅，开放度早已拉满的她不再掩饰半分依恋；只套着一件白衬衫的雪球则直接贴进你怀里。两张娇俏的脸一左一右，把你夹在了中间。</p>
+        <button class="enter" type="button" data-swipe="5">进入后日谈</button>
       </div>
     </div>
   </div>
