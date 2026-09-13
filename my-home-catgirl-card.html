@@ -96,19 +96,31 @@ body{
 .who-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;border-radius:16px;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);letter-spacing:.06em;transition:transform .2s;text-align:left}
 .who-toggle:hover{transform:translateY(-1px)}
 .who-toggle-t{font-family:var(--serif);font-size:15px;letter-spacing:.1em}
-.who-list{margin-top:10px}
-.who-item{margin-bottom:8px}
-.who-name{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border-radius:14px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .2s}
-.who-name:hover{transform:translateY(-1px)}
-.who-name .nm{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:.1em;white-space:nowrap;flex-shrink:0}
-.who-name .role{font-size:11.5px;letter-spacing:.02em;opacity:.9;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.who-name .who-caret{margin-left:auto;flex-shrink:0}
+.who-list{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.who-item{min-width:0}
+/* 名字行：头像 + 姓名/身份 + 主题渐变 */
+.who-name{display:flex;align-items:center;gap:12px;width:100%;padding:10px 16px 10px 10px;border-radius:16px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .2s,box-shadow .2s}
+.who-name:hover{transform:translateY(-2px)}
+.who-av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(120,90,100,.16);background:rgba(255,255,255,.6)}
+.who-av img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.who-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.who-name .nm{font-family:var(--serif);font-size:18px;font-weight:700;letter-spacing:.1em;white-space:nowrap;line-height:1.2}
+.who-name .role{font-size:11.5px;letter-spacing:.02em;opacity:.92;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.who-name .who-caret{flex-shrink:0;font-size:12px}
+.who-name.snow{background:var(--xue-bg);border:1px solid var(--xue-brd);box-shadow:0 6px 18px var(--xue-glow)}
 .who-name.snow .nm{color:var(--xue-ink)} .who-name.snow .role{color:var(--xue-accent)}
+.who-name.yiyi{background:var(--yi-bg);border:1px solid var(--yi-brd);box-shadow:0 6px 18px var(--yi-glow)}
 .who-name.yiyi .nm{color:var(--yi-ink)} .who-name.yiyi .role{color:var(--yi-accent)}
+.who-name.mo{background:var(--mo-bg);border:1px solid var(--mo-brd);box-shadow:0 6px 18px var(--mo-glow)}
 .who-name.mo .nm{color:var(--mo-ink)} .who-name.mo .role{color:var(--mo-accent)}
-.who-caret{color:var(--faint);transition:transform .25s ease}
+.who-name[aria-expanded="true"]{box-shadow:0 10px 26px rgba(120,90,100,.2)}
+.who-caret{color:inherit;opacity:.5;transition:transform .25s ease}
 [aria-expanded="true"] .who-caret{transform:rotate(180deg)}
-.who-detail{margin-top:10px}
+/* 展开区：左侧一条主题色引导线，与名字行呼应 */
+.who-detail{margin-top:10px;padding-left:12px;border-left:2px solid rgba(255,255,255,.75)}
+.who-detail.snow{border-left-color:var(--xue-brd)}
+.who-detail.yiyi{border-left-color:var(--yi-brd)}
+.who-detail.mo{border-left-color:var(--mo-brd)}
 .who-detail .pic{max-width:440px;margin:0 auto}
 @media(max-width:520px){.who-detail .pic{max-width:100%}}
 .char{padding:12px;text-align:center;border-radius:18px;border:1px solid transparent}
@@ -223,11 +235,14 @@ body{
 
     <div class="who-item">
       <button class="who-name snow glass" type="button" aria-expanded="false">
-        <span class="nm">雪球</span>
-        <span class="role">三无猫娘 · 银白波斯猫</span>
+        <span class="who-av"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@b84f5b4a4213c491ef64fb461caf78d5a2416a31/雪球-头像.67y7s0qobe.webp" alt="" loading="lazy"></span>
+        <span class="who-txt">
+          <span class="nm">雪球</span>
+          <span class="role">三无猫娘 · 银白波斯猫</span>
+        </span>
         <span class="who-caret">▾</span>
       </button>
-      <div class="who-detail" hidden>
+      <div class="who-detail snow" hidden>
         <div class="char snow">
           <div class="pic">
             <div class="flip" data-char="snow" role="button" tabindex="0" aria-label="点击翻转雪球立绘">
@@ -244,11 +259,14 @@ body{
 
     <div class="who-item">
       <button class="who-name yiyi glass" type="button" aria-expanded="false">
-        <span class="nm">苏依依</span>
-        <span class="role">假装自己不是兄控的 · 重度兄控</span>
+        <span class="who-av"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@b84f5b4a4213c491ef64fb461caf78d5a2416a31/苏依依-头像.1hsytlz1xx.webp" alt="" loading="lazy"></span>
+        <span class="who-txt">
+          <span class="nm">苏依依</span>
+          <span class="role">假装自己不是兄控的 · 重度兄控</span>
+        </span>
         <span class="who-caret">▾</span>
       </button>
-      <div class="who-detail" hidden>
+      <div class="who-detail yiyi" hidden>
         <div class="char yiyi">
           <div class="pic">
             <div class="flip" data-char="yiyi" role="button" tabindex="0" aria-label="点击翻转苏依依立绘">
@@ -265,11 +283,14 @@ body{
 
     <div class="who-item">
       <button class="who-name mo glass" type="button" aria-expanded="false">
-        <span class="nm">沈墨</span>
-        <span class="role">毒舌催稿的 · 责任编辑</span>
+        <span class="who-av"><img src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-头像.6il1tmp2xo.webp" alt="" loading="lazy"></span>
+        <span class="who-txt">
+          <span class="nm">沈墨</span>
+          <span class="role">毒舌催稿的 · 责任编辑</span>
+        </span>
         <span class="who-caret">▾</span>
       </button>
-      <div class="who-detail" hidden>
+      <div class="who-detail mo" hidden>
         <div class="char mo">
           <div class="pic">
             <div class="flip" data-char="mo" role="button" tabindex="0" aria-label="点击翻转沈墨立绘">
