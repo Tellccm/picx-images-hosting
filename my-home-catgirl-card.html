@@ -28,8 +28,31 @@ async function selectGreeting(swipeId) {
   const messages = await getMessages('0', { include_swipes: true });
   const first = messages && messages[0];
   if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) throw new Error('所选开场不存在，请确认卡片已导入 alternate greetings');
+
+  // 尝试根据选定开场自动同步对应的初始剧情变量
+  try {
+    const setVar = helperCall('setVariable');
+    if (typeof setVar === 'function') {
+      const presetMap = {
+        1: { 'date': '2020-04-01', 'time': '08:37', 'yiyi.openness': 5, 'editor.pressure': 10 },
+        2: { 'date': '2020-04-04', 'time': '12:23', 'yiyi.openness': 10, 'editor.pressure': 25 },
+        3: { 'date': '2020-04-06', 'time': '08:10', 'yiyi.openness': 25, 'editor.pressure': 35 },
+        4: { 'date': '2020-12-25', 'time': '20:00', 'yiyi.openness': 85, 'editor.pressure': 20 },
+        5: { 'date': '2021-04-01', 'time': '09:45', 'yiyi.openness': 100, 'editor.pressure': 15 },
+        6: { 'date': '2020-04-10', 'time': '14:20', 'yiyi.openness': 30, 'editor.pressure': 85 }
+      };
+      const preset = presetMap[index];
+      if (preset) {
+        for (const [k, v] of Object.entries(preset)) {
+          try { setVar(k, v); } catch (_) {}
+        }
+      }
+    }
+  } catch (_) {}
+
   return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
 }
+
 global.MaoNiangCardBridgeV2 = Object.freeze({ version: 2, selectGreeting });
 })(globalThis);
 </script>
@@ -228,10 +251,11 @@ body{
 </div>
 
 <div class="sec"><div class="sec-t">关于本卡 <small>· 世界观</small></div></div>
-<div class="intro glass">2020年4月1日，你养了两年的<b>银白波斯猫【雪球】</b>一夜之间化为人形——三无、软糯、只认你一个饲主。
-4月4日，重度兄控的<b>亲妹妹【苏依依】</b>拖着行李箱强行搬来同住，撞见了只穿一件白衬衫的猫娘。
-猫化的秘密<b>只有你们三人知道</b>：一个是把一切直球到底的猫，一个是把所有真心藏进傲娇的妹妹——而夹在中间的<b>{{user}}</b>，要同时伺候好两张嘴。
-本卡内置 <b>开放度 / 心声 / 内射计数</b> 状态变量，随剧情由 AI 自动更新。</div>
+<div class="intro glass">
+  2020年4月1日，你养了两年的<b>银白波斯猫【雪球】</b>突然在被窝里化为人形——三无软糯、缺乏世俗羞耻、纯粹猫之逻辑。4月4日，真·重度兄控的<b>亲妹妹【苏依依】</b>以“突击检查废柴老哥”为由强行搬来同居，真实动机却是成人漫画遭遇取材瓶颈，冒险近距离取材并撞破白衬衫猫娘。4月10日，27岁的<b>黑丝知性责编【沈墨】</b>因拖稿登门对线，本以为你是轻浮废柴，初见却被你温润干净的无害少年感直击心门……<br>
+  公寓内的修罗场与隐秘关系由此展开：直球无防备的猫娘、傲娇自卑却深情的画手妹妹、以及职业威严逐渐瓦解的责编御姐——夹在中间的<b>{{user}}</b>，将如何应对她们的依赖与索求？<br>
+  <span style="font-size:12px;opacity:0.9;display:inline-block;margin-top:6px;">⚡ 本卡内置 <b>开放度 / 催稿压力 / 沈墨亲密阶段 / 怀疑度 / 偷看心声 / 内射计数</b> 等完整 MVU 变量体系，随剧情由 AI 动态推演。</span>
+</div>
 
 <div class="sec"><div class="sec-t">她们是谁 <small>· 点击展开名单</small></div></div>
 <div class="who">
@@ -239,7 +263,7 @@ body{
     <span class="who-faces">
       <span class="who-face"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@b84f5b4a4213c491ef64fb461caf78d5a2416a31/雪球-头像.67y7s0qobe.webp" alt="" loading="lazy"></span>
       <span class="who-face"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@b84f5b4a4213c491ef64fb461caf78d5a2416a31/苏依依-头像.1hsytlz1xx.webp" alt="" loading="lazy"></span>
-      <span class="who-face"><img src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-头像.6il1tmp2xo.webp" alt="" loading="lazy"></span>
+      <span class="who-face"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-头像.6il1tmp2xo.webp" alt="" loading="lazy"></span>
     </span>
     <span class="who-toggle-txt">
       <span class="who-toggle-t">人物名单</span>
@@ -278,7 +302,7 @@ body{
         <span class="who-av"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@b84f5b4a4213c491ef64fb461caf78d5a2416a31/苏依依-头像.1hsytlz1xx.webp" alt="" loading="lazy"></span>
         <span class="who-txt">
           <span class="nm">苏依依</span>
-          <span class="role">假装自己不是兄控的 · 重度兄控</span>
+          <span class="role">真·重度兄控妹妹 · 秘密成人漫画家</span>
         </span>
         <span class="who-caret">▾</span>
       </button>
@@ -292,17 +316,17 @@ body{
             </div>
           </div>
           <div class="line">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
-          <div class="hintp">水蓝杏眼 · 一戳穿真心就宕机</div>
+          <div class="hintp">水蓝杏眼 · 为打破成人漫画创作瓶颈冒险近距离取材 · 一戳穿真心就宕机红温</div>
         </div>
       </div>
     </div>
 
     <div class="who-item">
       <button class="who-name mo glass" type="button" aria-expanded="false">
-        <span class="who-av"><img src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-头像.6il1tmp2xo.webp" alt="" loading="lazy"></span>
+        <span class="who-av"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-头像.6il1tmp2xo.webp" alt="" loading="lazy"></span>
         <span class="who-txt">
           <span class="nm">沈墨</span>
-          <span class="role">毒舌催稿的 · 责任编辑</span>
+          <span class="role">黑丝知性责编 · 隐性白给职场御姐 (27岁)</span>
         </span>
         <span class="who-caret">▾</span>
       </button>
@@ -310,13 +334,13 @@ body{
         <div class="char mo">
           <div class="pic">
             <div class="flip" data-char="mo" role="button" tabindex="0" aria-label="点击翻转沈墨立绘">
-              <img class="face front" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻前.39lxx1ps6z.webp" alt="沈墨">
-              <img class="face back" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻后.8l0uhrbsku.webp" alt="沈墨 背面">
+              <img class="face front" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-立绘-翻前.39lxx1ps6z.webp" alt="沈墨">
+              <img class="face back" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-立绘-翻后.8l0uhrbsku.webp" alt="沈墨 背面">
               <span class="flip-hint">点击翻转</span>
             </div>
           </div>
-          <div class="line">「苏依依，这个月的分镜呢？」</div>
-          <div class="hintp">灰瞳 · 责怪是真心的，心动是不自觉的</div>
+          <div class="line">「苏依依，今天不交出分镜，你和你的数位板都别想走出这扇门。」</div>
+          <div class="hintp">清冷灰瞳 · 172cm/D罩杯 · 黑丝制服与严苛职业自持下的隐秘破防</div>
         </div>
       </div>
     </div>
@@ -384,8 +408,8 @@ body{
     <div class="panel mo" data-panel="6">
       <div class="p-body glass">
         <div class="p-head"><span class="p-idx">Opening 06</span><span class="p-title">编辑登门</span><span class="p-time">2020年4月10日 · 午后 · 晴天 14:20</span></div>
-        <div class="p-preview"><img src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-敲门开局.7q1vr060r.webp" alt="编辑登门"></div>
-        <p>依依拖稿拖到责任编辑亲自杀上门。门一开，站在门口的是个抱着档案、戴细框半框眼镜的冷面女人——她认定你就是把依依养成废人的元凶。而卧室里，雪球还睡得正香。</p>
+        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-立绘-敲门开局.7q1vr060r.webp" alt="编辑登门"></div>
+        <p>依依拖稿拖到成人漫画责任编辑亲自杀上门。防盗门一开，站在门口的是个怀抱档案、身着干练白衬衫、黑丝包臀裙与细框眼镜的冷艳御姐——她原本咬定你就是带坏依依的元凶，但四目相对的一瞬间，却被你温润干净的无害少年感直击心门。而卧室里，雪球还套着宽大白衬衫睡得正香……</p>
         <button class="enter" type="button" data-swipe="6">进入此开局</button>
       </div>
     </div>
