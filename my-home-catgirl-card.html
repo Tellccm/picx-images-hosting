@@ -91,8 +91,26 @@ body{
 .intro b{color:var(--accent);font-weight:600}
 
 /* 角色卡：主题色分离（雪球=冷银金瞳 / 依依=暖栗水蓝 / 沈墨=墨黑冷灰） */
-.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:12px}
-@media(max-width:520px){.duo{grid-template-columns:1fr}}
+/* 人物列表：三级折叠（总开关 → 名字 → 图片），避免三图并排过小 */
+.who{margin-top:12px}
+.who-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;border-radius:16px;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);letter-spacing:.06em;transition:transform .2s;text-align:left}
+.who-toggle:hover{transform:translateY(-1px)}
+.who-toggle-t{font-family:var(--serif);font-size:15px;letter-spacing:.1em}
+.who-list{margin-top:10px}
+.who-item{margin-bottom:8px}
+.who-name{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border-radius:14px;cursor:pointer;font-family:inherit;text-align:left;transition:transform .2s}
+.who-name:hover{transform:translateY(-1px)}
+.who-name .nm{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:.1em;white-space:nowrap;flex-shrink:0}
+.who-name .role{font-size:11.5px;letter-spacing:.02em;opacity:.9;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who-name .who-caret{margin-left:auto;flex-shrink:0}
+.who-name.snow .nm{color:var(--xue-ink)} .who-name.snow .role{color:var(--xue-accent)}
+.who-name.yiyi .nm{color:var(--yi-ink)} .who-name.yiyi .role{color:var(--yi-accent)}
+.who-name.mo .nm{color:var(--mo-ink)} .who-name.mo .role{color:var(--mo-accent)}
+.who-caret{color:var(--faint);transition:transform .25s ease}
+[aria-expanded="true"] .who-caret{transform:rotate(180deg)}
+.who-detail{margin-top:10px}
+.who-detail .pic{max-width:440px;margin:0 auto}
+@media(max-width:520px){.who-detail .pic{max-width:100%}}
 .char{padding:12px;text-align:center;border-radius:18px;border:1px solid transparent}
 .char .pic{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7);position:relative;cursor:pointer}
 .char img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
@@ -195,46 +213,77 @@ body{
 猫化的秘密<b>只有你们三人知道</b>：一个是把一切直球到底的猫，一个是把所有真心藏进傲娇的妹妹——而夹在中间的<b>{{user}}</b>，要同时伺候好两张嘴。
 本卡内置 <b>开放度 / 心声 / 内射计数</b> 状态变量，随剧情由 AI 自动更新。</div>
 
-<div class="sec"><div class="sec-t">她们是谁 <small>· 点击立绘可翻转</small></div></div>
-<div class="duo">
-  <div class="char snow glass">
-    <div class="pic">
-      <div class="flip" data-char="snow" role="button" tabindex="0" aria-label="点击翻转雪球立绘">
-        <img class="face front" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白衬衫白丝盘腿坐.4jouvsukwj.webp" alt="雪球">
-        <img class="face back" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-裸体抬腿.b9nlz4c40.webp" alt="雪球 背面">
-        <span class="flip-hint">点击翻转</span>
+<div class="sec"><div class="sec-t">她们是谁 <small>· 点击展开名单</small></div></div>
+<div class="who">
+  <button class="who-toggle glass" type="button" aria-expanded="false" aria-controls="who-list">
+    <span class="who-toggle-t">人物名单 · 3 位</span>
+    <span class="who-caret">▾</span>
+  </button>
+  <div class="who-list" id="who-list" hidden>
+
+    <div class="who-item">
+      <button class="who-name snow glass" type="button" aria-expanded="false">
+        <span class="nm">雪球</span>
+        <span class="role">三无猫娘 · 银白波斯猫</span>
+        <span class="who-caret">▾</span>
+      </button>
+      <div class="who-detail" hidden>
+        <div class="char snow">
+          <div class="pic">
+            <div class="flip" data-char="snow" role="button" tabindex="0" aria-label="点击翻转雪球立绘">
+              <img class="face front" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-白衬衫白丝盘腿坐.4jouvsukwj.webp" alt="雪球">
+              <img class="face back" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-裸体抬腿.b9nlz4c40.webp" alt="雪球 背面">
+              <span class="flip-hint">点击翻转</span>
+            </div>
+          </div>
+          <div class="line">「饿了。开两个，罐头…」</div>
+          <div class="hintp">淡金猫瞳 · 只会踩奶与打直球</div>
+        </div>
       </div>
     </div>
-    <div class="nm">雪球</div>
-    <div class="role">三无猫娘 · 银白波斯猫</div>
-    <div class="line">「饿了。开两个，罐头…」</div>
-    <div class="hintp">淡金猫瞳 · 只会踩奶与打直球</div>
-  </div>
-  <div class="char yiyi glass">
-    <div class="pic">
-      <div class="flip" data-char="yiyi" role="button" tabindex="0" aria-label="点击翻转苏依依立绘">
-        <img class="face front" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-黑丝黑毛衣-并膝坐床.5c1qdi4yit.webp" alt="苏依依">
-        <img class="face back" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-裸体盘腿坐2.3yf79gtwht.webp" alt="苏依依 背面">
-        <span class="flip-hint">点击翻转</span>
+
+    <div class="who-item">
+      <button class="who-name yiyi glass" type="button" aria-expanded="false">
+        <span class="nm">苏依依</span>
+        <span class="role">假装自己不是兄控的 · 重度兄控</span>
+        <span class="who-caret">▾</span>
+      </button>
+      <div class="who-detail" hidden>
+        <div class="char yiyi">
+          <div class="pic">
+            <div class="flip" data-char="yiyi" role="button" tabindex="0" aria-label="点击翻转苏依依立绘">
+              <img class="face front" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-黑丝黑毛衣-并膝坐床.5c1qdi4yit.webp" alt="苏依依">
+              <img class="face back" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-裸体盘腿坐2.3yf79gtwht.webp" alt="苏依依 背面">
+              <span class="flip-hint">点击翻转</span>
+            </div>
+          </div>
+          <div class="line">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
+          <div class="hintp">水蓝杏眼 · 一戳穿真心就宕机</div>
+        </div>
       </div>
     </div>
-    <div class="nm">苏依依</div>
-    <div class="role">假装自己不是兄控的 · 重度兄控</div>
-    <div class="line">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
-    <div class="hintp">水蓝杏眼 · 一戳穿真心就宕机</div>
-  </div>
-  <div class="char mo glass">
-    <div class="pic">
-      <div class="flip" data-char="mo" role="button" tabindex="0" aria-label="点击翻转沈墨立绘">
-        <img class="face front" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻前.39lxx1ps6z.webp" alt="沈墨">
-        <img class="face back" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻后.8l0uhrbsku.webp" alt="沈墨 背面">
-        <span class="flip-hint">点击翻转</span>
+
+    <div class="who-item">
+      <button class="who-name mo glass" type="button" aria-expanded="false">
+        <span class="nm">沈墨</span>
+        <span class="role">毒舌催稿的 · 责任编辑</span>
+        <span class="who-caret">▾</span>
+      </button>
+      <div class="who-detail" hidden>
+        <div class="char mo">
+          <div class="pic">
+            <div class="flip" data-char="mo" role="button" tabindex="0" aria-label="点击翻转沈墨立绘">
+              <img class="face front" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻前.39lxx1ps6z.webp" alt="沈墨">
+              <img class="face back" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻后.8l0uhrbsku.webp" alt="沈墨 背面">
+              <span class="flip-hint">点击翻转</span>
+            </div>
+          </div>
+          <div class="line">「苏依依，这个月的分镜呢？」</div>
+          <div class="hintp">灰瞳 · 责怪是真心的，心动是不自觉的</div>
+        </div>
       </div>
     </div>
-    <div class="nm">沈墨</div>
-    <div class="role">毒舌催稿的 · 责任编辑</div>
-    <div class="line">「苏依依，这个月的分镜呢？」</div>
-    <div class="hintp">灰瞳 · 责怪是真心的，心动是不自觉的</div>
+
   </div>
 </div>
 
@@ -319,6 +368,35 @@ document.querySelectorAll('.flip').forEach(function (el) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
   });
 });
+
+// —— 人物列表：总开关 + 名字展开（手风琴，只留一个展开以保证图片够大） ——
+(function () {
+  const toggle = document.querySelector('.who-toggle');
+  const list = document.getElementById('who-list');
+  if (toggle && list) {
+    toggle.addEventListener('click', function () {
+      const open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!open));
+      list.hidden = open;
+    });
+  }
+  const names = document.querySelectorAll('.who-name');
+  names.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const detail = btn.closest('.who-item').querySelector('.who-detail');
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      names.forEach(function (other) {
+        if (other !== btn) {
+          other.setAttribute('aria-expanded', 'false');
+          const d = other.closest('.who-item').querySelector('.who-detail');
+          if (d) d.hidden = true;
+        }
+      });
+      btn.setAttribute('aria-expanded', String(!open));
+      if (detail) detail.hidden = open;
+    });
+  });
+})();
 
 // —— Tab 切换 ——
 const tabs = document.querySelectorAll('.tab');
