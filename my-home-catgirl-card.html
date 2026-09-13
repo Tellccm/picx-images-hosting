@@ -43,6 +43,9 @@ global.MaoNiangCardBridgeV2 = Object.freeze({ version: 2, selectGreeting });
   /* 依依：暖栗 + 水蓝（杏眼蓝） */
   --yi-ink:#8a5a43; --yi-accent:#5f9ec4; --yi-bg:linear-gradient(160deg,rgba(243,214,192,.5),rgba(214,232,242,.4));
   --yi-brd:rgba(95,158,196,.4); --yi-glow:rgba(95,158,196,.18);
+  /* 沈墨：墨黑 + 冷灰（灰瞳编辑） */
+  --mo-ink:#3f4652; --mo-accent:#7f8b9c; --mo-bg:linear-gradient(160deg,rgba(226,232,238,.5),rgba(238,242,246,.42));
+  --mo-brd:rgba(127,139,156,.4); --mo-glow:rgba(127,139,156,.2);
   /* 圣诞特殊开局 */
   --xmas-accent:#d64545; --xmas-green:#2e8b57; --xmas-glow:rgba(214,69,69,.18);
   --glass:rgba(255,255,255,.62);
@@ -87,8 +90,8 @@ body{
 .intro{padding:16px 18px;margin-top:12px;font-size:14px}
 .intro b{color:var(--accent);font-weight:600}
 
-/* 角色卡：主题色分离（雪球=冷银金瞳 / 依依=暖栗水蓝） */
-.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+/* 角色卡：主题色分离（雪球=冷银金瞳 / 依依=暖栗水蓝 / 沈墨=墨黑冷灰） */
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:12px}
 @media(max-width:520px){.duo{grid-template-columns:1fr}}
 .char{padding:12px;text-align:center;border-radius:18px;border:1px solid transparent}
 .char .pic{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7);position:relative;cursor:pointer}
@@ -116,6 +119,12 @@ body{
 .char.yiyi .role{color:var(--yi-accent)}
 .char.yiyi .line{background:rgba(95,158,196,.18);color:var(--yi-ink)}
 .char.yiyi .hintp{color:var(--yi-ink)}
+/* 沈墨卡 */
+.char.mo{background:var(--mo-bg);border:1px solid var(--mo-brd);box-shadow:0 8px 22px var(--mo-glow)}
+.char.mo .nm{color:var(--mo-ink)}
+.char.mo .role{color:var(--mo-accent)}
+.char.mo .line{background:rgba(127,139,156,.18);color:var(--mo-ink)}
+.char.mo .hintp{color:var(--mo-ink)}
 
 /* 开局 Tab 选项卡 */
 /* 4 个常规开局 flex:1 → flex-basis:0%，换行只在 .tab.after（100% 独占一行）发生 */
@@ -132,6 +141,10 @@ body{
 .tab.after{flex:1 1 100%;background:linear-gradient(120deg,rgba(255,240,243,.7),rgba(243,214,192,.62));border-color:rgba(201,168,106,.45)}
 .tab.after.active{border-color:var(--xue-accent);box-shadow:0 6px 18px rgba(201,168,106,.26);color:#a8842f}
 .tab.after.active .t-t{color:#a8842f}
+/* 沈墨 · 编辑登门（独占一行，墨黑冷灰主题） */
+.tab.mo{flex:1 1 100%;background:linear-gradient(120deg,rgba(228,232,238,.78),rgba(240,242,246,.6));border-color:rgba(127,139,156,.45)}
+.tab.mo.active{border-color:var(--mo-accent);box-shadow:0 6px 18px var(--mo-glow);color:var(--mo-ink)}
+.tab.mo.active .t-t{color:var(--mo-ink)}
 .panels{margin-top:12px}
 .panel{display:none}
 .panel.show{display:block;animation:fade .3s ease}
@@ -158,6 +171,9 @@ body{
 /* 一周年后日谈面板 */
 .panel.after .p-idx{color:var(--xue-accent)}
 .panel.after .enter{background:linear-gradient(120deg,#c9a86a,#e08a9e);box-shadow:0 8px 20px rgba(201,168,106,.3)}
+/* 沈墨面板 */
+.panel.mo .p-idx{color:var(--mo-accent)}
+.panel.mo .enter{background:linear-gradient(120deg,#8b97a8,#3f4652);box-shadow:0 8px 20px var(--mo-glow)}
 .opening-status{display:none;text-align:center;font-size:13px;color:var(--muted);padding:10px 14px;border:1px solid rgba(255,255,255,.7);border-radius:12px;background:rgba(255,255,255,.55);margin:12px 0}
 .hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.16em;margin-top:18px}
 </style>
@@ -207,6 +223,19 @@ body{
     <div class="line">「本小姐大发慈悲来照顾你，感恩戴德吧~」</div>
     <div class="hintp">水蓝杏眼 · 一戳穿真心就宕机</div>
   </div>
+  <div class="char mo glass">
+    <div class="pic">
+      <div class="flip" data-char="mo" role="button" tabindex="0" aria-label="点击翻转沈墨立绘">
+        <img class="face front" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻前.39lxx1ps6z.webp" alt="沈墨">
+        <img class="face back" src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-翻后.8l0uhrbsku.webp" alt="沈墨 背面">
+        <span class="flip-hint">点击翻转</span>
+      </div>
+    </div>
+    <div class="nm">沈墨</div>
+    <div class="role">毒舌催稿的 · 责任编辑</div>
+    <div class="line">「苏依依，这个月的分镜呢？」</div>
+    <div class="hintp">灰瞳 · 责怪是真心的，心动是不自觉的</div>
+  </div>
 </div>
 
 <div class="sec"><div class="sec-t">选择开局 <small>· 点击直接跳转对应开场</small></div></div>
@@ -217,6 +246,7 @@ body{
     <button class="tab" data-tab="3" type="button"><div class="t-t">晨间修罗场</div><div class="t-date">4月6日 · 早上</div></button>
     <button class="tab xmas" data-tab="4" type="button"><div class="t-t">圣诞节日</div><div class="t-date">12月25日 · 晚上</div></button>
     <button class="tab after" data-tab="5" type="button"><div class="t-t">一周年后日谈</div><div class="t-date">一年后 · 4月1日 · 上午</div></button>
+    <button class="tab mo" data-tab="6" type="button"><div class="t-t">编辑登门</div><div class="t-date">4月10日 · 午后</div></button>
   </div>
   <div class="panels">
     <div class="panel show" data-panel="1">
@@ -253,7 +283,7 @@ body{
           <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-圣诞礼物.7i14yc8nl0.webp" alt="雪球"><figcaption>雪球 · 圣诞礼物</figcaption></div>
           <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-圣诞礼物.9rk5htte1t.webp" alt="苏依依"><figcaption>苏依依 · 圣诞礼物</figcaption></div>
         </figure>
-        <p>「当当——！圣诞快乐，笨蛋老哥！」今晚的依依格外大胆主动，和雪球一起把自己"打包"成礼物送给你。</p>
+        <p>「当当——！圣诞快乐，笨蛋老哥！」今晚的依依格外大胆主动，和雪球一起把自己“打包”成礼物送给你。</p>
         <button class="enter" type="button" data-swipe="4">进入圣诞特殊开局</button>
       </div>
     </div>
@@ -263,6 +293,14 @@ body{
         <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user-雪球-苏依依—后日谈立绘.1apr5fsj40.webp" alt="一周年后日谈"></div>
         <p>雪球化形满一周年的清晨。依依的连载漫画挂上了一周年特别篇横幅，开放度早已拉满的她不再掩饰半分依恋；只套着一件白衬衫的雪球则直接贴进你怀里。两张娇俏的脸一左一右，把你夹在了中间。</p>
         <button class="enter" type="button" data-swipe="5">进入后日谈</button>
+      </div>
+    </div>
+    <div class="panel mo" data-panel="6">
+      <div class="p-body glass">
+        <div class="p-head"><span class="p-idx">Opening 06</span><span class="p-title">编辑登门</span><span class="p-time">2020年4月10日 · 午后 · 晴天 14:20</span></div>
+        <div class="p-preview"><img src="https://github.com/Tellccm/picx-images-hosting/raw/master/沈墨-立绘-敲门开局.7q1vr060r.webp" alt="编辑登门"></div>
+        <p>依依拖稿拖到责任编辑亲自杀上门。门一开，站在门口的是个抱着档案、戴细框半框眼镜的冷面女人——她认定你就是把依依养成废人的元凶。而卧室里，雪球还睡得正香。</p>
+        <button class="enter" type="button" data-swipe="6">进入此开局</button>
       </div>
     </div>
   </div>
