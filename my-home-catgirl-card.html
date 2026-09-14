@@ -33,15 +33,9 @@ async function selectGreeting(swipeId) {
   try {
     const setVar = helperCall('setVariable');
     if (typeof setVar === 'function') {
-      const presetMap = {
-        1: { 'date': '2020-04-01', 'time': '08:37', 'yiyi.openness': 5, 'editor.pressure': 10 },
-        2: { 'date': '2020-04-04', 'time': '12:23', 'yiyi.openness': 10, 'editor.pressure': 25 },
-        3: { 'date': '2020-04-06', 'time': '08:10', 'yiyi.openness': 25, 'editor.pressure': 35 },
-        4: { 'date': '2020-12-25', 'time': '20:00', 'yiyi.openness': 85, 'editor.pressure': 20 },
-        5: { 'date': '2021-04-01', 'time': '09:45', 'yiyi.openness': 100, 'editor.pressure': 15 },
-        6: { 'date': '2020-04-10', 'time': '14:20', 'yiyi.openness': 30, 'editor.pressure': 85 }
-      };
-      const preset = presetMap[index];
+      const configList = globalThis.MaoNiangOpeningsConfig || [];
+      const targetOp = configList.find(function(x) { return Number(x.swipe) === index; });
+      const preset = targetOp && targetOp.presets ? targetOp.presets : null;
       if (preset) {
         for (const [k, v] of Object.entries(preset)) {
           try { setVar(k, v); } catch (_) {}
@@ -187,36 +181,61 @@ body{
 .char.mo .line{background:rgba(127,139,156,.18);color:var(--mo-ink)}
 .char.mo .hintp{color:var(--mo-ink)}
 
-/* 开局 Tab 选项卡 */
-/* 4 个常规开局 flex:1 → flex-basis:0%，换行只在 .tab.after（100% 独占一行）发生 */
-.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.tab{flex:1;padding:11px 6px;text-align:center;border:none;border-radius:14px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.6);cursor:pointer;font-family:inherit;transition:all .2s;color:var(--muted)}
-.tab:hover{transform:translateY(-1px)}
-.tab .t-t{font-family:var(--serif);font-size:16px;letter-spacing:.03em}
-.tab .t-date{font-size:10.5px;letter-spacing:.1em;opacity:.85;margin-top:2px}
-.tab.active{background:#fff;border-color:var(--accent);box-shadow:0 6px 18px rgba(255,107,139,.22);color:var(--deep)}
-.tab.active .t-t{color:var(--deep)}
-.tab.xmas.active{border-color:var(--xmas-accent);box-shadow:0 6px 18px var(--xmas-glow);color:var(--xmas-accent)}
-.tab.xmas.active .t-t{color:var(--xmas-accent)}
-/* 一周年后日谈（独占一行，不挤压原 4 个开局） */
-.tab.after{flex:1 1 100%;background:linear-gradient(120deg,rgba(255,240,243,.7),rgba(243,214,192,.62));border-color:rgba(201,168,106,.45)}
-.tab.after.active{border-color:var(--xue-accent);box-shadow:0 6px 18px rgba(201,168,106,.26);color:#a8842f}
-.tab.after.active .t-t{color:#a8842f}
-/* 沈墨 · 编辑登门（独占一行，墨黑冷灰主题） */
-.tab.mo{flex:1 1 100%;background:linear-gradient(120deg,rgba(228,232,238,.78),rgba(240,242,246,.6));border-color:rgba(127,139,156,.45)}
-.tab.mo.active{border-color:var(--mo-accent);box-shadow:0 6px 18px var(--mo-glow);color:var(--mo-ink)}
-.tab.mo.active .t-t{color:var(--mo-ink)}
-.panels{margin-top:12px}
-.panel{display:none}
-.panel.show{display:block;animation:fade .3s ease}
+/* ================= 开局选择模块（数据驱动 · 响应式自适应网格） ================= */
+.op-filter-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.op-filter-btn{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.45);font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.op-filter-btn:hover{background:rgba(255,255,255,.75);transform:translateY(-1px)}
+.op-filter-btn.active{background:#fff;color:var(--deep);border-color:var(--accent);box-shadow:0 3px 12px rgba(255,107,139,.2);font-weight:600}
+
+.op-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+@media(max-width:520px){.op-grid{grid-template-columns:repeat(2,1fr)}}
+
+.op-card{padding:10px 10px 8px;border-radius:14px;border:1px solid rgba(255,255,255,.65);background:rgba(255,255,255,.45);cursor:pointer;font-family:inherit;transition:all .2s;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:5px;position:relative;overflow:hidden;min-height:70px}
+.op-card:hover{transform:translateY(-2px);background:rgba(255,255,255,.8);box-shadow:0 6px 16px rgba(120,90,100,.12)}
+.op-card-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.op-card-idx{font-family:var(--serif);font-size:10.5px;letter-spacing:.08em;font-weight:600;opacity:.75}
+.op-card-tag{font-size:9.5px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.65);letter-spacing:.02em;font-weight:500}
+.op-card-title{font-family:var(--serif);font-size:14px;font-weight:600;letter-spacing:.02em;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.op-card-date{font-size:10.5px;letter-spacing:.03em;opacity:.85;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 各主题在卡片激活态的高亮配色 */
+.op-card[data-theme="snow"].active{background:#fff;border-color:var(--xue-accent);box-shadow:0 6px 18px var(--xue-glow)}
+.op-card[data-theme="snow"].active .op-card-title,.op-card[data-theme="snow"].active .op-card-idx{color:#9a7629}
+
+.op-card[data-theme="yiyi"].active{background:#fff;border-color:var(--yi-accent);box-shadow:0 6px 18px var(--yi-glow)}
+.op-card[data-theme="yiyi"].active .op-card-title,.op-card[data-theme="yiyi"].active .op-card-idx{color:#3b7ca3}
+
+.op-card[data-theme="mo"].active{background:#fff;border-color:var(--mo-accent);box-shadow:0 6px 18px var(--mo-glow)}
+.op-card[data-theme="mo"].active .op-card-title,.op-card[data-theme="mo"].active .op-card-idx{color:var(--mo-ink)}
+
+.op-card[data-theme="xmas"].active{background:#fff;border-color:var(--xmas-accent);box-shadow:0 6px 18px var(--xmas-glow)}
+.op-card[data-theme="xmas"].active .op-card-title,.op-card[data-theme="xmas"].active .op-card-idx{color:var(--xmas-accent)}
+
+.op-card[data-theme="after"].active{background:#fff;border-color:var(--xue-accent);box-shadow:0 6px 18px rgba(201,168,106,.26)}
+.op-card[data-theme="after"].active .op-card-title,.op-card[data-theme="after"].active .op-card-idx{color:#a8842f}
+
+.op-card[data-theme="default"].active{background:#fff;border-color:var(--accent);box-shadow:0 6px 18px rgba(255,107,139,.22)}
+.op-card[data-theme="default"].active .op-card-title,.op-card[data-theme="default"].active .op-card-idx{color:var(--deep)}
+
+/* 详情面板容器 */
+.op-panel-box{margin-top:12px}
+.op-panel{animation:fade .3s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.panel .p-body{padding:16px 18px}
-.panel .p-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
-.panel .p-idx{font-family:var(--serif);font-style:italic;font-size:11px;letter-spacing:.18em;color:var(--accent)}
-.panel.xmas .p-idx{color:var(--xmas-accent)}
-.panel .p-time{font-size:11px;color:var(--faint);letter-spacing:.1em;margin-left:auto}
-.panel .p-title{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ink)}
-.panel p{font-size:13.5px;color:var(--muted);margin-top:8px}
+.op-panel .p-body{padding:16px 18px}
+.op-panel .p-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.op-panel .p-idx{font-family:var(--serif);font-style:italic;font-size:11px;letter-spacing:.18em;color:var(--accent)}
+.op-panel .p-idx[data-theme="snow"],.op-panel .p-idx[data-theme="after"]{color:var(--xue-accent)}
+.op-panel .p-idx[data-theme="yiyi"]{color:var(--yi-accent)}
+.op-panel .p-idx[data-theme="mo"]{color:var(--mo-accent)}
+.op-panel .p-idx[data-theme="xmas"]{color:var(--xmas-accent)}
+.op-panel .p-time{font-size:11px;color:var(--faint);letter-spacing:.1em;margin-left:auto}
+.op-panel .p-title{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ink)}
+.op-panel p{font-size:13.5px;color:var(--muted);margin-top:8px}
+
+.op-vars-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;padding:8px 12px;background:rgba(255,255,255,.55);border-radius:10px;font-size:11px;color:var(--muted);border:1px dashed rgba(200,160,170,.45)}
+.op-vars-preview span{display:inline-flex;align-items:center;gap:3px}
+.op-vars-preview b{color:var(--ink);font-weight:600}
+
 /* 开局预览：竖图 */
 .p-preview{margin-top:12px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.7)}
 .p-preview img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
@@ -229,12 +248,14 @@ body{
 .enter:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(255,107,139,.4)}
 .enter:disabled{opacity:.6;cursor:default;transform:none}
 .panel.xmas .enter{background:linear-gradient(120deg,var(--xmas-green),var(--xmas-accent));box-shadow:0 8px 20px var(--xmas-glow)}
-/* 一周年后日谈面板 */
-.panel.after .p-idx{color:var(--xue-accent)}
-.panel.after .enter{background:linear-gradient(120deg,#c9a86a,#e08a9e);box-shadow:0 8px 20px rgba(201,168,106,.3)}
-/* 沈墨面板 */
-.panel.mo .p-idx{color:var(--mo-accent)}
-.panel.mo .enter{background:linear-gradient(120deg,#8b97a8,#3f4652);box-shadow:0 8px 20px var(--mo-glow)}
+/* 按钮主题色自适应 */
+.enter[data-theme="snow"]{background:linear-gradient(120deg,#c9a86a,#e08a9e);box-shadow:0 8px 20px rgba(201,168,106,.3)}
+.enter[data-theme="yiyi"]{background:linear-gradient(120deg,#5f9ec4,#ff6b8b);box-shadow:0 8px 20px rgba(95,158,196,.3)}
+.enter[data-theme="mo"]{background:linear-gradient(120deg,#8b97a8,#3f4652);box-shadow:0 8px 20px var(--mo-glow)}
+.enter[data-theme="xmas"]{background:linear-gradient(120deg,var(--xmas-green),var(--xmas-accent));box-shadow:0 8px 20px var(--xmas-glow)}
+.enter[data-theme="after"]{background:linear-gradient(120deg,#c9a86a,#e08a9e);box-shadow:0 8px 20px rgba(201,168,106,.3)}
+.enter[data-theme="default"]{background:linear-gradient(120deg,var(--accent),var(--deep));box-shadow:0 8px 20px rgba(255,107,139,.3)}
+
 .opening-status{display:none;text-align:center;font-size:13px;color:var(--muted);padding:10px 14px;border:1px solid rgba(255,255,255,.7);border-radius:12px;background:rgba(255,255,255,.55);margin:12px 0}
 .hint{text-align:center;font-size:11px;color:var(--faint);letter-spacing:.16em;margin-top:18px}
 </style>
@@ -348,73 +369,16 @@ body{
   </div>
 </div>
 
-<div class="sec"><div class="sec-t">选择开局 <small>· 点击直接跳转对应开场</small></div></div>
-<div class="origins">
-  <div class="tabs" role="tablist">
-    <button class="tab active" data-tab="1" type="button"><div class="t-t">愚人节的猫</div><div class="t-date">4月1日 · 清晨</div></button>
-    <button class="tab" data-tab="2" type="button"><div class="t-t">妹妹的突击</div><div class="t-date">4月4日 · 中午</div></button>
-    <button class="tab" data-tab="3" type="button"><div class="t-t">晨间修罗场</div><div class="t-date">4月6日 · 早上</div></button>
-    <button class="tab xmas" data-tab="4" type="button"><div class="t-t">圣诞节日</div><div class="t-date">12月25日 · 晚上</div></button>
-    <button class="tab after" data-tab="5" type="button"><div class="t-t">一周年后日谈</div><div class="t-date">一年后 · 4月1日 · 上午</div></button>
-    <button class="tab mo" data-tab="6" type="button"><div class="t-t">编辑登门</div><div class="t-date">4月10日 · 午后</div></button>
-  </div>
-  <div class="panels">
-    <div class="panel show" data-panel="1">
-      <div class="p-body glass">
-        <div class="p-head"><span class="p-idx">Opening 01</span><span class="p-title">愚人节的猫</span><span class="p-time">4月1日 · 清晨 · 晴天 8:37</span></div>
-        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-躺床.5xbdzszeuc.webp" alt="愚人节的猫"></div>
-        <p>晨光入被窝。你掀开被子，等来的不是白毛团子，而是一个蜷在床单中央、顶着猫耳与尾巴的三无猫娘少女——雪球化人了。</p>
-        <button class="enter" type="button" data-swipe="1">进入此开局</button>
-      </div>
-    </div>
-    <div class="panel" data-panel="2">
-      <div class="p-body glass">
-        <div class="p-head"><span class="p-idx">Opening 02</span><span class="p-title">妹妹的突击检查</span><span class="p-time">4月4日 · 中午 · 阴天 12:23</span></div>
-        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/猫娘角色卡-开局2.6il1m3tv4x.webp" alt="妹妹的突击检查"></div>
-        <p>「哥——！本小姐突击检查！」粉色行李箱碾过玄关，苏依依撞见只穿你白衬衫、趴地吃罐头的猫娘。误会大爆发！</p>
-        <button class="enter" type="button" data-swipe="2">进入此开局</button>
-      </div>
-    </div>
-    <div class="panel" data-panel="3">
-      <div class="p-body glass">
-        <div class="p-head"><span class="p-idx">Opening 03</span><span class="p-title">晨间的修罗场</span><span class="p-time">4月6日 · 早上 · 晴天 8:10</span></div>
-        <figure class="xmas-duo">
-          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user抱着雪球在厨房看苏依依做饭-立绘.26m8ekajmi.webp" alt="user抱着雪球看苏依依做饭"><figcaption>晨间 · 撒娇的雪球</figcaption></div>
-          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依背着雪球-立绘-厨房.7i14z9wmal.webp" alt="苏依依背着雪球"><figcaption>厨房 · 背上的雪球</figcaption></div>
-        </figure>
-        <p>接受设定的依依系上围裙做早餐，你怀里还抱着赖着不下的雪球。厨房飘香，醋意也在悄悄发酵。</p>
-        <button class="enter" type="button" data-swipe="3">进入此开局</button>
-      </div>
-    </div>
-    <div class="panel xmas" data-panel="4">
-      <div class="p-body glass">
-        <div class="p-head"><span class="p-idx">Special · Opening 04</span><span class="p-title">圣诞节日</span><span class="p-time">12月25日 · 晚上 · 暖光</span></div>
-        <figure class="xmas-duo">
-          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-圣诞礼物.7i14yc8nl0.webp" alt="雪球"><figcaption>雪球 · 圣诞礼物</figcaption></div>
-          <div><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-圣诞礼物.9rk5htte1t.webp" alt="苏依依"><figcaption>苏依依 · 圣诞礼物</figcaption></div>
-        </figure>
-        <p>「当当——！圣诞快乐，笨蛋老哥！」今晚的依依格外大胆主动，和雪球一起把自己“打包”成礼物送给你。</p>
-        <button class="enter" type="button" data-swipe="4">进入圣诞特殊开局</button>
-      </div>
-    </div>
-    <div class="panel after" data-panel="5">
-      <div class="p-body glass">
-        <div class="p-head"><span class="p-idx">After Story · Opening 05</span><span class="p-title">一周年后日谈</span><span class="p-time">2021年4月1日 · 上午 · 晴天 09:45</span></div>
-        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user-雪球-苏依依—后日谈立绘.1apr5fsj40.webp" alt="一周年后日谈"></div>
-        <p>雪球化形满一周年的清晨。依依的连载漫画挂上了一周年特别篇横幅，开放度早已拉满的她不再掩饰半分依恋；只套着一件白衬衫的雪球则直接贴进你怀里。两张娇俏的脸一左一右，把你夹在了中间。</p>
-        <button class="enter" type="button" data-swipe="5">进入后日谈</button>
-      </div>
-    </div>
-    <div class="panel mo" data-panel="6">
-      <div class="p-body glass">
-        <div class="p-head"><span class="p-idx">Opening 06</span><span class="p-title">编辑登门</span><span class="p-time">2020年4月10日 · 午后 · 晴天 14:20</span></div>
-        <div class="p-preview"><img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-立绘-敲门开局.7q1vr060r.webp" alt="编辑登门"></div>
-        <p>依依拖稿拖到成人漫画责任编辑亲自杀上门。防盗门一开，站在门口的是个怀抱档案、身着干练白衬衫、黑丝包臀裙与细框眼镜的冷艳御姐——她原本咬定你就是带坏依依的元凶，但四目相对的一瞬间，却被你温润干净的无害少年感直击心门。而卧室里，雪球还套着宽大白衬衫睡得正香……</p>
-        <button class="enter" type="button" data-swipe="6">进入此开局</button>
-      </div>
-    </div>
-  </div>
+<div class="sec"><div class="sec-t">选择开局 <small>· 角色分类筛选 &amp; 一键切入剧情</small></div></div>
+<div class="origins" id="origins-app">
+  <!-- 角色分类筛选胶囊 -->
+  <div class="op-filter-bar" id="op-filters" role="tablist"></div>
+  <!-- 开局卡片自适应网格 -->
+  <div class="op-grid" id="op-grid"></div>
+  <!-- 详情图文与进入面板 -->
+  <div class="op-panel-box" id="op-panel"></div>
 </div>
+
 <div class="opening-status">…</div>
 <div class="hint">开局切换后 · 状态栏变量将同步为对应开场的正文 🐾🌸</div>
 
@@ -459,43 +423,284 @@ document.querySelectorAll('.flip').forEach(function (el) {
   });
 })();
 
-// —— Tab 切换 ——
-const tabs = document.querySelectorAll('.tab');
-const panels = document.querySelectorAll('.panel');
-tabs.forEach(function (t) {
-  t.addEventListener('click', function () {
-    const key = t.dataset.tab;
-    tabs.forEach(function (x) { x.classList.toggle('active', x === t); });
-    panels.forEach(function (p) { p.classList.toggle('show', p.dataset.panel === key); });
-  });
-});
+// ==========================================================================
+// 💡【开局配置表 (OPENINGS_CONFIG)】
+// 以后若要增加新开局或扩展新角色，只需在下方数组中添加一个配置对象即可！
+// 所有的筛选栏、响应式卡片网格、详情图文、进入开局按钮与剧情初始变量将全自动生成！
+// ==========================================================================
+const OPENINGS_CONFIG = [
+  {
+    id: 1,
+    swipe: 1,
+    title: "愚人节的猫",
+    shortTitle: "愚人节的猫",
+    date: "4月1日 · 清晨",
+    fullTime: "2020年4月1日 · 清晨 · 晴天 8:37",
+    category: "snow",
+    categoryName: "雪球",
+    badge: "Opening 01",
+    theme: "snow",
+    desc: "晨光入被窝。你掀开被子，等来的不是白毛团子，而是一个蜷在床单中央、顶着猫耳与尾巴的三无猫娘少女——雪球化人了。",
+    images: [
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-躺床.5xbdzszeuc.webp", alt: "愚人节的猫" }
+    ],
+    btnText: "进入此开局",
+    presets: { "date": "2020-04-01", "time": "08:37", "yiyi.openness": 5, "editor.pressure": 10 }
+  },
+  {
+    id: 2,
+    swipe: 2,
+    title: "妹妹的突击检查",
+    shortTitle: "妹妹突击",
+    date: "4月4日 · 中午",
+    fullTime: "2020年4月4日 · 中午 · 阴天 12:23",
+    category: "yiyi",
+    categoryName: "苏依依",
+    badge: "Opening 02",
+    theme: "yiyi",
+    desc: "「哥——！本小姐突击检查！」粉色行李箱碾过玄关，苏依依撞见只穿你白衬衫、趴地吃罐头的猫娘。误会大爆发！",
+    images: [
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/猫娘角色卡-开局2.6il1m3tv4x.webp", alt: "妹妹的突击检查" }
+    ],
+    btnText: "进入此开局",
+    presets: { "date": "2020-04-04", "time": "12:23", "yiyi.openness": 10, "editor.pressure": 25 }
+  },
+  {
+    id: 3,
+    swipe: 3,
+    title: "晨间的修罗场",
+    shortTitle: "晨间修罗场",
+    date: "4月6日 · 早上",
+    fullTime: "2020年4月6日 · 早上 · 晴天 8:10",
+    category: "dual",
+    categoryName: "雪球 & 依依",
+    badge: "Opening 03",
+    theme: "snow",
+    desc: "接受设定的依依系上围裙做早餐，你怀里还抱着赖着不下的雪球。厨房飘香，醋意也在悄悄发酵。",
+    images: [
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user抱着雪球在厨房看苏依依做饭-立绘.26m8ekajmi.webp", caption: "晨间 · 撒娇的雪球" },
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依背着雪球-立绘-厨房.7i14z9wmal.webp", caption: "厨房 · 背上的雪球" }
+    ],
+    btnText: "进入此开局",
+    presets: { "date": "2020-04-06", "time": "08:10", "yiyi.openness": 25, "editor.pressure": 35 }
+  },
+  {
+    id: 4,
+    swipe: 4,
+    title: "圣诞节日",
+    shortTitle: "圣诞节日",
+    date: "12月25日 · 晚上",
+    fullTime: "2020年12月25日 · 晚上 · 暖光",
+    category: "special",
+    categoryName: "特殊篇",
+    badge: "Special · Opening 04",
+    theme: "xmas",
+    desc: "「当当——！圣诞快乐，笨蛋老哥！」今晚的依依格外大胆主动，和雪球一起把自己“打包”成礼物送给你。",
+    images: [
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-圣诞礼物.7i14yc8nl0.webp", caption: "雪球 · 圣诞礼物" },
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-圣诞礼物.9rk5htte1t.webp", caption: "苏依依 · 圣诞礼物" }
+    ],
+    btnText: "进入圣诞特殊开局",
+    presets: { "date": "2020-12-25", "time": "20:00", "yiyi.openness": 85, "editor.pressure": 20 }
+  },
+  {
+    id: 5,
+    swipe: 5,
+    title: "一周年后日谈",
+    shortTitle: "一周年后日谈",
+    date: "一年后 · 4月1日",
+    fullTime: "2021年4月1日 · 上午 · 晴天 09:45",
+    category: "special",
+    categoryName: "后日谈",
+    badge: "After Story · Opening 05",
+    theme: "after",
+    desc: "雪球化形满一周年的清晨。依依的连载漫画挂上了一周年特别篇横幅，开放度早已拉满的她不再掩饰半分依恋；只套着一件白衬衫的雪球则直接贴进你怀里。两张娇俏的脸一左一右，把你夹在了中间。",
+    images: [
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user-雪球-苏依依—后日谈立绘.1apr5fsj40.webp", alt: "一周年后日谈" }
+    ],
+    btnText: "进入后日谈",
+    presets: { "date": "2021-04-01", "time": "09:45", "yiyi.openness": 100, "editor.pressure": 15 }
+  },
+  {
+    id: 6,
+    swipe: 6,
+    title: "编辑登门",
+    shortTitle: "编辑登门",
+    date: "4月10日 · 午后",
+    fullTime: "2020年4月10日 · 午后 · 晴天 14:20",
+    category: "mo",
+    categoryName: "沈墨",
+    badge: "Opening 06",
+    theme: "mo",
+    desc: "依依拖稿拖到成人漫画责任编辑亲自杀上门。防盗门一开，站在门口的是个怀抱档案、身着干练白衬衫、黑丝包臀裙与细框眼镜的冷艳御姐——她原本咬定你就是带坏依依的元凶，但四目相对的一瞬间，却被你温润干净的无害少年感直击心门。而卧室里，雪球还套着宽大白衬衫睡得正香……",
+    images: [
+      { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-立绘-敲门开局.7q1vr060r.webp", alt: "编辑登门" }
+    ],
+    btnText: "进入此开局",
+    presets: { "date": "2020-04-10", "time": "14:20", "yiyi.openness": 30, "editor.pressure": 85 }
+  }
+];
 
-// —— 进入开局 ——
-const status = document.querySelector('.opening-status');
+// 挂载到全局，便于桥接函数访问
+globalThis.MaoNiangOpeningsConfig = OPENINGS_CONFIG;
+
+// —— 状态管理器 ——
+let currentCat = "all";
+let currentOpeningId = 1;
+
+const status = document.querySelector(".opening-status");
 const showStatus = function (txt, isError) {
   if (!status) return;
-  status.style.display = 'block';
+  status.style.display = "block";
   status.textContent = txt;
-  status.style.color = isError ? '#d64545' : 'var(--muted)';
+  status.style.color = isError ? "#d64545" : "var(--muted)";
 };
-document.querySelectorAll('.enter').forEach(function (btn) {
-  btn.addEventListener('click', async function () {
-    const swipeId = Number(btn.dataset.swipe);
-    document.querySelectorAll('.enter').forEach(function (x) { x.disabled = true; });
-    const title = ((btn.closest('.p-body').querySelector('.p-title')) || {}).textContent || ('开局 ' + String(swipeId).padStart(2, '0'));
-    showStatus('正在进入「' + title + '」……');
-    try {
-      const bridge = globalThis.MaoNiangCardBridgeV2 || {};
-      if (typeof bridge.selectGreeting !== 'function') throw new Error('开场桥接尚未就绪');
-      await bridge.selectGreeting(swipeId);
-      showStatus('✅ 已切换开局，状态栏同步中……');
-    } catch (err) {
-      showStatus('⚠️ ' + (err && err.message ? err.message : '切换失败') + '（若在浏览器直接打开属正常，请在酒馆聊天中点击）', true);
-    } finally {
-      document.querySelectorAll('.enter').forEach(function (x) { x.disabled = false; });
+
+function renderOpeningsUI() {
+  const filterContainer = document.getElementById("op-filters");
+  const gridContainer = document.getElementById("op-grid");
+  const panelContainer = document.getElementById("op-panel");
+  if (!filterContainer || !gridContainer || !panelContainer) return;
+
+  // 1. 自动收集所有可用分类标签
+  const categories = [
+    { key: "all", label: "全部开局" },
+    { key: "snow", label: "🐾 雪球" },
+    { key: "yiyi", label: "🌸 苏依依" },
+    { key: "mo", label: "💼 沈墨" },
+    { key: "special", label: "✨ 节日/后日谈" }
+  ];
+
+  // 动态合并未来可能添加的新角色类别
+  OPENINGS_CONFIG.forEach(function (op) {
+    if (op.category && !categories.some(function (c) { return c.key === op.category; }) && op.category !== "dual") {
+      categories.push({ key: op.category, label: op.categoryName || op.category });
     }
   });
-});
+
+  // 渲染筛选按钮
+  filterContainer.innerHTML = categories.map(function (c) {
+    const count = c.key === "all"
+      ? OPENINGS_CONFIG.length
+      : OPENINGS_CONFIG.filter(function (o) {
+          return o.category === c.key || (c.key === "snow" && o.category === "dual") || (c.key === "yiyi" && o.category === "dual");
+        }).length;
+    return '<button class="op-filter-btn' + (c.key === currentCat ? ' active' : '') + '" data-cat="' + c.key + '" type="button">' + c.label + ' <small style="opacity:.68;font-size:10px">(' + count + ')</small></button>';
+  }).join("");
+
+  // 根据选中的分类过滤开局
+  const filtered = currentCat === "all"
+    ? OPENINGS_CONFIG
+    : OPENINGS_CONFIG.filter(function (o) {
+        return o.category === currentCat || (currentCat === "snow" && o.category === "dual") || (currentCat === "yiyi" && o.category === "dual");
+      });
+
+  // 若当前开局不在过滤结果中，自动切换至该分类下的第一个
+  if (!filtered.some(function (o) { return o.id === currentOpeningId; }) && filtered.length > 0) {
+    currentOpeningId = filtered[0].id;
+  }
+
+  // 渲染卡片网格
+  gridContainer.innerHTML = filtered.map(function (op) {
+    const isActive = op.id === currentOpeningId;
+    const badgeText = op.badge ? op.badge.replace(/.*?Opening\s*/i, "OP.") : ("OP." + op.id);
+    return '<button class="op-card' + (isActive ? ' active' : '') + '" data-id="' + op.id + '" data-theme="' + (op.theme || 'default') + '" type="button">' +
+      '<div class="op-card-top">' +
+        '<span class="op-card-idx">' + badgeText + '</span>' +
+        '<span class="op-card-tag">' + (op.categoryName || "开局") + '</span>' +
+      '</div>' +
+      '<div class="op-card-title">' + (op.shortTitle || op.title) + '</div>' +
+      '<div class="op-card-date">' + op.date + '</div>' +
+    '</button>';
+  }).join("");
+
+  // 渲染详情面板
+  const currentOp = OPENINGS_CONFIG.find(function (o) { return o.id === currentOpeningId; }) || OPENINGS_CONFIG[0];
+  if (currentOp) {
+    let imagesHtml = "";
+    if (currentOp.images && currentOp.images.length >= 2) {
+      imagesHtml = '<figure class="xmas-duo">' +
+        currentOp.images.map(function (img) {
+          return '<div><img src="' + img.src + '" alt="' + (img.alt || img.caption || '') + '"><figcaption>' + (img.caption || '') + '</figcaption></div>';
+        }).join("") +
+      '</figure>';
+    } else if (currentOp.images && currentOp.images.length === 1) {
+      imagesHtml = '<div class="p-preview"><img src="' + currentOp.images[0].src + '" alt="' + (currentOp.images[0].alt || currentOp.title) + '"></div>';
+    }
+
+    const presets = currentOp.presets || {};
+    const presetItems = [];
+    if (presets.date) presetItems.push('<span>📅 剧情日期: <b>' + presets.date + '</b></span>');
+    if (presets.time) presetItems.push('<span>⏰ 初始时间: <b>' + presets.time + '</b></span>');
+    if (presets["yiyi.openness"] !== undefined) presetItems.push('<span>🌸 依依开放度: <b>' + presets["yiyi.openness"] + '</b>/100</span>');
+    if (presets["editor.pressure"] !== undefined) presetItems.push('<span>💼 催稿压力: <b>' + presets["editor.pressure"] + '</b>/100</span>');
+
+    const varsHtml = presetItems.length > 0 ? ('<div class="op-vars-preview">' + presetItems.join("") + '</div>') : "";
+
+    panelContainer.innerHTML = '<div class="op-panel" data-theme="' + (currentOp.theme || 'default') + '">' +
+      '<div class="p-body glass">' +
+        '<div class="p-head">' +
+          '<span class="p-idx" data-theme="' + (currentOp.theme || 'default') + '">' + currentOp.badge + '</span>' +
+          '<span class="p-title">' + currentOp.title + '</span>' +
+          '<span class="p-time">' + currentOp.fullTime + '</span>' +
+        '</div>' +
+        imagesHtml +
+        '<p>' + currentOp.desc + '</p>' +
+        varsHtml +
+        '<button class="enter" data-theme="' + (currentOp.theme || 'default') + '" type="button" data-swipe="' + currentOp.swipe + '">' + (currentOp.btnText || "进入此开局") + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+}
+
+// 绑定分类筛选点击
+const filtersEl = document.getElementById("op-filters");
+if (filtersEl) {
+  filtersEl.addEventListener("click", function (e) {
+    const btn = e.target.closest(".op-filter-btn");
+    if (!btn) return;
+    currentCat = btn.dataset.cat;
+    renderOpeningsUI();
+  });
+}
+
+// 绑定开局卡片点击
+const gridEl = document.getElementById("op-grid");
+if (gridEl) {
+  gridEl.addEventListener("click", function (e) {
+    const card = e.target.closest(".op-card");
+    if (!card) return;
+    currentOpeningId = Number(card.dataset.id);
+    renderOpeningsUI();
+  });
+}
+
+// 绑定进入开局按钮
+const panelEl = document.getElementById("op-panel");
+if (panelEl) {
+  panelEl.addEventListener("click", async function (e) {
+    const btn = e.target.closest(".enter");
+    if (!btn) return;
+    const swipeId = Number(btn.dataset.swipe);
+    btn.disabled = true;
+    const currentOp = OPENINGS_CONFIG.find(function (o) { return o.id === currentOpeningId; });
+    const title = currentOp ? currentOp.title : ("开局 " + String(swipeId).padStart(2, "0"));
+    showStatus("正在进入「" + title + "」……");
+    try {
+      const bridge = globalThis.MaoNiangCardBridgeV2 || {};
+      if (typeof bridge.selectGreeting !== "function") throw new Error("开场桥接尚未就绪");
+      await bridge.selectGreeting(swipeId);
+      showStatus("✅ 已切换至「" + title + "」，初始状态变量已同步！");
+    } catch (err) {
+      showStatus("⚠️ " + (err && err.message ? err.message : "切换失败") + "（若在浏览器直接打开属正常，请在酒馆聊天中点击）", true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+// 初始化渲染
+renderOpeningsUI();
 </script>
 </body>
 </html>
