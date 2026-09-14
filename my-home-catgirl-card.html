@@ -29,22 +29,50 @@ async function selectGreeting(swipeId) {
   const first = messages && messages[0];
   if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) throw new Error('所选开场不存在，请确认卡片已导入 alternate greetings');
 
-  // 尝试根据选定开场自动同步对应的初始剧情变量
-  try {
-    const setVar = helperCall('setVariable');
-    if (typeof setVar === 'function') {
-      const configList = globalThis.MaoNiangOpeningsConfig || [];
-      const targetOp = configList.find(function(x) { return Number(x.swipe) === index; });
-      const preset = targetOp && targetOp.presets ? targetOp.presets : null;
-      if (preset) {
-        for (const [k, v] of Object.entries(preset)) {
-          try { setVar(k, v); } catch (_) {}
-        }
-      }
-    }
-  } catch (_) {}
+  const result = await setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
 
-  return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
+  // 同步该开局的初始剧情变量（best-effort：失败不影响开场切换本身，
+  // 问候语自带的 <UpdateVariable> 块会在下一次生成时兜底）
+  try { await applyOpeningVariables(index); } catch (_) {}
+
+  return result;
+}
+
+// 把所选开局的 presets 写回当前楼层（0 楼 = 开局楼）的 MVU stat_data。
+// 依据：TavernHelper updateVariablesWith(fn, { type:'message', message_id }) —— 变量作用域写回。
+// ⚠️ presets 的数值必须与该开场问候语内 <UpdateVariable> 块逐项一致，
+//    否则两处写同一字段会互相覆盖。date / time 仅用于 UI 预览，
+//    真实时间由问候语的 global.date_time 负责，此处不重复写。
+async function applyOpeningVariables(swipeId) {
+  const updateVars = helperCall('updateVariablesWith');
+  if (typeof updateVars !== 'function') return false;
+
+  const configList = globalThis.MaoNiangOpeningsConfig || [];
+  const targetOp = configList.find(function (x) { return Number(x.swipe) === Number(swipeId); });
+  const preset = targetOp && targetOp.presets ? targetOp.presets : null;
+  if (!preset) return false;
+
+  const patch = {};
+  for (const k of Object.keys(preset)) {
+    if (/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(k)) patch[k] = preset[k];
+  }
+  if (Object.keys(patch).length === 0) return false;
+
+  await updateVars(function (vars) {
+    vars = vars || {};
+    vars.stat_data = vars.stat_data || {};
+    for (const path of Object.keys(patch)) {
+      const parts = path.split('.');
+      let node = vars.stat_data;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!node[parts[i]] || typeof node[parts[i]] !== 'object') node[parts[i]] = {};
+        node = node[parts[i]];
+      }
+      node[parts[parts.length - 1]] = patch[path];
+    }
+    return vars;
+  }, { type: 'message', message_id: 0 });
+  return true;
 }
 
 global.MaoNiangCardBridgeV2 = Object.freeze({ version: 2, selectGreeting });
@@ -426,7 +454,11 @@ document.querySelectorAll('.flip').forEach(function (el) {
 // ==========================================================================
 // 💡【开局配置表 (OPENINGS_CONFIG)】
 // 以后若要增加新开局或扩展新角色，只需在下方数组中添加一个配置对象即可！
-// 所有的筛选栏、响应式卡片网格、详情图文、进入开局按钮与剧情初始变量将全自动生成！
+// 所有的筛选栏、响应式卡片网格、详情图文与进入开局按钮将全自动生成！
+// ⚠️ presets 有两个作用：① 详情页的初始数值预览；② 进入开局时写回 MVU 变量。
+//    因此 presets 必须与「角色卡 → alternate greetings 对应 swipe」内 <UpdateVariable>
+//    块的数值逐项一致，否则预览会显示错误数值、写回也会与问候语互相覆盖。
+//    date / time 仅供预览展示，真实时间以问候语的 global.date_time 为准。
 // ==========================================================================
 const OPENINGS_CONFIG = [
   {
@@ -445,7 +477,7 @@ const OPENINGS_CONFIG = [
       { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/雪球-立绘-躺床.5xbdzszeuc.webp", alt: "愚人节的猫" }
     ],
     btnText: "进入此开局",
-    presets: { "date": "2020-04-01", "time": "08:37", "yiyi.openness": 5, "editor.pressure": 10 }
+    presets: { "date": "2020-04-01", "time": "08:37", "yiyi.openness": 5, "editor.pressure": 20 }
   },
   {
     id: 2,
@@ -463,7 +495,7 @@ const OPENINGS_CONFIG = [
       { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/猫娘角色卡-开局2.6il1m3tv4x.webp", alt: "妹妹的突击检查" }
     ],
     btnText: "进入此开局",
-    presets: { "date": "2020-04-04", "time": "12:23", "yiyi.openness": 10, "editor.pressure": 25 }
+    presets: { "date": "2020-04-04", "time": "12:23", "yiyi.openness": 5, "editor.pressure": 20 }
   },
   {
     id: 3,
@@ -482,7 +514,7 @@ const OPENINGS_CONFIG = [
       { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依背着雪球-立绘-厨房.7i14z9wmal.webp", caption: "厨房 · 背上的雪球" }
     ],
     btnText: "进入此开局",
-    presets: { "date": "2020-04-06", "time": "08:10", "yiyi.openness": 25, "editor.pressure": 35 }
+    presets: { "date": "2020-04-06", "time": "08:10", "yiyi.openness": 5, "editor.pressure": 25 }
   },
   {
     id: 4,
@@ -490,7 +522,7 @@ const OPENINGS_CONFIG = [
     title: "圣诞节日",
     shortTitle: "圣诞节日",
     date: "12月25日 · 晚上",
-    fullTime: "2020年12月25日 · 晚上 · 暖光",
+    fullTime: "2020年12月25日 · 晚上 · 19:30",
     category: "special",
     categoryName: "特殊篇",
     badge: "Special · Opening 04",
@@ -501,7 +533,7 @@ const OPENINGS_CONFIG = [
       { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/苏依依-立绘-圣诞礼物.9rk5htte1t.webp", caption: "苏依依 · 圣诞礼物" }
     ],
     btnText: "进入圣诞特殊开局",
-    presets: { "date": "2020-12-25", "time": "20:00", "yiyi.openness": 85, "editor.pressure": 20 }
+    presets: { "date": "2020-12-25", "time": "19:30", "yiyi.openness": 85, "editor.pressure": 20 }
   },
   {
     id: 5,
@@ -519,7 +551,7 @@ const OPENINGS_CONFIG = [
       { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/user-雪球-苏依依—后日谈立绘.1apr5fsj40.webp", alt: "一周年后日谈" }
     ],
     btnText: "进入后日谈",
-    presets: { "date": "2021-04-01", "time": "09:45", "yiyi.openness": 100, "editor.pressure": 15 }
+    presets: { "date": "2021-04-01", "time": "09:45", "yiyi.openness": 100, "editor.pressure": 20 }
   },
   {
     id: 6,
@@ -537,7 +569,7 @@ const OPENINGS_CONFIG = [
       { src: "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/沈墨-立绘-敲门开局.7q1vr060r.webp", alt: "编辑登门" }
     ],
     btnText: "进入此开局",
-    presets: { "date": "2020-04-10", "time": "14:20", "yiyi.openness": 30, "editor.pressure": 85 }
+    presets: { "date": "2020-04-10", "time": "14:20", "yiyi.openness": 15, "editor.pressure": 55 }
   }
 ];
 
