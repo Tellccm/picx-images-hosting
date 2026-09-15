@@ -3,74 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>召唤纪 · 选择开局</title>
+<title>召唤纪 · 开局登记</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --ink:#f2e6d6;--ink2:#b9a68f;--ink3:#8d7d6b;--gold:#d9b168;--gold2:#f0d59a;
-  --line:rgba(217,177,104,.32);--danger:#d96a74;
+  --line:rgba(217,177,104,.30);--danger:#d96a74;--ok:#7fc08a;
 }
 body{
   background:transparent;color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-  padding:4px}
+  padding:4px;line-height:1.6}
 .wrap{
-  max-width:640px;margin:12px auto;
+  max-width:660px;margin:12px auto;
   background:linear-gradient(165deg,#241820,#161013 72%);
-  border:1px solid var(--line);border-radius:14px;padding:15px;
+  border:1px solid var(--line);border-radius:14px;padding:16px;
   box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.hd{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}
-.ttl{font-family:"Songti SC","STSong",serif;font-size:15px;font-weight:800;letter-spacing:.3em;color:var(--gold)}
-.sub{font-size:11.5px;color:var(--ink2);margin-top:5px;line-height:1.6}
-.done{
-  font-size:11.5px;color:var(--gold2);margin-top:7px;padding:6px 9px;
-  border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:8px}
-.list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.card{
-  border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(0,0,0,.24);
-  padding:10px 11px;cursor:pointer;transition:all .15s}
-.card:hover{border-color:var(--gold);transform:translateY(-1px)}
-.card.on{border-color:var(--gold2);background:linear-gradient(160deg,rgba(120,88,40,.34),rgba(30,20,12,.5))}
-.c-hd{display:flex;align-items:baseline;gap:7px;margin-bottom:5px}
-.c-nm{font-size:13px;font-weight:800}
-.c-tag{font-size:10px;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-left:auto}
-.c-ds{font-size:11px;color:var(--ink2);line-height:1.6}
-.ranks{margin-top:11px}
-.rk-label{font-size:11px;color:var(--ink3);letter-spacing:.18em;margin-bottom:7px}
-.rk-chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{
-  border:1px solid rgba(255,255,255,.14);border-radius:7px;background:rgba(0,0,0,.24);
-  color:var(--ink2);font-size:11.5px;padding:5px 11px;cursor:pointer;
-  font-family:inherit;transition:all .15s}
-.chip:hover{border-color:var(--gold);color:var(--ink)}
-.chip.on{background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503;font-weight:800;border-color:var(--gold2)}
-.opts{margin-top:12px}
-.opt-row{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;user-select:none}
-.sw{position:relative;flex:0 0 38px;height:20px;border-radius:99px;background:rgba(255,255,255,.16);transition:background .18s}
-.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.opt-row.on .sw{background:linear-gradient(160deg,var(--gold2),#b98a34)}
-.opt-row.on .sw::after{transform:translateX(18px)}
-.opt-txt{font-size:12px;line-height:1.5}
-.opt-name{font-weight:800}
-.opt-desc{color:var(--ink2);font-size:11px}
-.ed{margin-top:12px}
-.ed-hd{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink3);letter-spacing:.18em;margin-bottom:6px}
-textarea{
-  width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:9px;
-  background:rgba(0,0,0,.28);color:var(--ink);padding:11px;font-size:12.5px;line-height:1.75;
-  font-family:inherit;outline:none}
-textarea::placeholder{color:var(--ink3)}
-textarea:focus{border-color:var(--gold2)}
-.foot{display:flex;gap:9px;margin-top:12px}
+.hd{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+.ttl{font-family:"Songti SC","STSong",serif;font-size:16px;font-weight:800;letter-spacing:.3em;color:var(--gold)}
+.sub{font-size:11.5px;color:var(--ink2);margin-top:5px}
+.done{font-size:11.5px;color:var(--gold2);margin-top:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:9px}
+.sec{margin-bottom:15px}
+.sec-hd{font-size:11.5px;letter-spacing:.2em;color:var(--gold);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(217,177,104,.16)}
+.hint{font-size:10.5px;color:var(--ink3);margin:-4px 0 8px;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opts{display:flex;flex-wrap:wrap;gap:7px}
+.opt{
+  border:1px solid rgba(255,255,255,.13);border-radius:8px;background:rgba(0,0,0,.24);
+  color:var(--ink2);font-size:12px;padding:7px 13px;cursor:pointer;
+  font-family:inherit;transition:all .15s;text-align:left}
+.opt:hover{border-color:var(--gold);color:var(--ink)}
+.opt.on{background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503;font-weight:800;border-color:var(--gold2)}
+.opt .od{display:block;font-size:10px;font-weight:400;color:inherit;opacity:.75;margin-top:2px}
+.opt.on .od{opacity:.85}
+.opt.wide{flex:1 1 100%}
+.inp{
+  width:100%;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.28);
+  color:var(--ink);padding:9px 11px;font-size:12.5px;font-family:inherit;outline:none}
+.inp::placeholder{color:var(--ink3)}
+.inp:focus{border-color:var(--gold2)}
+.lbl{font-size:11px;color:var(--ink3);margin-bottom:5px;display:block}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.note{font-size:10.5px;color:var(--ink3);line-height:1.65;text-align:center;margin-top:12px}
+.note.warn{color:var(--danger)}
+.foot{display:flex;gap:9px;margin-top:14px}
 .btn{
   flex:1;border:0;border-radius:9px;padding:11px;font-size:13px;font-weight:800;
-  letter-spacing:.1em;cursor:pointer;font-family:inherit;
+  letter-spacing:.08em;cursor:pointer;font-family:inherit;
   background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503}
 .btn:hover:not(:disabled){filter:brightness(1.08)}
 .btn:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
-.btn.ghost{background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink2);flex:0 0 110px}
-.note{font-size:10.5px;color:var(--ink3);line-height:1.65;text-align:center;margin-top:10px}
-.note.warn{color:var(--danger)}
+.btn.ghost{background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink2);flex:0 0 104px}
+.prev{
+  font-size:11.5px;line-height:1.8;color:var(--ink2);background:rgba(0,0,0,.28);
+  border:1px dashed rgba(217,177,104,.28);border-radius:9px;padding:11px 12px;
+  white-space:pre-wrap;max-height:260px;overflow:auto}
 .toast{
   position:fixed;left:50%;bottom:36px;transform:translateX(-50%);
   background:rgba(20,13,16,.97);border:1px solid var(--line);border-radius:9px;
@@ -82,48 +71,95 @@ textarea:focus{border-color:var(--gold2)}
 <body>
 <div class="wrap">
   <div class="hd">
-    <div class="ttl">选 择 开 局</div>
-    <div class="sub">选一个通用开局直接开始，也可以改了再发，或者自己写一段。</div>
+    <div class="ttl">开 局 登 记</div>
+    <div class="sub">王历规定：五至六岁行觉醒礼。下面这些将决定你站在这个世界的哪一层。</div>
     <div class="done" id="done" style="display:none">
       <span id="done-text"></span>
-      <button class="btn ghost" id="reset" style="flex:0 0 auto;padding:4px 10px;font-size:11px">重置开局</button>
+      <button class="btn ghost" id="reset" style="flex:0 0 auto;padding:4px 10px;font-size:11px">重置</button>
     </div>
   </div>
 
-  <div class="list" id="list"></div>
-
-  <div class="ranks">
-    <div class="rk-label">初 始 血 统 品 阶</div>
-    <div class="rk-chips" id="ranks"></div>
-  </div>
-
-  <div class="opts">
-    <div class="rk-label">开 局 注 入 控 制</div>
-    <div class="opt-row" id="opt-preset">
-      <div class="sw"></div>
-      <div class="opt-txt"><span class="opt-name">不用预设</span><span class="opt-desc">　开启后开局那一条不套用当前预设的提示词</span></div>
+  <!-- 1 身份 -->
+  <div class="sec">
+    <div class="sec-hd">一 · 你 是 谁</div>
+    <div class="row" style="margin-bottom:8px">
+      <div><span class="lbl">姓名</span><input class="inp" id="name" placeholder="你的名字"></div>
+      <div style="flex:0 0 120px"><span class="lbl">觉醒年龄</span><input class="inp" id="age" type="number" min="5" max="6" value="6"></div>
     </div>
-    <div class="opt-row" id="opt-worldbook">
-      <div class="sw"></div>
-      <div class="opt-txt"><span class="opt-name">不带世界书</span><span class="opt-desc">　开启后开局那一条不注入世界书设定条目</span></div>
-    </div>
-    <div class="opt-row" id="opt-history">
-      <div class="sw"></div>
-      <div class="opt-txt"><span class="opt-name">不带对话</span><span class="opt-desc">　开启后开局那一条不携带已有聊天历史</span></div>
+    <div class="hint">觉醒年龄固定在五至六岁之间。它不决定天赋高低 —— 决定命运的是你带出了什么。</div>
+    <span class="lbl">觉醒结果</span>
+    <div class="opts" id="awaken">
+      <button class="opt" data-k="awaken" data-v="已觉醒">已觉醒<span class="od">正常带出召唤兽</span></button>
+      <button class="opt" data-k="awaken" data-v="未觉醒">未觉醒<span class="od">破例者：没有兽，处境真实</span></button>
     </div>
   </div>
 
-  <div class="ed">
-    <div class="ed-hd"><span id="ed-label">自定义开局</span></div>
-    <textarea id="text" placeholder="在这里写你自己的开局背景，或点上面任一预设后修改。"></textarea>
+  <!-- 2 品阶 -->
+  <div class="sec">
+    <div class="sec-hd">二 · 血 统 品 阶</div>
+    <div class="hint" id="rank-hint">决定进化树的阶段上限与技能树的 SP 总量。觉醒礼那一刻定下，此生不可更改。</div>
+    <div class="opts" id="rank"></div>
+  </div>
+
+  <!-- 3 出身 -->
+  <div class="sec">
+    <div class="sec-hd">三 · 出 身</div>
+    <span class="lbl">家族背景</span>
+    <div class="opts" id="family" style="margin-bottom:10px"></div>
+    <span class="lbl">出身势力</span>
+    <div class="opts" id="faction" style="margin-bottom:10px"></div>
+    <span class="lbl">就读学院</span>
+    <div class="opts" id="academy"></div>
+  </div>
+
+  <!-- 4 初始召唤兽 -->
+  <div class="sec" id="beast-sec">
+    <div class="sec-hd">四 · 初 始 召 唤 兽</div>
+    <div class="hint">物种可自由指定。品阶已在上一步选定，这里只定「是什么兽」与「它的脾气」。</div>
+    <div class="row" style="margin-bottom:8px">
+      <div><span class="lbl">物种</span><input class="inp" id="beast-species" placeholder="例：灰狼 / 银鹰 / 麻雀"></div>
+      <div><span class="lbl">最显眼的特征</span><input class="inp" id="beast-mark" placeholder="例：右翼缺一羽"></div>
+    </div>
+    <span class="lbl">性格（它常常是你压住的那部分，放大后的样子）</span>
+    <div class="opts" id="beast-temper"></div>
+  </div>
+
+  <!-- 5 初始资源 -->
+  <div class="sec">
+    <div class="sec-hd">五 · 初 始 天 赋 与 随 身</div>
+    <div class="hint">觉醒者获得 3 点天赋点，可在养成面板自由分配。破例者没有召唤兽，因此没有天赋点，但有别的路。</div>
+    <span class="lbl">随身物品（两件，用顿号分隔）</span>
+    <input class="inp" id="items" placeholder="例：母亲的铜扣、一把钝匕首">
+  </div>
+
+  <!-- 6 开局设定 -->
+  <div class="sec">
+    <div class="sec-hd">六 · 开 局 设 定</div>
+    <span class="lbl">起始地点</span>
+    <div class="opts" id="place" style="margin-bottom:10px"></div>
+    <span class="lbl">开局风格</span>
+    <div class="opts" id="tone"></div>
+  </div>
+
+  <!-- 注入控制 -->
+  <div class="sec">
+    <div class="sec-hd">七 · 注 入 控 制</div>
+    <div class="opts" id="inject"></div>
+  </div>
+
+  <!-- 预览与发送 -->
+  <div class="sec">
+    <div class="sec-hd">开 局 陈 述</div>
+    <div class="hint">下面是根据你的选择生成的陈述。可以直接改，也可以全部重写。</div>
+    <textarea class="prev" id="text" style="min-height:150px;resize:vertical"></textarea>
   </div>
 
   <div class="foot">
-    <button class="btn" id="send">发送并开始</button>
-    <button class="btn ghost" id="copy">复制文本</button>
+    <button class="btn" id="send">确认并开始</button>
+    <button class="btn ghost" id="copy">复制</button>
   </div>
 
-  <div class="note" id="note">开局文本会作为你的第一条消息发送，之后由正常剧情链接管。</div>
+  <div class="note" id="note">提交后会写入你的状态，并把这段陈述作为第一条消息发送。</div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -131,106 +167,197 @@ textarea:focus{border-color:var(--gold2)}
 (function () {
   'use strict';
 
-  var RANKS = ['凡种', '良种', '贵种', '超凡种', '传说种', '王种'];
-  var RANK_NOTE = {
-    '凡种': '随处可见，起点最低，成长空间最大',
-    '良种': '标准战力，学院里的多数',
-    '贵种': '越过平民线，天生被看重',
-    '超凡种': '越过贵族血统线，稀少见',
-    '传说种': '数十年一遇',
-    '王种': '当代最高，全学院都会看着你'
+  var DATA = {
+    rank: [
+      ['凡种', '约七成人是这个。麻雀、田鼠、野兔一类'],
+      ['良种', '约两成。灰狼、猎鹰、山地獾，有实际战力'],
+      ['贵种', '百分之几。银鹰、雪豹、玄狐。会被记进族谱'],
+      ['超凡种', '一个城镇几年出一个。焰狮、雷隼、霜巨狼'],
+      ['传说种', '数十年一遇。白泽、九尾、血月狼王'],
+      ['王种', '一代人未必有一个。金龙、凤凰、钟塔之影']
+    ],
+    family: [
+      ['旧贵族', '三代内出过王种，如今家道中落。有名字，没钱'],
+      ['平民', '祖上都是凡种。你是全家第一个可能改变阶层的人'],
+      ['商贾', '有钱，没名分。买得到荐书，买不到尊重'],
+      ['弃子', '被家族除名，来历不明。没有后盾，也没有束缚']
+    ],
+    faction: [
+      ['灰塔学院', '学术至上，掌握觉醒档案与品阶鉴定权'],
+      ['铁蔷薇骑士团', '尚武。认实力不认出身，凡种出身者唯一被平等看待的地方'],
+      ['赤铜商会', '重利。情报最灵通，什么都能谈'],
+      ['无籍游民', '没有靠山，也没有约束']
+    ],
+    academy: [
+      ['白垩塔', '正统召唤学，资源最厚，最讲规矩'],
+      ['灰烬所', '专收异种与问题儿童。名声差，教习多是实战派'],
+      ['未入学', '没拿到名额。可能因为品阶太低，也可能因为交不起荐书钱'],
+      ['家族私塾', '由家族自己教养。资源看家族'],
+      ['破例者不入学', '不入册，不被招生名册收录']
+    ],
+    temper: [
+      ['护食', '谁碰它的碗都不行，包括你'],
+      ['认生', '对陌生人龇牙，对你也不太热情'],
+      ['黏人', '走哪跟哪，你上茅房它蹲门口'],
+      ['懒散', '叫三声动一下，但真出事时它最快'],
+      ['记仇', '你上次踩了它尾巴，它记到现在'],
+      ['爱叫', '什么都想叫两声，夜里也一样']
+    ],
+    place: [
+      ['灰塔学院·东院', '入学第一天，宿舍通铺'],
+      ['霜镜城·下城', '铁砧巷或麦穗酒馆一带'],
+      ['霜镜城·上城', '白鸦街，鉴定所门口'],
+      ['城外·梯田', '采集课或自己去'],
+      ['旧矿道', '没有来路的地方']
+    ],
+    tone: [
+      ['入学日', '从踏入学院的那一天开始'],
+      ['觉醒之后', '从觉醒礼结束、众人散去之后开始'],
+      ['已入学一年', '已经在学院待了一年，熟悉了规矩'],
+      ['游离在外', '不在学院体系内，自己在城里讨生活']
+    ],
+    inject: [
+      ['nopreset', '不用预设', '开局那一条不套用当前预设的提示词'],
+      ['noworldbook', '不带世界书', '开局那一条不注入世界书设定条目'],
+      ['nohistory', '不带对话', '开局那一条不携带已有聊天历史']
+    ]
   };
 
-  var PRESETS = [
-    {
-      id: 'academy-first',
-      name: '灰塔入学日',
-      tag: '学院开局',
-      desc: '觉醒礼刚过，带着召唤兽第一次走进学院大门。',
-      body: '【开局】灰塔入学日。\n' +
-        '我在五六岁那年通过了觉醒礼，如今到了入学的年纪。今天是我第一次以觉醒者的身份走进学院，召唤兽跟在我身边。\n' +
-        '请从入学登记处开始，交代我所在势力的立场、学院对我的初步评价，以及周围同届生对我的态度。记得按觉醒者的社会分层来写——血统品阶会直接影响别人看我的眼神。'
-    },
-    {
-      id: 'broke-rule',
-      name: '破例者',
-      tag: '未觉醒线',
-      desc: '你没有觉醒。所有人都以为你完了。',
-      body: '【开局】破例者。\n' +
-        '觉醒礼那天，我没有召唤出任何东西。按王历的说法，我是破例者。\n' +
-        '请写我如何面对周围人的眼光，以及这个世界对未觉醒者到底是什么态度。不要急着给我补偿或金手指——先让这份处境真实地压下来。'
-    },
-    {
-      id: 'low-blood',
-      name: '凡种出身',
-      tag: '底层崛起',
-      desc: '你觉醒的是一只麻雀。这在贵族眼里是个笑话。',
-      body: '【开局】凡种出身。\n' +
-        '我觉醒出来的召唤兽是凡种。同一天，隔壁家族的少爷带出了一头贵种。\n' +
-        '请从这种落差写起，交代我家的处境、周围的嘲笑和我不服气的地方。记住：品阶只决定起点，不决定终点。'
-    },
-    {
-      id: 'high-blood',
-      name: '高处不胜寒',
-      tag: '高位压力',
-      desc: '你带出了传说种或王种。整个学院都在看着你。',
-      body: '【开局】高处不胜寒。\n' +
-        '觉醒礼上，我召唤出的品阶高得离谱，高到让在场的大人一时不知道该怎么反应。\n' +
-        '请写这份天赋带来的注视、试探与算计，而不是单纯的夸赞。高品阶是资源，也是靶子。'
-    }
-  ];
-
-  var activeId = null;
-  var rank = null;
-  var busy = false;
+  var pick = {};   // 单选结果
+  var inject = {}; // 注入开关
 
   var $ = function (s) { return document.querySelector(s); };
-
   function toast(msg, ok) {
     var el = $('#toast');
     el.textContent = msg;
     el.style.borderColor = ok === false ? 'rgba(217,106,116,.75)' : 'rgba(217,177,104,.6)';
     el.classList.add('on');
     clearTimeout(el._t);
-    el._t = setTimeout(function () { el.classList.remove('on'); }, 2400);
+    el._t = setTimeout(function () { el.classList.remove('on'); }, 2600);
+  }
+  function esc(s) { return String(s == null ? '' : s); }
+
+  function renderOpts(hostId, key, list) {
+    var host = document.getElementById(hostId);
+    if (!host) return;
+    host.innerHTML = list.map(function (r) {
+      var on = pick[key] === r[0] ? ' on' : '';
+      return '<button class="opt' + on + '" data-k="' + key + '" data-v="' + r[0] + '">' +
+        r[0] + (r[1] ? '<span class="od">' + r[1] + '</span>' : '') + '</button>';
+    }).join('');
   }
 
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
-    });
+  function renderInject() {
+    var host = document.getElementById('inject');
+    host.innerHTML = DATA.inject.map(function (r) {
+      var on = inject[r[0]] ? ' on' : '';
+      return '<button class="opt' + on + '" data-inj="' + r[0] + '">' + r[1] +
+        '<span class="od">' + r[2] + '</span></button>';
+    }).join('');
   }
 
-  /* ---------- 宿主桥接：远程页面可能是跨域 iframe，逐级降级 ---------- */
+  function buildText() {
+    var name = ($('#name').value || '').trim() || '我';
+    var age = $('#age').value || 6;
+    var unawakened = pick.awaken === '未觉醒';
+    var L = [];
+    L.push('【开局登记】');
+    L.push('姓名：' + name + '　觉醒年龄：' + age + ' 岁　结果：' + (pick.awaken || '已觉醒'));
+    if (unawakened) {
+      L.push('血统品阶：无（破例者）');
+    } else {
+      L.push('血统品阶：' + (pick.rank || '凡种'));
+    }
+    L.push('家族背景：' + (pick.family || '平民') +
+      '　出身势力：' + (pick.faction || '无籍游民') +
+      '　就读：' + (pick.academy || '未入学'));
+    if (!unawakened) {
+      var sp = ($('#beast-species').value || '').trim() || '未定';
+      var mk = ($('#beast-mark').value || '').trim();
+      L.push('初始召唤兽：' + (pick.rank || '凡种') + '·' + sp + (mk ? '（' + mk + '）' : '') +
+        '　性格：' + (pick.temper || '未定'));
+    }
+    L.push('随身物品：' + (($('#items').value || '').trim() || '身无长物'));
+    L.push('起始地点：' + (pick.place || '灰塔学院·东院'));
+    L.push('开局风格：' + (pick.tone || '入学日'));
+    L.push('');
+    L.push('请从这个局面开始。按〈世界规则〉判定，不要替我决定，也不要给我无依据的优待。');
+    return L.join('\n');
+  }
+
+  function refresh() {
+    // 未觉醒者没有召唤兽，隐藏该段
+    var un = pick.awaken === '未觉醒';
+    $('#beast-sec').style.display = un ? 'none' : '';
+    if ($('#rank-hint')) {
+      $('#rank-hint').textContent = un
+        ? '破例者：不入觉醒册，没有召唤兽。品阶与你无关 —— 这是设计如此。'
+        : '决定进化树的阶段上限与技能树的 SP 总量。觉醒礼那一刻定下，此生不可更改。';
+    }
+    document.getElementById('rank').style.opacity = un ? '.35' : '1';
+    document.getElementById('rank').style.pointerEvents = un ? 'none' : '';
+    $('#text').value = buildText();
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t.closest) return;
+    var o = t.closest('[data-k]');
+    if (o) {
+      pick[o.getAttribute('data-k')] = o.getAttribute('data-v');
+      var k = o.getAttribute('data-k');
+      var map = { awaken: ['awaken', DATA.awaken || []], rank: ['rank', DATA.rank],
+        family: ['family', DATA.family], faction: ['faction', DATA.faction],
+        academy: ['academy', DATA.academy], temper: ['temper', DATA.temper],
+        place: ['place', DATA.place], tone: ['tone', DATA.tone] };
+      if (k === 'awaken') {
+        var host = document.getElementById('awaken');
+        Array.prototype.forEach.call(host.querySelectorAll('.opt'), function (b) {
+          b.className = 'opt' + (b.getAttribute('data-v') === pick.awaken ? ' on' : '');
+        });
+      } else if (map[k]) {
+        renderOpts(map[k][0], k, map[k][1]);
+      }
+      refresh();
+      return;
+    }
+    var inj = t.closest('[data-inj]');
+    if (inj) {
+      var key = inj.getAttribute('data-inj');
+      inject[key] = !inject[key];
+      renderInject();
+      return;
+    }
+  });
+
+  ['#name', '#age', '#items', '#beast-species', '#beast-mark'].forEach(function (sel) {
+    var el = $(sel);
+    if (el) el.addEventListener('input', function () { $('#text').value = buildText(); });
+  });
+
+  /* ---------- 宿主桥接（三级探测 + 降级） ---------- */
   function hosts() {
     var out = [window];
     try { if (window.parent && window.parent !== window) out.push(window.parent); } catch (e) {}
     try { if (window.top && window.top !== window && window.top !== window.parent) out.push(window.top); } catch (e) {}
     return out;
   }
-  function findOnHosts(path) {
-    var api = findHostApi(path);
-    return api ? api.fn : null;
-  }
   function findHostApi(path) {
     var hs = hosts();
     for (var i = 0; i < hs.length; i++) {
       try {
-        var cur = hs[i];
-        var parentObj = cur;
+        var cur = hs[i], parentObj = cur;
         var parts = path.split('.');
         for (var j = 0; j < parts.length; j++) {
           if (cur == null) { cur = null; break; }
-          parentObj = cur;
-          cur = cur[parts[j]];
+          parentObj = cur; cur = cur[parts[j]];
         }
         if (typeof cur === 'function') return { fn: cur, context: parentObj };
-      } catch (e) { /* 跨域，跳过 */ }
+      } catch (e) {}
     }
     return null;
   }
-
-  function apiOnHosts(a, b, c) {
+  function apiOnHosts(a, b) {
     var hs = hosts();
     for (var i = 0; i < hs.length; i++) {
       try {
@@ -238,94 +365,41 @@ textarea:focus{border-color:var(--gold2)}
           var ctx = hs[i].SillyTavern.getContext();
           if (typeof ctx[a] === 'function') return { fn: ctx[a].bind(ctx), context: ctx };
           if (b && typeof ctx[b] === 'function') return { fn: ctx[b].bind(ctx), context: ctx };
-          if (c && typeof ctx[c] === 'function') return { fn: ctx[c].bind(ctx), context: ctx };
         }
-      } catch (e) { /* 跨域，跳过 */ }
+      } catch (e) {}
     }
     return null;
   }
-
-  var opts = { preset: false, worldbook: false, history: false };
-  function renderOpts() {
-    ['preset', 'worldbook', 'history'].forEach(function (k) {
-      var row = document.getElementById('opt-' + k);
-      if (row) row.className = 'opt-row' + (opts[k] ? ' on' : '');
-    });
-  }
-  ['preset', 'worldbook', 'history'].forEach(function (k) {
-    var row = document.getElementById('opt-' + k);
-    if (row) row.addEventListener('click', function () { opts[k] = !opts[k]; renderOpts(); });
-  });
   function findMvu() {
     var hs = hosts();
+    for (var i = 0; i < hs.length; i++) { try { if (hs[i].Mvu) return hs[i].Mvu; } catch (e) {} }
+    return null;
+  }
+  function ctxOf() {
+    var hs = hosts();
     for (var i = 0; i < hs.length; i++) {
-      try { if (hs[i].Mvu) return hs[i].Mvu; } catch (e) {}
+      try {
+        if (hs[i].SillyTavern && typeof hs[i].SillyTavern.getContext === 'function') return hs[i].SillyTavern.getContext();
+      } catch (e) {}
     }
     return null;
   }
-
-  /* ---------- 渲染 ---------- */
-  function renderList() {
-    $('#list').innerHTML = PRESETS.map(function (p) {
-      return '<div class="card' + (activeId === p.id ? ' on' : '') + '" data-pick="' + esc(p.id) + '">' +
-        '<div class="c-hd"><span class="c-nm">' + esc(p.name) + '</span>' +
-        '<span class="c-tag">' + esc(p.tag) + '</span></div>' +
-        '<div class="c-ds">' + esc(p.desc) + '</div></div>';
-    }).join('');
+  function applyInject() {
+    var ctx = ctxOf();
+    if (!ctx || !ctx.chatMetadata) return false;
+    var md = ctx.chatMetadata;
+    if (inject.nopreset) md.skip_preset = true;
+    if (inject.noworldbook) md.disable_world_info = true;
+    if (inject.nohistory) md.max_chat_history = 1;
+    try { if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata(); } catch (e) {}
+    return true;
   }
-
-  function renderRanks() {
-    $('#ranks').innerHTML = RANKS.map(function (r) {
-      return '<button class="chip' + (rank === r ? ' on' : '') + '" data-rank="' + esc(r) + '" title="' +
-        esc(RANK_NOTE[r]) + '">' + esc(r) + '</button>';
-    }).join('');
-  }
-
-  function renderDone(setup) {
-    var done = !!(setup && setup.已完成);
-    var el = $('#done');
-    el.style.display = done ? 'flex' : 'none';
-    if (done) $('#done-text').textContent = '本局已开局：' + (setup.开局预设 || '自定义');
-  }
-
-  $('#list').addEventListener('click', function (e) {
-    var c = e.target.closest ? e.target.closest('[data-pick]') : null;
-    if (!c) return;
-    var id = c.getAttribute('data-pick');
-    var p = null;
-    PRESETS.forEach(function (x) { if (x.id === id) p = x; });
-    activeId = id;
-    if (p) $('#text').value = p.body;
-    $('#ed-label').textContent = '编辑选中开局';
-    renderList();
-  });
-
-  $('#ranks').addEventListener('click', function (e) {
-    var c = e.target.closest ? e.target.closest('[data-rank]') : null;
-    if (!c) return;
-    rank = c.getAttribute('data-rank');
-    renderRanks();
-  });
-
-  $('#copy').addEventListener('click', function () {
-    var t = $('#text').value;
-    if (!t.trim()) { toast('开局内容为空', false); return; }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(t).then(function () { toast('已复制，粘贴到输入框发送即可'); },
-        function () { toast('复制失败，请手动选中复制', false); });
-    } else {
-      $('#text').select();
-      toast('已选中，请按 Ctrl+C 复制');
-    }
-  });
-
-  function readSetup() {
-    var M = findMvu();
-    if (!M || typeof M.getMvuData !== 'function') return null;
-    try {
-      var d = M.getMvuData({ type: 'message', message_id: 'latest' });
-      return d && d.stat_data ? (d.stat_data.开局配置 || {}) : null;
-    } catch (e) { return null; }
+  function clearInject() {
+    var ctx = ctxOf();
+    if (!ctx || !ctx.chatMetadata) return;
+    var md = ctx.chatMetadata;
+    delete md.skip_preset; delete md.disable_world_info; delete md.max_chat_history;
+    try { if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata(); } catch (e) {}
   }
 
   async function writeVars(cmds) {
@@ -340,120 +414,129 @@ textarea:focus{border-color:var(--gold2)}
       return true;
     } catch (e) { console.warn('[开局] 写入失败', e); return false; }
   }
+  function q(s) { return String(s == null ? '' : s).replace(/'/g, ''); }
 
-  /* 按开关调整注入。这些是酒馆原生生成参数（在发送前设置，发送后还原）。
-     只在开关被打开时改，避免污染玩家自己的设置。 */
-  function applyGenOpts() {
-    var hs = hosts();
-    for (var i = 0; i < hs.length; i++) {
-      try {
-        var ctx = hs[i].SillyTavern && hs[i].SillyTavern.getContext
-          ? hs[i].SillyTavern.getContext() : null;
-        if (!ctx || !ctx.chatMetadata) continue;
-        var md = ctx.chatMetadata;
-        if (opts.preset) md.skip_preset = true;
-        if (opts.worldbook) md.disable_world_info = true;
-        if (opts.history) md.max_chat_history = 1;
-        try { if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata(); } catch (e) {}
-        return true;
-      } catch (e) { /* 跨域，跳过 */ }
-    }
-    return false;
-  }
-  function clearGenOpts() {
-    var hs = hosts();
-    for (var i = 0; i < hs.length; i++) {
-      try {
-        var ctx = hs[i].SillyTavern && hs[i].SillyTavern.getContext
-          ? hs[i].SillyTavern.getContext() : null;
-        if (!ctx || !ctx.chatMetadata) continue;
-        var md = ctx.chatMetadata;
-        delete md.skip_preset;
-        delete md.disable_world_info;
-        delete md.max_chat_history;
-        try { if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata(); } catch (e) {}
-        return true;
-      } catch (e) {}
-    }
-    return false;
-  }
-
+  var busy = false;
   $('#send').addEventListener('click', async function () {
-    if (busy) { toast('正在发送，请稍候'); return; }
-    var text = $('#text').value.trim();
-    if (!text) { toast('开局内容为空', false); return; }
+    if (busy) { toast('正在提交，请稍候'); return; }
+    var text = ($('#text').value || '').trim();
+    if (!text) { toast('开局陈述为空', false); return; }
 
-    var api = findHostApi('TavernHelper.sendMessage') || findHostApi('sendMessage');
+    var api = findHostApi('TavernHelper.sendMessage') || findHostApi('sendMessage')
+      || apiOnHosts('sendMessage', 'Generate');
     if (!api || typeof api.fn !== 'function') {
-      api = apiOnHosts('sendMessage', 'Generate', 'executeSlashCommandsWithOptions');
-    }
-    if (!api || typeof api.fn !== 'function') {
-      toast('拿不到发送接口（跨域限制），请点「复制文本」手动发送', false);
+      toast('拿不到发送接口（跨域限制），请点「复制」手动发送', false);
       return;
     }
 
     busy = true;
     var btn = $('#send');
-    btn.disabled = true;
-    btn.textContent = '发送中…';
-    var optsApplied = false;
+    btn.disabled = true; btn.textContent = '提交中…';
+    var injected = false;
     try {
-      var picked = '自定义开局';
-      PRESETS.forEach(function (p) { if (p.id === activeId) picked = p.name; });
+      var un = pick.awaken === '未觉醒';
+      var inj = Object.keys(inject).filter(function (k) { return inject[k]; });
+      var injText = inj.length ? inj.map(function (k) {
+        return { nopreset: '无预设', noworldbook: '无世界书', nohistory: '无历史' }[k];
+      }).join(' ') : '默认';
 
-      optsApplied = applyGenOpts();
+      injected = applyInject();
       await api.fn.call(api.context, text, { name: 'user' });
 
       var cmds = [
-        "_.set('开局配置.开局预设', '" + picked.replace(/'/g, '') + "');",
-        "_.set('开局配置.已完成', true);",
-        "_.set('开局配置.开局注入', '" +
-          (opts.preset || opts.worldbook || opts.history
-            ? (opts.preset ? '无预设' : '') + (opts.worldbook ? ' 无世界书' : '') + (opts.history ? ' 无历史' : '')
-            : '默认') + "');"
+        "_.set('自身.姓名', '" + q(($('#name').value || 'user').trim()) + "');",
+        "_.set('自身.觉醒年龄', " + (Number($('#age').value) || 6) + ");",
+        "_.set('自身.觉醒状态', '" + q(pick.awaken || '已觉醒') + "');",
+        "_.set('自身.家族背景', '" + q(pick.family || '平民') + "');",
+        "_.set('自身.出身势力', '" + q(pick.faction || '无籍游民') + "');",
+        "_.set('自身.学院', '" + q(pick.academy || '未入学') + "');",
+        "_.set('自身.随身物品', [" + (($('#items').value || '').split(/[、,，]/).map(function (x) { return "'" + q(x.trim()) + "'"; }).filter(function (x) { return x !== "''"; }).join(', ')) + "]);",
+        "_.set('常态状态.地点', '" + q(pick.place || '灰塔学院·东院') + "');",
+        "_.set('开局配置.开局预设', '开局登记页');",
+        "_.set('开局配置.开局注入', '" + q(injText) + "');",
+        "_.set('开局配置.初始召唤兽', '" + (un ? '无（破例者）' : q((pick.rank || '凡种') + '·' + (($('#beast-species').value || '未定').trim()))) + "');",
+        "_.set('开局配置.已完成', true);"
       ];
-      if (rank) {
-        cmds.push("_.set('召唤兽.血统品阶', '" + rank + "');");
+      if (!un) {
+        cmds.push("_.set('召唤兽.血统品阶', '" + q(pick.rank || '凡种') + "');");
+        cmds.push("_.set('召唤兽.物种', '" + q(($('#beast-species').value || '未定').trim()) + "');");
+        cmds.push("_.set('召唤兽.性格', '" + q(pick.temper || '未定') + "');");
+        cmds.push("_.set('养成.当前天赋点', 3);");
+        cmds.push("_.set('天赋点来源.累计获得', 3);");
+      } else {
+        cmds.push("_.set('养成.当前天赋点', 0);");
+        cmds.push("_.set('天赋点来源.累计获得', 0);");
       }
       var okVar = await writeVars(cmds);
-
-      var optNote = (opts.preset || opts.worldbook || opts.history)
-        ? (optsApplied ? '（已按开关调整注入）' : '（开关未生效：拿不到宿主设置）')
-        : '';
-      toast(okVar ? '已发送，开局开始' + optNote : '已发送；变量未写入，请检查 MVU 是否就绪', okVar);
-      renderDone(readSetup());
+      var optNote = inj.length ? (injected ? '（已按开关调整注入）' : '（开关未生效：拿不到宿主设置）') : '';
+      toast(okVar ? '已提交，开局开始' + optNote : '已发送；变量未写入，请检查 MVU', okVar);
+      showDone();
     } catch (e) {
-      toast('发送失败：' + (e && e.message ? e.message : e), false);
+      toast('提交失败：' + (e && e.message ? e.message : e), false);
     } finally {
-      // 还原注入设置，避免污染玩家后续的正常对话
-      if (optsApplied) clearGenOpts();
-      busy = false;
-      btn.disabled = false;
-      btn.textContent = '发送并开始';
+      if (injected) clearInject();
+      busy = false; btn.disabled = false; btn.textContent = '确认并开始';
     }
   });
 
+  $('#copy').addEventListener('click', function () {
+    var t = $('#text').value;
+    if (!t.trim()) { toast('内容为空', false); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { toast('已复制，粘贴到输入框发送即可'); },
+        function () { toast('复制失败，请手动选中', false); });
+    } else { $('#text').select(); toast('已选中，按 Ctrl+C 复制'); }
+  });
+
+  function showDone() {
+    var M = findMvu();
+    var done = false, preset = '';
+    try {
+      var d = M && M.getMvuData({ type: 'message', message_id: 'latest' });
+      var s = d && d.stat_data ? d.stat_data.开局配置 : null;
+      if (s) { done = !!s.已完成; preset = s.开局预设 || ''; }
+    } catch (e) {}
+    $('#done').style.display = done ? 'flex' : 'none';
+    if (done) $('#done-text').textContent = '本局已登记：' + (preset || '自定义');
+  }
   $('#reset').addEventListener('click', async function () {
     var ok = await writeVars(["_.set('开局配置.已完成', false);", "_.set('开局配置.开局预设', '');"]);
-    toast(ok ? '已重置开局标记' : '重置失败', ok);
-    renderDone(readSetup());
+    toast(ok ? '已重置登记标记' : '重置失败', ok);
+    showDone();
   });
 
-  // 跨域时提前告知玩家，避免点了没反应
-  (function probeBridge() {
-    var send = findOnHosts('TavernHelper.sendMessage') || findOnHosts('sendMessage');
-    var M = findMvu();
-    if (!send && !M) {
+  // 初始化
+  renderOpts('rank', 'rank', DATA.rank);
+  renderOpts('family', 'family', DATA.family);
+  renderOpts('faction', 'faction', DATA.faction);
+  renderOpts('academy', 'academy', DATA.academy);
+  renderOpts('temper', 'temper', DATA.temper);
+  renderOpts('place', 'place', DATA.place);
+  renderOpts('tone', 'tone', DATA.tone);
+  renderInject();
+  // 默认值
+  pick.awaken = '已觉醒'; pick.rank = '凡种'; pick.family = '平民';
+  pick.faction = '无籍游民'; pick.academy = '白垩塔'; pick.temper = '护食';
+  pick.place = '灰塔学院·东院'; pick.tone = '入学日';
+  ['#awaken', '#rank', '#family', '#faction', '#academy', '#temper', '#place', '#tone'].forEach(function (id) {
+    var host = document.getElementById(id.replace('#', ''));
+    if (!host) return;
+    var k = { awaken: 'awaken', rank: 'rank', family: 'family', faction: 'faction', academy: 'academy', temper: 'temper', place: 'place', tone: 'tone' }[id.replace('#', '')];
+    Array.prototype.forEach.call(host.querySelectorAll('.opt'), function (b) {
+      if (b.getAttribute('data-v') === pick[k]) b.className = 'opt on';
+    });
+  });
+  refresh();
+  showDone();
+  setTimeout(showDone, 900);
+
+  (function probe() {
+    var api = findHostApi('TavernHelper.sendMessage') || findHostApi('sendMessage') || apiOnHosts('sendMessage');
+    if (!api && !findMvu()) {
       $('#note').className = 'note warn';
-      $('#note').textContent = '未检测到酒馆接口（可能是跨域 iframe 限制）。可以用「复制文本」把开局粘贴到输入框发送。';
+      $('#note').textContent = '未检测到酒馆接口（可能是跨域 iframe 限制）。可以用「复制」把开局陈述粘贴到输入框发送。';
     }
   })();
-
-  renderList();
-  renderRanks();
-  renderOpts();
-  renderDone(readSetup());
-  setTimeout(function () { renderDone(readSetup()); }, 900);
 })();
 </script>
 </body>
