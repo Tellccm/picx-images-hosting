@@ -134,8 +134,12 @@ body{
     <div class="opts" id="beast-cat" style="margin-bottom:10px"></div>
     <span class="lbl">元素倾向</span>
     <div class="opts" id="beast-elem" style="margin-bottom:10px"></div>
+    <div class="row" style="margin-bottom:4px">
+      <div><span class="lbl">给它取名</span><input class="inp" id="beast-name" placeholder="例：灰耳 / 阿炭 / 雪团"></div>
+      <div style="flex:0 0 118px"><span class="lbl">&nbsp;</span><button class="opt" id="roll-name" style="width:100%;padding:9px 10px">换个名字</button></div>
+    </div>
+    <div class="hint" id="name-hint">名字你说了算。觉醒当场通常来不及取，几天后才定下来也正常 —— 但这一栏定了，它就一直是这个名。</div>
     <div class="row" style="margin-bottom:8px">
-      <div><span class="lbl">名字（可留空，之后再由剧情定）</span><input class="inp" id="beast-name" placeholder="例：灰耳 / 未命名"></div>
       <div><span class="lbl">最显眼的特征</span><input class="inp" id="beast-mark" placeholder="例：右翼缺一羽"></div>
     </div>
     <span class="lbl">战力倾向（决定它在战斗里做什么）</span>
@@ -269,6 +273,12 @@ body{
     ]
   };
 
+  var NAME_POOL = [
+    '灰耳', '阿炭', '雪团', '铜铃', '小满', '黑豆', '阿岬', '铁蛋', '芦花', '青眼',
+    '石苔', '火绒', '白牙', '断尾', '小寒', '阿鸦', '泥鳅', '炭头', '老六', '碎星',
+    '薄雾', '灯芯', '阿灰', '铜钱', '沙砾', '短耳', '小蓟', '阿岚', '绯瞳', '骨朵'
+  ];
+
   var pick = {};   // 单选结果
   var inject = {}; // 注入开关
 
@@ -329,9 +339,10 @@ body{
       var tem = v('#beast-temper');
       var cat = pick.beastCat || '兽类';
       var elem = pick.beastElem || '无';
+      if (!nm) nm = '未命名';
       var line = '初始召唤兽：' + (pick.rank || '凡种') + '·' + cat +
         (elem !== '无' ? '（' + elem + '元素）' : '') +
-        '　名字：' + (nm || '尚未取名');
+        '　名字：' + nm;
       if (mk) line += '　特征：' + mk;
       if (look) line += '　外貌：' + look;
       if (tem) line += '　性格：' + tem;
@@ -395,6 +406,16 @@ body{
       renderInject();
       return;
     }
+  });
+
+  var rollBtn = document.getElementById('roll-name');
+  if (rollBtn) rollBtn.addEventListener('click', function () {
+    var used = {};
+    var pool = NAME_POOL.filter(function (n) { return n !== $('#beast-name').value.trim(); });
+    var nm = pool[Math.floor(Math.random() * pool.length)] || '灰耳';
+    $('#beast-name').value = nm;
+    $('#text').value = buildText();
+    $('#name-hint').textContent = '已填入「' + nm + '」。不满意就再点一次，或者自己改。';
   });
 
   ['#name', '#age', '#items', '#beast-name', '#beast-mark', '#beast-look',

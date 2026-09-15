@@ -41,7 +41,7 @@
         {
           "scriptName": "召唤纪·开局预设挂载",
           "findRegex": "<customized>\\s*([\\s\\S]*?)\\s*</customized>",
-          "replaceString": "<body>\n<script>\n$('body').load('https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v56/zhaohuan/start.html')\n</script>\n</body>",
+          "replaceString": "<body>\n<script>\n$('body').load('https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v57/zhaohuan/start.html')\n</script>\n</body>",
           "placement": [
             2
           ],
@@ -149,9 +149,9 @@
             "seg8_skill_panel.js"
           ],
           "schemaAndGenerators": "seg1_schema_gen.js",
-          "startPage": "https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v56/zhaohuan/start.html"
+          "startPage": "https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v57/zhaohuan/start.html"
         },
-        "worldbookEntries": 42,
+        "worldbookEntries": 41,
         "regexRules": 7,
         "tavernScripts": 2
       }
