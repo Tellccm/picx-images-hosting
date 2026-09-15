@@ -1,0 +1,319 @@
+<!-- ============================================================
+     卡内前端 C · 召唤兽进化树面板（图标已全部移除，纯文字）
+     用法：整块作为正则规则的 replaceString（findRegex 匹配 【召唤纪·进化树】）
+     职责：展示进化树 / 静默调用主 API 生成 / 解锁节点
+     ============================================================ -->
+<div id="zhaohuan-evolution">
+<style>
+#zhaohuan-evolution *{box-sizing:border-box;margin:0;padding:0}
+#zhaohuan-evolution{
+  --ink:#f2e6d6;--ink2:#b9a68f;--ink3:#8d7d6b;--gold:#d9b168;--gold2:#f0d59a;
+  --line:rgba(217,177,104,.32);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--ink);max-width:660px;margin:12px auto}
+#zhaohuan-evolution .ze-card{
+  background:linear-gradient(165deg,#241820,#161013 72%);
+  border:1px solid var(--line);border-radius:14px;padding:14px 15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#zhaohuan-evolution .ze-hd{
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:11px}
+#zhaohuan-evolution .ze-ttl{
+  font-family:"Songti SC","STSong",serif;font-size:14px;font-weight:800;
+  letter-spacing:.3em;color:var(--gold)}
+#zhaohuan-evolution .ze-pt{
+  margin-left:auto;font-size:11.5px;font-weight:700;color:var(--gold2);
+  font-variant-numeric:tabular-nums}
+#zhaohuan-evolution .ze-empty{font-size:12px;color:var(--ink2);text-align:center;padding:10px 0;line-height:1.7}
+#zhaohuan-evolution .ze-btn{
+  display:block;width:100%;border:0;border-radius:9px;padding:10px;
+  font-size:13px;font-weight:800;letter-spacing:.1em;cursor:pointer;font-family:inherit;
+  background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503;margin-top:9px}
+#zhaohuan-evolution .ze-btn:hover:not(:disabled){filter:brightness(1.08)}
+#zhaohuan-evolution .ze-btn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.5)}
+#zhaohuan-evolution .ze-btn.ghost{
+  background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink2)}
+#zhaohuan-evolution .ze-btn.sm{
+  width:auto;display:inline-block;padding:4px 12px;font-size:11.5px;
+  letter-spacing:.06em;margin-top:7px}
+#zhaohuan-evolution .ze-sum{font-size:11.5px;color:var(--ink2);line-height:1.7;margin-bottom:10px}
+#zhaohuan-evolution .ze-stage{margin-bottom:13px}
+#zhaohuan-evolution .ze-stage-label{
+  font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.2em;
+  padding-bottom:5px;margin-bottom:8px;border-bottom:1px solid rgba(217,177,104,.2)}
+#zhaohuan-evolution .ze-nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:8px}
+#zhaohuan-evolution .ze-node{
+  border:1px solid rgba(255,255,255,.08);border-radius:10px;
+  background:rgba(0,0,0,.22);padding:10px 11px}
+#zhaohuan-evolution .ze-node.on{
+  border-color:rgba(217,177,104,.6);background:linear-gradient(160deg,rgba(120,88,40,.28),rgba(30,20,12,.5))}
+#zhaohuan-evolution .ze-node.cur{box-shadow:inset 0 0 0 1px rgba(240,213,154,.35)}
+#zhaohuan-evolution .ze-n-top{display:flex;align-items:baseline;gap:7px;margin-bottom:5px}
+#zhaohuan-evolution .ze-n-name{font-size:13.5px;font-weight:800}
+#zhaohuan-evolution .ze-n-cur{
+  font-size:10px;font-weight:700;color:#241503;background:var(--gold2);
+  border-radius:5px;padding:1px 6px}
+#zhaohuan-evolution .ze-n-desc{font-size:11.5px;color:var(--ink2);line-height:1.65}
+#zhaohuan-evolution .ze-n-pre{font-size:11px;color:var(--ink3);margin-top:5px}
+#zhaohuan-evolution .ze-n-ok{font-size:11.5px;font-weight:800;color:var(--gold);margin-top:6px}
+#zhaohuan-evolution .ze-n-soul{
+  font-size:11px;color:var(--ink3);margin-top:5px;padding-top:5px;
+  border-top:1px dashed rgba(255,255,255,.07);line-height:1.6}
+#zhaohuan-evolution .ze-toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%);
+  background:rgba(20,13,16,.97);border:1px solid var(--line);border-radius:9px;
+  color:var(--ink);font-size:12.5px;padding:9px 18px;opacity:0;transition:opacity .22s;
+  pointer-events:none;z-index:2147483600;max-width:88vw;text-align:center}
+#zhaohuan-evolution .ze-toast.on{opacity:1}
+</style>
+
+<div class="ze-card">
+  <div class="ze-hd">
+    <span class="ze-ttl">进 化 树</span>
+    <span class="ze-pt" id="ze-pt">—</span>
+  </div>
+  <div id="ze-body"><div class="ze-empty">正在读取变量…</div></div>
+</div>
+<div class="ze-toast" id="ze-toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'zhaohuan-evolution';
+  var root = document.getElementById(NS);
+  if (!root || root.dataset.zeBound === '1') return;
+  root.dataset.zeBound = '1';
+
+  var STAGE_LABEL = { 1: '初鸣', 2: '成形', 3: '蜕变', 4: '显化', 5: '极境' };
+  var disposers = [];
+  var genBusy = false;
+  var unlocking = {};
+
+  function $(s) { return root.querySelector(s); }
+
+  function toast(msg, ok) {
+    var el = $('#ze-toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.borderColor = ok === false ? 'rgba(217,106,116,.7)' : 'rgba(217,177,104,.6)';
+    el.classList.add('on');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove('on'); }, 2200);
+  }
+
+  function hostWindow() {
+    try { if (window.top && window.top.document) return window.top; } catch (e) {}
+    try { if (window.parent && window.parent.document) return window.parent; } catch (e) {}
+    return window;
+  }
+  function mvu() {
+    var w = hostWindow();
+    return (typeof Mvu !== 'undefined' && Mvu) || w.Mvu || null;
+  }
+
+  function readTree() {
+    try {
+      var M = mvu();
+      if (!M || typeof M.getMvuData !== 'function') return null;
+      var d = M.getMvuData({ type: 'message', message_id: 'latest' });
+      return d && d.stat_data ? (d.stat_data.进化树 || {}) : null;
+    } catch (e) { console.warn('[' + NS + '] 读取失败', e); return null; }
+  }
+
+  async function write(commands) {
+    var M = mvu();
+    if (!M) { toast('MVU 未就绪', false); return false; }
+    var oldData = M.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!oldData) { toast('读取变量失败', false); return false; }
+    try {
+      var next = await M.parseMessage(commands.join('\n'), oldData);
+      if (!next) { toast('命令未被解析', false); return false; }
+      await M.replaceMvuData(next, { type: 'message', message_id: 'latest' });
+      return true;
+    } catch (e) {
+      console.error('[' + NS + '] 写入失败', e);
+      toast('写入失败：' + (e && e.message ? e.message : e), false);
+      return false;
+    }
+  }
+
+  async function callGenerator() {
+    var w = hostWindow();
+    var fn = null;
+    try {
+      if (typeof waitGlobalInitialized === 'function') {
+        fn = await waitGlobalInitialized('zhaohuan-gen_evolution');
+      }
+    } catch (e) {}
+    if (typeof fn !== 'function') fn = window['zhaohuan-gen_evolution'] || w['zhaohuan-gen_evolution'];
+    if (typeof fn !== 'function') return { ok: false, reason: '生成器未注册（脚本侧未加载？）' };
+    return await fn();
+  }
+
+  async function doGenerate() {
+    if (genBusy) { toast('正在生成，请稍候'); return; }
+    genBusy = true;
+    var btn = $('#ze-regen');
+    if (btn) { btn.disabled = true; btn.textContent = '生成中…'; }
+    try {
+      var r = await callGenerator();
+      if (r && r.ok) { toast('进化树已生成'); render(); }
+      else { toast('生成失败：' + ((r && r.reason) || '未知原因'), false); }
+    } catch (e) {
+      toast('生成失败：' + (e && e.message ? e.message : e), false);
+    } finally {
+      genBusy = false;
+      if (btn) { btn.disabled = false; btn.textContent = '重新生成（会覆盖当前进化树）'; }
+    }
+  }
+
+  async function unlockNode(key) {
+    if (unlocking[key]) { toast('正在写入，请稍候'); return; }
+    var t = readTree();
+    if (!t) { toast('变量未就绪', false); return; }
+    var node = (t.节点 || {})[key];
+    if (!node) { toast('节点不存在', false); return; }
+    if (node.已解锁) { toast('该节点已解锁'); return; }
+
+    var left = Math.floor(Number(t.总进化点) || 0) - Math.floor(Number(t.已使用进化点) || 0);
+    var COST = 1;
+    if (left < COST) { toast('进化点不足（需 ' + COST + ' 点）', false); return; }
+
+    var pre = String(node.前置 || '');
+    if (pre && !((t.节点 || {})[pre] || {}).已解锁) {
+      toast('前置节点未解锁：' + pre, false); return;
+    }
+
+    var unlocked = Array.isArray(t.已解锁) ? t.已解锁.slice() : [];
+    if (unlocked.indexOf(key) === -1) unlocked.push(key);
+    var usable = (Array.isArray(t.可解锁) ? t.可解锁 : []).filter(function (k) {
+      var n = (t.节点 || {})[k];
+      return n && String(n.前置 || '') === key && !n.已解锁;
+    });
+
+    unlocking[key] = true;
+    try {
+      var ok = await write([
+        "_.set('进化树.节点." + key + ".已解锁', true);",
+        "_.set('进化树.当前节点', '" + key + "');",
+        "_.set('进化树.已使用进化点', " + (Math.floor(Number(t.已使用进化点) || 0) + COST) + ");",
+        "_.set('进化树.已解锁', " + JSON.stringify(unlocked) + ");",
+        "_.set('进化树.可解锁', " + JSON.stringify(usable) + ");"
+      ]);
+      if (ok) { toast('已解锁：' + (node.名称 || key)); render(); }
+    } finally {
+      unlocking[key] = false;
+    }
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
+    });
+  }
+
+  function render() {
+    var body = $('#ze-body');
+    var t = readTree();
+
+    if (!t) {
+      body.innerHTML = '<div class="ze-empty">变量尚未初始化。请确认 Tavern Helper 已启用、MVU bundle 已加载。</div>';
+      $('#ze-pt').textContent = '未就绪';
+      return;
+    }
+
+    var nodes = t.节点 || {};
+    var keys = Object.keys(nodes);
+    var unlocked = Array.isArray(t.已解锁) ? t.已解锁 : [];
+    var total = Math.floor(Number(t.总进化点) || 0);
+    var used = Math.floor(Number(t.已使用进化点) || 0);
+    var left = total - used;
+    $('#ze-pt').textContent = keys.length
+      ? ('进化点 ' + left + ' / ' + total + '　已解锁 ' + unlocked.length + ' / ' + keys.length)
+      : '未生成';
+
+    if (!keys.length) {
+      body.innerHTML =
+        '<div class="ze-empty">这头召唤兽还没有进化树。<br>' +
+        '生成会静默调用主 API，不产生聊天楼层。<br>' +
+        '生成前需要已确定物种与血统品阶。</div>' +
+        '<button class="ze-btn" id="ze-regen">生成进化树</button>';
+      var b = $('#ze-regen');
+      if (b) b.addEventListener('click', doGenerate);
+      return;
+    }
+
+    var h = [];
+    var src = t.生成依据 || {};
+    h.push('<div class="ze-sum">' +
+      esc(t.树名 || '未命名进化树') + '<br>' +
+      '物种 ' + esc(src.物种 || '—') +
+      '　品阶 ' + esc(src.血统品阶 || '—') +
+      '　契约 ' + esc(src.契约形态 || '—') +
+      (src.召唤兽性格 ? '<br>性格 ' + esc(src.召唤兽性格) : '') +
+      '</div>');
+
+    var byStage = {};
+    keys.forEach(function (k) {
+      var s = Math.max(1, Math.min(5, Math.floor(Number(nodes[k].阶段) || 1)));
+      (byStage[s] = byStage[s] || []).push(k);
+    });
+
+    for (var s = 1; s <= 5; s++) {
+      var list = byStage[s];
+      if (!list || !list.length) continue;
+      h.push('<div class="ze-stage"><div class="ze-stage-label">阶段 ' + s + '　' +
+        (STAGE_LABEL[s] || '') + '</div><div class="ze-nodes">');
+      list.forEach(function (k) {
+        var n = nodes[k];
+        var on = !!n.已解锁;
+        var isCur = String(t.当前节点 || '') === k;
+        var pre = String(n.前置 || '');
+        var preOk = !pre || !!((nodes[pre] || {}).已解锁);
+        var can = !on && preOk && left >= 1;
+        h.push('<div class="ze-node' + (on ? ' on' : '') + (isCur ? ' cur' : '') + '">' +
+          '<div class="ze-n-top"><span class="ze-n-name">' + esc(n.名称 || k) + '</span>' +
+          (isCur ? '<span class="ze-n-cur">当前</span>' : '') + '</div>' +
+          '<div class="ze-n-desc">' + esc(n.说明 || '') + '</div>' +
+          (n.人格底色 ? '<div class="ze-n-soul">人格底色　' + esc(n.人格底色) + '</div>' : '') +
+          (pre && !on ? '<div class="ze-n-pre">前置　' + esc((nodes[pre] || {}).名称 || pre) + '</div>' : '') +
+          (on ? '<div class="ze-n-ok">已解锁</div>'
+              : '<button class="ze-btn sm" data-ze-unlock="' + esc(k) + '"' +
+                (can ? '' : ' disabled') + '>解锁（1 点）</button>') +
+          '</div>');
+      });
+      h.push('</div></div>');
+    }
+
+    h.push('<button class="ze-btn ghost" id="ze-regen">重新生成（会覆盖当前进化树）</button>');
+    body.innerHTML = h.join('');
+    var rb = $('#ze-regen');
+    if (rb) rb.addEventListener('click', doGenerate);
+  }
+
+  root.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var u = t.closest('[data-ze-unlock]');
+    if (u) { e.preventDefault(); unlockNode(u.getAttribute('data-ze-unlock')); }
+  });
+
+  function boot() {
+    render();
+    try {
+      var M = mvu();
+      if (typeof eventOn === 'function' && M && M.events) {
+        disposers.push(eventOn(M.events.VARIABLE_UPDATE_ENDED, function () { render(); }));
+        disposers.push(eventOn(M.events.VARIABLE_INITIALIZED, function () { render(); }));
+      }
+    } catch (e) { console.warn('[' + NS + '] 订阅失败', e); }
+  }
+
+  window.addEventListener('unload', function () {
+    while (disposers.length) { try { disposers.pop()(); } catch (e) {} }
+  });
+
+  if (mvu()) boot(); else setTimeout(boot, 900);
+})();
+</script>
+</div>

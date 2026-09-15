@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>召唤纪 · 选择开局</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#f2e6d6;--ink2:#b9a68f;--ink3:#8d7d6b;--gold:#d9b168;--gold2:#f0d59a;
+  --line:rgba(217,177,104,.32);--danger:#d96a74;
+}
+body{
+  background:transparent;color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  padding:4px}
+.wrap{
+  max-width:640px;margin:12px auto;
+  background:linear-gradient(165deg,#241820,#161013 72%);
+  border:1px solid var(--line);border-radius:14px;padding:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.hd{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}
+.ttl{font-family:"Songti SC","STSong",serif;font-size:15px;font-weight:800;letter-spacing:.3em;color:var(--gold)}
+.sub{font-size:11.5px;color:var(--ink2);margin-top:5px;line-height:1.6}
+.done{
+  font-size:11.5px;color:var(--gold2);margin-top:7px;padding:6px 9px;
+  border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:8px}
+.list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{
+  border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(0,0,0,.24);
+  padding:10px 11px;cursor:pointer;transition:all .15s}
+.card:hover{border-color:var(--gold);transform:translateY(-1px)}
+.card.on{border-color:var(--gold2);background:linear-gradient(160deg,rgba(120,88,40,.34),rgba(30,20,12,.5))}
+.c-hd{display:flex;align-items:baseline;gap:7px;margin-bottom:5px}
+.c-nm{font-size:13px;font-weight:800}
+.c-tag{font-size:10px;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-left:auto}
+.c-ds{font-size:11px;color:var(--ink2);line-height:1.6}
+.ranks{margin-top:11px}
+.rk-label{font-size:11px;color:var(--ink3);letter-spacing:.18em;margin-bottom:7px}
+.rk-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  border:1px solid rgba(255,255,255,.14);border-radius:7px;background:rgba(0,0,0,.24);
+  color:var(--ink2);font-size:11.5px;padding:5px 11px;cursor:pointer;
+  font-family:inherit;transition:all .15s}
+.chip:hover{border-color:var(--gold);color:var(--ink)}
+.chip.on{background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503;font-weight:800;border-color:var(--gold2)}
+.ed{margin-top:12px}
+.ed-hd{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink3);letter-spacing:.18em;margin-bottom:6px}
+textarea{
+  width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:9px;
+  background:rgba(0,0,0,.28);color:var(--ink);padding:11px;font-size:12.5px;line-height:1.75;
+  font-family:inherit;outline:none}
+textarea::placeholder{color:var(--ink3)}
+textarea:focus{border-color:var(--gold2)}
+.foot{display:flex;gap:9px;margin-top:12px}
+.btn{
+  flex:1;border:0;border-radius:9px;padding:11px;font-size:13px;font-weight:800;
+  letter-spacing:.1em;cursor:pointer;font-family:inherit;
+  background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
+.btn.ghost{background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink2);flex:0 0 110px}
+.note{font-size:10.5px;color:var(--ink3);line-height:1.65;text-align:center;margin-top:10px}
+.note.warn{color:var(--danger)}
+.toast{
+  position:fixed;left:50%;bottom:36px;transform:translateX(-50%);
+  background:rgba(20,13,16,.97);border:1px solid var(--line);border-radius:9px;
+  color:var(--ink);font-size:12.5px;padding:9px 18px;opacity:0;transition:opacity .22s;
+  pointer-events:none;z-index:99;max-width:88vw;text-align:center}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <div class="ttl">选 择 开 局</div>
+    <div class="sub">选一个通用开局直接开始，也可以改了再发，或者自己写一段。</div>
+    <div class="done" id="done" style="display:none">
+      <span id="done-text"></span>
+      <button class="btn ghost" id="reset" style="flex:0 0 auto;padding:4px 10px;font-size:11px">重置开局</button>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <div class="ranks">
+    <div class="rk-label">初 始 血 统 品 阶</div>
+    <div class="rk-chips" id="ranks"></div>
+  </div>
+
+  <div class="ed">
+    <div class="ed-hd"><span id="ed-label">自定义开局</span></div>
+    <textarea id="text" placeholder="在这里写你自己的开局背景，或点上面任一预设后修改。"></textarea>
+  </div>
+
+  <div class="foot">
+    <button class="btn" id="send">发送并开始</button>
+    <button class="btn ghost" id="copy">复制文本</button>
+  </div>
+
+  <div class="note" id="note">开局文本会作为你的第一条消息发送，之后由正常剧情链接管。</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var RANKS = ['凡种', '良种', '贵种', '超凡种', '传说种', '王种'];
+  var RANK_NOTE = {
+    '凡种': '随处可见，起点最低，成长空间最大',
+    '良种': '标准战力，学院里的多数',
+    '贵种': '越过平民线，天生被看重',
+    '超凡种': '越过贵族血统线，稀少见',
+    '传说种': '数十年一遇',
+    '王种': '当代最高，全学院都会看着你'
+  };
+
+  var PRESETS = [
+    {
+      id: 'academy-first',
+      name: '灰塔入学日',
+      tag: '学院开局',
+      desc: '觉醒礼刚过，带着召唤兽第一次走进学院大门。',
+      body: '【开局】灰塔入学日。\n' +
+        '我在五六岁那年通过了觉醒礼，如今到了入学的年纪。今天是我第一次以觉醒者的身份走进学院，召唤兽跟在我身边。\n' +
+        '请从入学登记处开始，交代我所在势力的立场、学院对我的初步评价，以及周围同届生对我的态度。记得按觉醒者的社会分层来写——血统品阶会直接影响别人看我的眼神。'
+    },
+    {
+      id: 'broke-rule',
+      name: '破例者',
+      tag: '未觉醒线',
+      desc: '你没有觉醒。所有人都以为你完了。',
+      body: '【开局】破例者。\n' +
+        '觉醒礼那天，我没有召唤出任何东西。按王历的说法，我是破例者。\n' +
+        '请写我如何面对周围人的眼光，以及这个世界对未觉醒者到底是什么态度。不要急着给我补偿或金手指——先让这份处境真实地压下来。'
+    },
+    {
+      id: 'low-blood',
+      name: '凡种出身',
+      tag: '底层崛起',
+      desc: '你觉醒的是一只麻雀。这在贵族眼里是个笑话。',
+      body: '【开局】凡种出身。\n' +
+        '我觉醒出来的召唤兽是凡种。同一天，隔壁家族的少爷带出了一头贵种。\n' +
+        '请从这种落差写起，交代我家的处境、周围的嘲笑和我不服气的地方。记住：品阶只决定起点，不决定终点。'
+    },
+    {
+      id: 'high-blood',
+      name: '高处不胜寒',
+      tag: '高位压力',
+      desc: '你带出了传说种或王种。整个学院都在看着你。',
+      body: '【开局】高处不胜寒。\n' +
+        '觉醒礼上，我召唤出的品阶高得离谱，高到让在场的大人一时不知道该怎么反应。\n' +
+        '请写这份天赋带来的注视、试探与算计，而不是单纯的夸赞。高品阶是资源，也是靶子。'
+    }
+  ];
+
+  var activeId = null;
+  var rank = null;
+  var busy = false;
+
+  var $ = function (s) { return document.querySelector(s); };
+
+  function toast(msg, ok) {
+    var el = $('#toast');
+    el.textContent = msg;
+    el.style.borderColor = ok === false ? 'rgba(217,106,116,.75)' : 'rgba(217,177,104,.6)';
+    el.classList.add('on');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove('on'); }, 2400);
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
+    });
+  }
+
+  /* ---------- 宿主桥接：远程页面可能是跨域 iframe，逐级降级 ---------- */
+  function hosts() {
+    var out = [window];
+    try { if (window.parent && window.parent !== window) out.push(window.parent); } catch (e) {}
+    try { if (window.top && window.top !== window && window.top !== window.parent) out.push(window.top); } catch (e) {}
+    return out;
+  }
+  function findOnHosts(path) {
+    var hs = hosts();
+    for (var i = 0; i < hs.length; i++) {
+      try {
+        var cur = hs[i];
+        var parts = path.split('.');
+        for (var j = 0; j < parts.length; j++) {
+          if (cur == null) { cur = null; break; }
+          cur = cur[parts[j]];
+        }
+        if (typeof cur === 'function') return cur;
+      } catch (e) { /* 跨域，跳过 */ }
+    }
+    return null;
+  }
+  function findMvu() {
+    var hs = hosts();
+    for (var i = 0; i < hs.length; i++) {
+      try { if (hs[i].Mvu) return hs[i].Mvu; } catch (e) {}
+    }
+    return null;
+  }
+
+  /* ---------- 渲染 ---------- */
+  function renderList() {
+    $('#list').innerHTML = PRESETS.map(function (p) {
+      return '<div class="card' + (activeId === p.id ? ' on' : '') + '" data-pick="' + esc(p.id) + '">' +
+        '<div class="c-hd"><span class="c-nm">' + esc(p.name) + '</span>' +
+        '<span class="c-tag">' + esc(p.tag) + '</span></div>' +
+        '<div class="c-ds">' + esc(p.desc) + '</div></div>';
+    }).join('');
+  }
+
+  function renderRanks() {
+    $('#ranks').innerHTML = RANKS.map(function (r) {
+      return '<button class="chip' + (rank === r ? ' on' : '') + '" data-rank="' + esc(r) + '" title="' +
+        esc(RANK_NOTE[r]) + '">' + esc(r) + '</button>';
+    }).join('');
+  }
+
+  function renderDone(setup) {
+    var done = !!(setup && setup.已完成);
+    var el = $('#done');
+    el.style.display = done ? 'flex' : 'none';
+    if (done) $('#done-text').textContent = '本局已开局：' + (setup.开局预设 || '自定义');
+  }
+
+  $('#list').addEventListener('click', function (e) {
+    var c = e.target.closest ? e.target.closest('[data-pick]') : null;
+    if (!c) return;
+    var id = c.getAttribute('data-pick');
+    var p = null;
+    PRESETS.forEach(function (x) { if (x.id === id) p = x; });
+    activeId = id;
+    if (p) $('#text').value = p.body;
+    $('#ed-label').textContent = '编辑选中开局';
+    renderList();
+  });
+
+  $('#ranks').addEventListener('click', function (e) {
+    var c = e.target.closest ? e.target.closest('[data-rank]') : null;
+    if (!c) return;
+    rank = c.getAttribute('data-rank');
+    renderRanks();
+  });
+
+  $('#copy').addEventListener('click', function () {
+    var t = $('#text').value;
+    if (!t.trim()) { toast('开局内容为空', false); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { toast('已复制，粘贴到输入框发送即可'); },
+        function () { toast('复制失败，请手动选中复制', false); });
+    } else {
+      $('#text').select();
+      toast('已选中，请按 Ctrl+C 复制');
+    }
+  });
+
+  function readSetup() {
+    var M = findMvu();
+    if (!M || typeof M.getMvuData !== 'function') return null;
+    try {
+      var d = M.getMvuData({ type: 'message', message_id: 'latest' });
+      return d && d.stat_data ? (d.stat_data.开局配置 || {}) : null;
+    } catch (e) { return null; }
+  }
+
+  async function writeVars(cmds) {
+    var M = findMvu();
+    if (!M) return false;
+    try {
+      var old = M.getMvuData({ type: 'message', message_id: 'latest' });
+      if (!old) return false;
+      var next = await M.parseMessage(cmds.join('\n'), old);
+      if (!next) return false;
+      await M.replaceMvuData(next, { type: 'message', message_id: 'latest' });
+      return true;
+    } catch (e) { console.warn('[开局] 写入失败', e); return false; }
+  }
+
+  $('#send').addEventListener('click', async function () {
+    if (busy) { toast('正在发送，请稍候'); return; }
+    var text = $('#text').value.trim();
+    if (!text) { toast('开局内容为空', false); return; }
+
+    var send = findOnHosts('TavernHelper.sendMessage') || findOnHosts('sendMessage');
+    if (typeof send !== 'function') {
+      toast('拿不到发送接口（跨域限制），请点「复制文本」手动发送', false);
+      return;
+    }
+
+    busy = true;
+    var btn = $('#send');
+    btn.disabled = true;
+    btn.textContent = '发送中…';
+    try {
+      var picked = '自定义开局';
+      PRESETS.forEach(function (p) { if (p.id === activeId) picked = p.name; });
+
+      await send.call(null, text, { name: 'user' });
+
+      var cmds = [
+        "_.set('开局配置.开局预设', '" + picked.replace(/'/g, '') + "');",
+        "_.set('开局配置.已完成', true);"
+      ];
+      if (rank) {
+        cmds.push("_.set('召唤兽.血统品阶', '" + rank + "');");
+      }
+      var okVar = await writeVars(cmds);
+
+      toast(okVar ? '已发送，开局开始' : '已发送；变量未写入，请检查 MVU 是否就绪', okVar);
+      renderDone(readSetup());
+    } catch (e) {
+      toast('发送失败：' + (e && e.message ? e.message : e), false);
+    } finally {
+      busy = false;
+      btn.disabled = false;
+      btn.textContent = '发送并开始';
+    }
+  });
+
+  $('#reset').addEventListener('click', async function () {
+    var ok = await writeVars(["_.set('开局配置.已完成', false);", "_.set('开局配置.开局预设', '');"]);
+    toast(ok ? '已重置开局标记' : '重置失败', ok);
+    renderDone(readSetup());
+  });
+
+  // 跨域时提前告知玩家，避免点了没反应
+  (function probeBridge() {
+    var send = findOnHosts('TavernHelper.sendMessage') || findOnHosts('sendMessage');
+    var M = findMvu();
+    if (!send && !M) {
+      $('#note').className = 'note warn';
+      $('#note').textContent = '未检测到酒馆接口（可能是跨域 iframe 限制）。可以用「复制文本」把开局粘贴到输入框发送。';
+    }
+  })();
+
+  renderList();
+  renderRanks();
+  renderDone(readSetup());
+  setTimeout(function () { renderDone(readSetup()); }, 900);
+})();
+</script>
+</body>
+</html>

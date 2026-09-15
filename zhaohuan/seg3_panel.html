@@ -1,0 +1,270 @@
+<!-- ============================================================
+     卡内前端 B · 召唤兽养成面板（图标已全部移除，纯文字）
+     用法：整块作为正则规则的 replaceString（findRegex 匹配 【召唤纪·面板】）
+     职责：本体信息展示 + 天赋点分配（脚本独占字段）
+     注：进化树已独立成面板，此处只显示摘要，不重复渲染
+     ============================================================ -->
+<div id="zhaohuan-panel">
+<style>
+#zhaohuan-panel *{box-sizing:border-box;margin:0;padding:0}
+#zhaohuan-panel{
+  --ink:#f2e6d6;--ink2:#b9a68f;--ink3:#8d7d6b;--gold:#d9b168;--gold2:#f0d59a;
+  --line:rgba(217,177,104,.34);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--ink);max-width:640px;margin:12px auto}
+#zhaohuan-panel .zp-card{
+  background:linear-gradient(165deg,#241820,#161013 72%);
+  border:1px solid var(--line);border-radius:14px;padding:14px 15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#zhaohuan-panel .zp-hd{
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:11px}
+#zhaohuan-panel .zp-ttl{
+  font-family:"Songti SC","STSong",serif;font-size:14px;font-weight:800;
+  letter-spacing:.3em;color:var(--gold)}
+#zhaohuan-panel .zp-pt{
+  margin-left:auto;font-size:11.5px;font-weight:700;color:var(--gold2);
+  font-variant-numeric:tabular-nums}
+#zhaohuan-panel .zp-hero{display:flex;gap:12px;align-items:flex-start;margin-bottom:11px}
+#zhaohuan-panel .zp-nm{font-size:15px;font-weight:800;letter-spacing:.06em}
+#zhaohuan-panel .zp-rank{
+  display:inline-block;font-size:10.5px;font-weight:700;padding:1px 8px;
+  border-radius:99px;border:1px solid var(--line);color:var(--gold);margin-left:8px}
+#zhaohuan-panel .zp-sub{font-size:11.5px;color:var(--ink2);margin-top:4px;line-height:1.6}
+#zhaohuan-panel .zp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+#zhaohuan-panel .zp-attr{
+  border:1px solid rgba(255,255,255,.08);border-radius:10px;
+  padding:8px 5px;text-align:center;background:rgba(0,0,0,.22)}
+#zhaohuan-panel .zp-attr .k{font-size:10px;color:var(--ink3);letter-spacing:.14em}
+#zhaohuan-panel .zp-attr .v{
+  font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;margin:3px 0 6px}
+#zhaohuan-panel .zp-plus{
+  width:100%;border:0;border-radius:7px;padding:4px 0;font-size:12px;font-weight:800;
+  cursor:pointer;background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503;
+  font-family:inherit}
+#zhaohuan-panel .zp-plus:disabled{opacity:.3;cursor:not-allowed;filter:grayscale(.6)}
+#zhaohuan-panel .zp-track{
+  height:7px;background:rgba(0,0,0,.55);border-radius:4px;overflow:hidden;margin-top:6px}
+#zhaohuan-panel .zp-fill{
+  height:100%;border-radius:4px;transition:width .5s;
+  background:linear-gradient(90deg,#b98a34,var(--gold2))}
+#zhaohuan-panel .zp-kv{
+  display:flex;gap:10px;font-size:12.5px;padding:5px 0;
+  border-bottom:1px dashed rgba(255,255,255,.07)}
+#zhaohuan-panel .zp-kv:last-child{border-bottom:0}
+#zhaohuan-panel .zp-kv .k{color:var(--ink3);letter-spacing:.1em;flex:0 0 auto}
+#zhaohuan-panel .zp-kv .v{font-weight:700;text-align:right;margin-left:auto;word-break:break-word}
+#zhaohuan-panel .zp-sec{font-size:11px;letter-spacing:.2em;color:var(--gold);margin:12px 0 6px}
+#zhaohuan-panel .zp-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+#zhaohuan-panel .zp-chip{
+  font-size:10.5px;padding:2px 8px;border-radius:99px;
+  background:rgba(217,177,104,.1);border:1px solid var(--line);color:var(--ink2)}
+#zhaohuan-panel .zp-wait{font-size:11.5px;color:var(--ink2);text-align:center;padding:8px 0}
+#zhaohuan-panel .zp-foot{
+  font-size:10.5px;color:var(--ink3);line-height:1.6;text-align:center;margin-top:11px}
+</style>
+
+<div class="zp-card">
+  <div class="zp-hd">
+    <span class="zp-ttl">召 唤 兽</span>
+    <span class="zp-pt" id="zp-pt">天赋点 —</span>
+  </div>
+  <div id="zp-body"><div class="zp-wait">正在读取变量…</div></div>
+  <div class="zp-foot">天赋点由脚本独占写入；品阶、契约形态、性格、羁绊由剧情模型写入。</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'zhaohuan-panel';
+  var root = document.getElementById(NS);
+  if (!root || root.dataset.zpBound === '1') return;
+  root.dataset.zpBound = '1';
+
+  var ATTRS = ['力量', '敏捷', '感知', '灵性'];
+  var disposers = [];
+
+  function $(sel) { return root.querySelector(sel); }
+
+  function toast(msg, ok) {
+    var el = $('#zp-toast');
+    if (!el) { console.log('[' + NS + '] ' + msg); return; }
+    el.textContent = msg;
+    el.style.borderColor = ok === false ? 'rgba(217,106,116,.7)' : 'rgba(217,177,104,.6)';
+    el.classList.add('on');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove('on'); }, 1900);
+  }
+
+  function readData() {
+    try {
+      if (typeof Mvu !== 'undefined' && Mvu && typeof Mvu.getMvuData === 'function') {
+        var d = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        return d && d.stat_data ? d.stat_data : null;
+      }
+    } catch (e) { console.warn('[' + NS + '] 读取失败', e); }
+    return null;
+  }
+
+  async function write(commands) {
+    if (typeof Mvu === 'undefined' || !Mvu) { toast('MVU 未就绪', false); return false; }
+    var oldData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!oldData) { toast('读取变量失败', false); return false; }
+    try {
+      var newData = await Mvu.parseMessage(commands.join('\n'), oldData);
+      if (!newData) { toast('命令未被解析', false); return false; }
+      await Mvu.replaceMvuData(newData, { type: 'message', message_id: 'latest' });
+      return true;
+    } catch (e) {
+      console.error('[' + NS + '] 写入失败', e);
+      toast('写入失败：' + (e && e.message ? e.message : e), false);
+      return false;
+    }
+  }
+
+  // 防连点：写入中不接受第二次点击
+  var spending = false;
+  async function spendPoint(attr) {
+    if (spending) { toast('正在写入，请稍候'); return; }
+    var sd = readData();
+    if (!sd) { toast('变量未就绪', false); return; }
+    var g = sd.养成 || {}, src = sd.天赋点来源 || {};
+    var left = Math.floor(Number(g.当前天赋点) || 0);
+    if (left <= 0) { toast('没有可用天赋点', false); return; }
+    var cur = Math.floor(Number((g.属性 || {})[attr]) || 1);
+    if (cur >= 99) { toast(attr + ' 已达上限', false); return; }
+
+    spending = true;
+    try {
+      // 当前天赋点与已分配必须同事务写入，否则会出现"点掉了但没记账"
+      var ok = await write([
+        "_.set('养成.属性." + attr + "', " + (cur + 1) + ");",
+        "_.set('养成.当前天赋点', " + (left - 1) + ");",
+        "_.set('天赋点来源.已分配', " + (Math.floor(Number(src.已分配) || 0) + 1) + ");"
+      ]);
+      if (ok) { toast(attr + ' 加 1'); render(); }
+    } finally {
+      spending = false;
+    }
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
+    });
+  }
+
+  function render() {
+    var sd = readData();
+    var body = $('#zp-body');
+    if (!sd) {
+      body.innerHTML = '<div class="zp-wait">变量尚未初始化。请确认 Tavern Helper 已启用、MVU bundle 已加载。</div>';
+      $('#zp-pt').textContent = '天赋点 —';
+      return;
+    }
+    var b = sd.召唤兽 || {}, g = sd.养成 || {}, src = sd.天赋点来源 || {}, self = sd.自身 || {};
+    var evo = sd.进化树 || {};
+    var unawakened = self.觉醒状态 === '未觉醒';
+    var left = Math.floor(Number(g.当前天赋点) || 0);
+    $('#zp-pt').textContent = '天赋点 ' + left;
+
+    var h = [];
+
+    h.push('<div class="zp-hero"><div style="flex:1;min-width:0">' +
+      '<div class="zp-nm">' + esc(b.名字 || '未命名') +
+      '<span class="zp-rank">' + esc(b.血统品阶 || '凡种') + '</span></div>' +
+      '<div class="zp-sub">物种　' + esc(b.物种 || '未定') +
+      '<br>契约　' + esc(b.契约形态 || '未定') +
+      '　进化阶段　' + (b.进化阶段 || 1) + ' / 5' +
+      '<br>性格　' + esc(b.性格 || '未定') + '</div>' +
+      '</div></div>');
+
+    if (unawakened) {
+      h.push('<div class="zp-wait" style="color:#e79aa2">当前为未觉醒者：召唤兽相关条目不可用</div>');
+    }
+
+    h.push('<div class="zp-kv"><span class="k">羁 绊</span><span class="v">' +
+      Math.floor(Number(b.羁绊) || 0) + ' / 100</span></div>');
+    h.push('<div class="zp-track"><div class="zp-fill" style="width:' +
+      Math.max(0, Math.min(100, Number(b.羁绊) || 0)) + '%"></div></div>');
+
+    h.push('<div class="zp-kv" style="margin-top:6px"><span class="k">技 能</span><span class="v">' +
+      ((Array.isArray(b.技能) && b.技能.length) ? esc(b.技能.join('、')) : '尚未习得') + '</span></div>');
+
+    var sk = sd.技能树 || {};
+    if (sk.技能列表 && Object.keys(sk.技能列表).length) {
+      h.push('<div class="zp-kv"><span class="k">技 能 树</span><span class="v">' +
+        esc(sk.树名 || '未命名') + '　SP ' +
+        Math.floor(Number(sk.已使用SP) || 0) + ' / ' + Math.floor(Number(sk.总SP) || 0) +
+        '</span></div>');
+    }
+
+    h.push('<div class="zp-sec">养 成 · 可用天赋点 ' + left + '</div><div class="zp-grid">');
+    ATTRS.forEach(function (a) {
+      var v = Math.floor(Number((g.属性 || {})[a]) || 1);
+      h.push('<div class="zp-attr"><div class="k">' + a + '</div><div class="v">' + v + '</div>' +
+        '<button class="zp-plus" data-zp-attr="' + a + '"' +
+        (left <= 0 || unawakened ? ' disabled' : '') + '>加 1</button></div>');
+    });
+    h.push('</div>');
+
+    h.push('<div class="zp-kv" style="margin-top:9px"><span class="k">训 练 度</span><span class="v">' +
+      Math.floor(Number(g.训练度) || 0) + ' / 100</span></div>');
+    h.push('<div class="zp-track"><div class="zp-fill" style="width:' +
+      Math.max(0, Math.min(100, Number(g.训练度) || 0)) + '%"></div></div>');
+
+    h.push('<div class="zp-kv" style="margin-top:6px"><span class="k">进化路线</span><span class="v">' +
+      esc(g.进化路线摘要 || '未定') + '</span></div>');
+    h.push('<div class="zp-kv"><span class="k">累计获得 / 已分配</span><span class="v">' +
+      Math.floor(Number(src.累计获得) || 0) + ' / ' + Math.floor(Number(src.已分配) || 0) + '</span></div>');
+
+    if (evo.节点 && Object.keys(evo.节点).length) {
+      var cur = String(evo.当前节点 || '');
+      h.push('<div class="zp-kv"><span class="k">当前进化节点</span><span class="v">' +
+        esc((evo.节点[cur] || {}).名称 || cur || '无') + '</span></div>');
+    }
+
+    var talents = g.天赋 || {};
+    var tk = Object.keys(talents);
+    if (tk.length) {
+      h.push('<div class="zp-chips">' + tk.map(function (k) {
+        return '<span class="zp-chip">' + esc(k) + ' Lv.' + (Math.floor(Number(talents[k]) || 0)) + '</span>';
+      }).join('') + '</div>');
+    }
+
+    body.innerHTML = h.join('');
+  }
+
+  function hostWindow() {
+    try { if (window.top && window.top.document) return window.top; } catch (e) {}
+    try { if (window.parent && window.parent.document) return window.parent; } catch (e) {}
+    return window;
+  }
+
+  root.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest('[data-zp-attr]');
+    if (btn) { e.preventDefault(); spendPoint(btn.getAttribute('data-zp-attr')); }
+  });
+
+  function boot() {
+    render();
+    try {
+      var w = hostWindow();
+      var M = (typeof Mvu !== 'undefined' && Mvu) || w.Mvu;
+      if (typeof eventOn === 'function' && M && M.events) {
+        disposers.push(eventOn(M.events.VARIABLE_UPDATE_ENDED, function () { render(); }));
+        disposers.push(eventOn(M.events.VARIABLE_INITIALIZED, function () { render(); }));
+      }
+    } catch (e) { console.warn('[' + NS + '] 订阅失败', e); }
+  }
+
+  window.addEventListener('unload', function () {
+    while (disposers.length) { try { disposers.pop()(); } catch (e) {} }
+  });
+
+  if (typeof Mvu !== 'undefined') boot(); else setTimeout(boot, 900);
+})();
+</script>
+</div>

@@ -1,0 +1,160 @@
+<!-- ============================================================
+     卡内前端 A · 常态状态栏（图标已全部移除，纯文字）
+     用法：整块作为正则规则的 replaceString（findRegex 匹配 【召唤纪·状态栏】）
+     ============================================================ -->
+<div id="zhaohuan-statusbar">
+<style>
+#zhaohuan-statusbar *{box-sizing:border-box;margin:0;padding:0}
+#zhaohuan-statusbar{
+  --ink:#f2e6d6;--ink2:#b9a68f;--ink3:#8d7d6b;--gold:#d9b168;
+  --line:rgba(217,177,104,.32);--hp:#c0565f;--sp:#5b82b8;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  max-width:640px;margin:12px auto;color:var(--ink)}
+#zhaohuan-statusbar .zs-card{
+  background:linear-gradient(165deg,#241820,#161013 72%);
+  border:1px solid var(--line);border-radius:14px;padding:13px 15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#zhaohuan-statusbar .zs-hd{
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:11px}
+#zhaohuan-statusbar .zs-ttl{
+  font-family:"Songti SC","STSong",serif;font-size:14px;font-weight:800;
+  letter-spacing:.3em;color:var(--gold)}
+#zhaohuan-statusbar .zs-meta{
+  margin-left:auto;font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+#zhaohuan-statusbar .zs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#zhaohuan-statusbar .zs-cell{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:9px;padding:8px 10px}
+#zhaohuan-statusbar .zs-k{
+  font-size:10px;letter-spacing:.2em;color:var(--ink3);margin-bottom:4px}
+#zhaohuan-statusbar .zs-v{font-size:13px;font-weight:700;line-height:1.4;word-break:break-word}
+#zhaohuan-statusbar .zs-v .sub{font-size:11px;font-weight:400;color:var(--ink2)}
+#zhaohuan-statusbar .zs-bar{
+  height:6px;background:rgba(0,0,0,.55);border-radius:3px;overflow:hidden;margin-top:7px}
+#zhaohuan-statusbar .zs-fill{height:100%;border-radius:3px;transition:width .5s ease}
+#zhaohuan-statusbar .zs-f-hp{background:linear-gradient(90deg,#8f3b43,var(--hp))}
+#zhaohuan-statusbar .zs-f-sp{background:linear-gradient(90deg,#3c5c86,var(--sp))}
+#zhaohuan-statusbar .zs-rel{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+#zhaohuan-statusbar .zs-tag{
+  font-size:10.5px;padding:2px 8px;border-radius:99px;
+  background:rgba(217,177,104,.1);border:1px solid var(--line);
+  color:var(--ink2);font-variant-numeric:tabular-nums}
+#zhaohuan-statusbar .zs-tag.pos{border-color:rgba(106,190,120,.45);color:#9fd8a8}
+#zhaohuan-statusbar .zs-tag.neg{border-color:rgba(217,106,116,.45);color:#e79aa2}
+#zhaohuan-statusbar .zs-wait{font-size:11.5px;color:var(--ink2);text-align:center;padding:8px 0}
+</style>
+
+<div class="zs-card">
+  <div class="zs-hd">
+    <span class="zs-ttl">状 态</span>
+    <span class="zs-meta" id="zs-meta">—</span>
+  </div>
+  <div id="zs-body"><div class="zs-wait">正在读取变量…</div></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var ROOT = document.getElementById('zhaohuan-statusbar');
+  if (!ROOT || ROOT.dataset.zsBound === '1') return;
+  ROOT.dataset.zsBound = '1';
+
+  var disposers = [];
+
+  function fmt(v, dft) {
+    return (v === undefined || v === null || v === '') ? dft : v;
+  }
+
+  function bar(pct, cls) {
+    var p = Math.max(0, Math.min(100, Number(pct) || 0));
+    return '<div class="zs-bar"><div class="zs-fill ' + cls + '" style="width:' + p + '%"></div></div>';
+  }
+
+  function cell(k, v, extra) {
+    return '<div class="zs-cell"><div class="zs-k">' + k + '</div><div class="zs-v">' + v + '</div>' + (extra || '') + '</div>';
+  }
+
+  function render(sd) {
+    var body = ROOT.querySelector('#zs-body');
+    if (!sd) {
+      body.innerHTML = '<div class="zs-wait">变量尚未初始化（检查 MVU bundle 是否加载）</div>';
+      return;
+    }
+    var st = sd.常态状态 || {}, self = sd.自身 || {}, rel = sd.势力关系 || {};
+    var evo = sd.进化树 || {};
+    var day = fmt(st.第几天, 1), clock = fmt(st.时刻, '—'), place = fmt(st.地点, '未定');
+    ROOT.querySelector('#zs-meta').textContent = '第 ' + day + ' 天　' + clock;
+
+    var tags = Object.keys(rel).map(function (k) {
+      var n = Number(rel[k]) || 0;
+      var cls = n > 0 ? ' pos' : (n < 0 ? ' neg' : '');
+      return '<span class="zs-tag' + cls + '">' + k + ' ' + (n > 0 ? '+' : '') + n + '</span>';
+    }).join('') || '<span class="zs-tag">暂无关系记录</span>';
+
+    // 进化树摘要：纯文字，无图标
+    var evoLine = '尚未生成';
+    if (evo.节点 && Object.keys(evo.节点).length) {
+      var cur = String(evo.当前节点 || '');
+      var curName = (evo.节点[cur] || {}).名称 || cur;
+      var un = Array.isArray(evo.已解锁) ? evo.已解锁.length : 0;
+      var all = Object.keys(evo.节点).length;
+      evoLine = (evo.树名 || '未命名') + '　' + curName + '　已解锁 ' + un + ' / ' + all;
+    }
+
+    var html = '<div class="zs-row">' +
+      cell('身 份', fmt(self.姓名, 'user') +
+        (self.觉醒状态 === '未觉醒' ? ' <span class="sub">未觉醒者</span>' : '')) +
+      cell('所 在', place) +
+      '</div>' +
+      '<div class="zs-row" style="margin-top:8px">' +
+      cell('体 力', Math.floor(fmt(st.体力, 0)) + ' <span class="sub">/ 100</span>', bar(st.体力, 'zs-f-hp')) +
+      cell('精 神', Math.floor(fmt(st.精神, 0)) + ' <span class="sub">/ 100</span>', bar(st.精神, 'zs-f-sp')) +
+      '</div>' +
+      '<div class="zs-row" style="margin-top:8px">' +
+      cell('伤 势', fmt(st.伤势, '无')) +
+      cell('随 身', (Array.isArray(self.随身物品) && self.随身物品.length) ? self.随身物品.join('、') : '空手') +
+      '</div>' +
+      '<div class="zs-cell" style="margin-top:8px"><div class="zs-k">进 化 树</div><div class="zs-v">' + evoLine + '</div></div>' +
+      '<div class="zs-cell" style="margin-top:8px"><div class="zs-k">势 力 关 系</div><div class="zs-rel">' + tags + '</div></div>';
+
+    body.innerHTML = html;
+  }
+
+  function readNow() {
+    try {
+      if (typeof Mvu !== 'undefined' && Mvu && typeof Mvu.getMvuData === 'function') {
+        var d = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        return d && d.stat_data ? d.stat_data : null;
+      }
+    } catch (e) { console.warn('[状态栏] 读取失败', e); }
+    return null;
+  }
+
+  function boot() {
+    render(readNow());
+    try {
+      if (typeof eventOn === 'function' && typeof Mvu !== 'undefined' && Mvu.events) {
+        // 必须用枚举常量：字符串值含上游拼写 bug
+        disposers.push(eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, function (variables) {
+          render(variables && variables.stat_data ? variables.stat_data : readNow());
+        }));
+        disposers.push(eventOn(Mvu.events.VARIABLE_INITIALIZED, function () { render(readNow()); }));
+      }
+    } catch (e) { console.warn('[状态栏] 订阅失败', e); }
+  }
+
+  var timer = setInterval(function () {
+    if (!document.body.contains(ROOT)) { clearInterval(timer); return; }
+    render(readNow());
+  }, 2500);
+
+  window.addEventListener('unload', function () {
+    clearInterval(timer);
+    while (disposers.length) { try { disposers.pop()(); } catch (e) {} }
+  });
+
+  if (typeof Mvu !== 'undefined') boot(); else setTimeout(boot, 800);
+})();
+</script>
+</div>
