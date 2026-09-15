@@ -7,11 +7,12 @@
    原则：源与产物分离。改源，再跑本脚本重建产物。
    ============================================================ */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import vm from 'node:vm';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SRC = join(HERE, '..');
+const SRC = existsSync(join(HERE, "..", "zhaohuan", "seg1_schema_gen.js")) ? join(HERE, "..", "zhaohuan") : (existsSync(join(HERE, "..", "seg1_schema_gen.js")) ? join(HERE, "..") : join(HERE, "..", "zhaohuan"));
 const DIST = join(HERE, 'dist');
 if (!existsSync(DIST)) mkdirSync(DIST, { recursive: true });
 
@@ -295,6 +296,34 @@ if (tierEntry) {
 const iconRe = /[\u2190-\u21FF\u2300-\u27BF\u2B00-\u2BFF\uFE0F]|[\u{1F000}-\u{1FAFF}]/u;
 [...tavern_scripts.map(s => s.content), ...regex_scripts.map(r => r.replaceString)].forEach((c, i) => {
   if (iconRe.test(c)) warns.push('组件 #' + i + ' 含图标字符');
+});
+
+
+// 脚本语法严格校验：使用 node --check 原生校验所有内嵌 script 与独立脚本
+import { execSync } from "node:child_process";
+import { tmpdir } from "node:os";
+
+const allScripts = [];
+tavern_scripts.forEach(s => {
+  allScripts.push({ name: "TH:" + s.name, content: s.content });
+});
+regex_scripts.forEach(r => {
+  const matches = [...r.replaceString.matchAll(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi)];
+  matches.forEach((m, idx) => {
+    allScripts.push({ name: "Reg:" + r.scriptName + " [script#" + idx + "]", content: m[1] });
+  });
+});
+
+allScripts.forEach(({ name, content }) => {
+  const tmpPath = join(tmpdir(), "check_" + Math.random().toString(36).slice(2) + ".mjs");
+  try {
+    writeFileSync(tmpPath, content, "utf8");
+    execSync("node --check \"" + tmpPath + "\"", { stdio: "pipe" });
+  } catch (err) {
+    errors.push("脚本语法错误 [" + name + "]: " + (err.stderr ? err.stderr.toString() : err.message));
+  } finally {
+    try { if (existsSync(tmpPath)) unlinkSync(tmpPath); } catch (e) {}
+  }
 });
 
 // 脚本：generateRaw 三段式必须齐

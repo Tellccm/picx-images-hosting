@@ -6,7 +6,7 @@ TH 脚本     : 3  (MVU, 变量结构·召唤纪, 召唤纪·技能树面板)
 first_mes   : "<customized>\n</customized>"
 description : 617 字符
 mes_example : 387 字符
-整卡大小    : 88.1 KB
+整卡大小    : 88.4 KB
 
 错误 0 项：
 警告 0 项：

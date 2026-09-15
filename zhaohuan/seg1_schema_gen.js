@@ -247,7 +247,7 @@ $(() => { registerMvuSchema(Schema); });
     return d && d.stat_data ? d.stat_data : null;
   }
 
-  async function runGeneration(sys, usr) {
+  async function runGeneration(sys, usr, standardMode) {
     const M = mvu();
     if (!M || typeof M.parseMessage !== 'function') return { ok: false, reason: 'MVU 未就绪' };
     const g = generateRawFn();
@@ -256,14 +256,19 @@ $(() => { registerMvuSchema(Schema); });
     const oldData = M.getMvuData({ type: 'message', message_id: 'latest' });
     if (!oldData) return { ok: false, reason: '读取变量失败' };
 
-    const raw = String(await g({
+    const genOpts = {
       should_silence: true,
       max_chat_history: 0,          // 开局生成不引剧情历史，避免把不存在的"经历"喂进去
       ordered_prompts: [
         { role: 'system', content: sys },
         { role: 'user', content: usr },
       ],
-    }) || '').trim();
+    };
+    if (standardMode) {
+      genOpts.disable_world_info = true;
+      genOpts.no_world_info = true;
+    }
+    const raw = String(await g(genOpts) || '').trim();
 
     if (!/<UpdateVariable/i.test(raw)) return { ok: false, reason: '模型结果未含 <UpdateVariable> 块' };
     const nextData = await M.parseMessage(raw, oldData);
@@ -340,7 +345,7 @@ $(() => { registerMvuSchema(Schema); });
      结构对齐参考卡：技能列表(record) + 总SP + 已使用SP
      标准模式：一次生成完整技能树
      分两步生成：先骨架，再补每一级特殊效果                                   */
-  async function generateSkillTree(styleHint, twoStep) {
+  async function generateSkillTree(styleHint, twoStep, standardMode) {
     return withLock('skill', async () => {
       try {
         const sd = readSnapshot();
@@ -377,7 +382,7 @@ $(() => { registerMvuSchema(Schema); });
 
         if (!twoStep) {
           const sys = ['你是召唤兽技能树生成器。', 共用约束].join('\n');
-          return await runGeneration(sys, 基线 + '\n\n请一次生成完整技能树。');
+          return await runGeneration(sys, 基线 + '\n\n请一次生成完整技能树。', standardMode);
         }
 
         // 第一步：骨架
@@ -390,7 +395,7 @@ $(() => { registerMvuSchema(Schema); });
           '另外写 /技能树/树名、/技能树/生成依据/物种、/技能树/生成依据/血统品阶、'
             + '/技能树/生成依据/契约形态、/技能树/生成依据/风格要求、/技能树/总SP、/技能树/已使用SP。',
         ].join('\n');
-        const r1 = await runGeneration(sys1, 基线 + '\n\n请生成技能树骨架（名称、类型、阶位、前置）。');
+        const r1 = await runGeneration(sys1, 基线 + '\n\n请生成技能树骨架（名称、类型、阶位、前置）。', standardMode);
         if (!r1.ok) return r1;
 
         // 第二步：补每一级特殊效果
@@ -406,7 +411,8 @@ $(() => { registerMvuSchema(Schema); });
         ].join('\n');
         const r2 = await runGeneration(
           sys2,
-          基线 + '\n\n【上一步生成的骨架】\n' + skeleton + '\n\n请补全每一级特殊效果。'
+          基线 + '\n\n【上一步生成的骨架】\n' + skeleton + '\n\n请补全每一级特殊效果。',
+          standardMode
         );
         if (!r2.ok) return { ok: false, reason: '第二步失败：' + r2.reason + '（骨架已写入，可重试）' };
         return { ok: true, raw: r2.raw, twoStep: true };

@@ -184,16 +184,22 @@ textarea:focus{border-color:var(--gold2)}
     return out;
   }
   function findOnHosts(path) {
+    var api = findHostApi(path);
+    return api ? api.fn : null;
+  }
+  function findHostApi(path) {
     var hs = hosts();
     for (var i = 0; i < hs.length; i++) {
       try {
         var cur = hs[i];
+        var parentObj = cur;
         var parts = path.split('.');
         for (var j = 0; j < parts.length; j++) {
           if (cur == null) { cur = null; break; }
+          parentObj = cur;
           cur = cur[parts[j]];
         }
-        if (typeof cur === 'function') return cur;
+        if (typeof cur === 'function') return { fn: cur, context: parentObj };
       } catch (e) { /* 跨域，跳过 */ }
     }
     return null;
@@ -288,8 +294,8 @@ textarea:focus{border-color:var(--gold2)}
     var text = $('#text').value.trim();
     if (!text) { toast('开局内容为空', false); return; }
 
-    var send = findOnHosts('TavernHelper.sendMessage') || findOnHosts('sendMessage');
-    if (typeof send !== 'function') {
+    var api = findHostApi('TavernHelper.sendMessage') || findHostApi('sendMessage');
+    if (!api || typeof api.fn !== 'function') {
       toast('拿不到发送接口（跨域限制），请点「复制文本」手动发送', false);
       return;
     }
@@ -302,7 +308,7 @@ textarea:focus{border-color:var(--gold2)}
       var picked = '自定义开局';
       PRESETS.forEach(function (p) { if (p.id === activeId) picked = p.name; });
 
-      await send.call(null, text, { name: 'user' });
+      await api.fn.call(api.context, text, { name: 'user' });
 
       var cmds = [
         "_.set('开局配置.开局预设', '" + picked.replace(/'/g, '') + "');",

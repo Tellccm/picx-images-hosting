@@ -54,7 +54,7 @@
   }
 
   // 优先用跨 iframe 共享接口，其次本窗口全局
-  async function callGenerator(styleHint, useTwoStep) {
+  async function callGenerator(styleHint, useTwoStep, isStandardMode) {
     const w = hostWindow();
     let fn = null;
     try {
@@ -62,7 +62,7 @@
     } catch (e) {}
     if (typeof fn !== 'function') fn = window['zhaohuan-gen_skill'] || w['zhaohuan-gen_skill'];
     if (typeof fn !== 'function') return { ok: false, reason: '生成器未注册（脚本侧未加载？）' };
-    return await fn(styleHint, useTwoStep);
+    return await fn(styleHint, useTwoStep, isStandardMode);
   }
 
   async function doGenerate() {
@@ -78,7 +78,7 @@
     const before = JSON.stringify((readSkillTree() || {}).技能列表 || {});
     try {
       const hint = String(($('#zks-style') || {}).value || '').trim();
-      const r = await callGenerator(hint, twoStep);
+      const r = await callGenerator(hint, twoStep, standardMode);
       if (r && r.ok) {
         toast(twoStep ? '技能树已生成（分两步）' : '技能树已生成');
         render();
