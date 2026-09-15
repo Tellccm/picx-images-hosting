@@ -15,7 +15,7 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
   padding:4px;line-height:1.6}
 .wrap{
-  max-width:660px;margin:12px auto;
+  max-width:680px;margin:12px auto;
   background:linear-gradient(165deg,#241820,#161013 72%);
   border:1px solid var(--line);border-radius:14px;padding:16px;
   box-shadow:0 10px 30px rgba(0,0,0,.5)}
@@ -23,175 +23,190 @@ body{
 .ttl{font-family:"Songti SC","STSong",serif;font-size:16px;font-weight:800;letter-spacing:.3em;color:var(--gold)}
 .sub{font-size:11.5px;color:var(--ink2);margin-top:5px}
 .done{font-size:11.5px;color:var(--gold2);margin-top:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:9px}
-.sec{margin-bottom:15px}
-.sec-hd{font-size:11.5px;letter-spacing:.2em;color:var(--gold);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(217,177,104,.16)}
-.hint{font-size:10.5px;color:var(--ink3);margin:-4px 0 8px;line-height:1.5}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.restored{font-size:11px;color:var(--ok);margin-top:8px}
+fieldset{border:0;margin:0 0 15px;padding:0;min-width:0}
+legend{
+  font-size:11.5px;letter-spacing:.2em;color:var(--gold);
+  margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(217,177,104,.16);
+  width:100%;display:block}
+.hint{font-size:10.5px;color:var(--ink3);margin:0 0 8px;line-height:1.55}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px;min-width:0}
 .opts{display:flex;flex-wrap:wrap;gap:7px}
 .opt{
   border:1px solid rgba(255,255,255,.13);border-radius:8px;background:rgba(0,0,0,.24);
-  color:var(--ink2);font-size:12px;padding:7px 13px;cursor:pointer;
-  font-family:inherit;transition:all .15s;text-align:left}
+  color:var(--ink2);font-size:12px;padding:9px 13px;min-height:38px;cursor:pointer;
+  font-family:inherit;transition:border-color .15s,background .15s,color .15s;text-align:left}
 .opt:hover{border-color:var(--gold);color:var(--ink)}
-.opt.on{background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503;font-weight:800;border-color:var(--gold2)}
+.opt[aria-pressed="true"]{background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503;font-weight:800;border-color:var(--gold2)}
 .opt .od{display:block;font-size:10px;font-weight:400;color:inherit;opacity:.75;margin-top:2px}
-.opt.on .od{opacity:.85}
-.opt.wide{flex:1 1 100%}
 .inp{
   width:100%;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.28);
-  color:var(--ink);padding:9px 11px;font-size:12.5px;font-family:inherit;outline:none}
+  color:var(--ink);padding:10px 11px;font-size:12.5px;font-family:inherit;outline:none;min-height:40px}
 .inp::placeholder{color:var(--ink3)}
-.inp:focus{border-color:var(--gold2)}
+.inp:focus-visible,.opt:focus-visible,.btn:focus-visible{outline:2px solid var(--gold2);outline-offset:1px}
 .lbl{font-size:11px;color:var(--ink3);margin-bottom:5px;display:block}
-.row{display:flex;gap:10px}
-.row>*{flex:1}
-.note{font-size:10.5px;color:var(--ink3);line-height:1.65;text-align:center;margin-top:12px}
-.note.warn{color:var(--danger)}
-.foot{display:flex;gap:9px;margin-top:14px}
-.btn{
-  flex:1;border:0;border-radius:9px;padding:11px;font-size:13px;font-weight:800;
-  letter-spacing:.08em;cursor:pointer;font-family:inherit;
-  background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503}
-.btn:hover:not(:disabled){filter:brightness(1.08)}
-.btn:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
-.btn.ghost{background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink2);flex:0 0 104px}
+.tal{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.tal-row{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:7px 9px}
+.tal-name{font-size:12px;color:var(--ink2);flex:1 1 auto}
+.tal-btn{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--line);
+  background:rgba(0,0,0,.3);color:var(--ink);font-size:15px;line-height:1;cursor:pointer;font-family:inherit}
+.tal-btn:disabled{opacity:.35;cursor:not-allowed}
+.tal-val{width:22px;text-align:center;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.tal-total{font-size:11.5px;color:var(--ink2);margin-top:7px}
+.tal-total b{color:var(--gold2);font-variant-numeric:tabular-nums}
+.tal-total.bad b{color:var(--danger)}
 .prev{
   font-size:11.5px;line-height:1.8;color:var(--ink2);background:rgba(0,0,0,.28);
   border:1px dashed rgba(217,177,104,.28);border-radius:9px;padding:11px 12px;
-  white-space:pre-wrap;max-height:260px;overflow:auto}
+  white-space:pre-wrap;max-height:280px;overflow:auto;width:100%;font-family:inherit;resize:vertical}
 .toast{
   position:fixed;left:50%;bottom:36px;transform:translateX(-50%);
   background:rgba(20,13,16,.97);border:1px solid var(--line);border-radius:9px;
   color:var(--ink);font-size:12.5px;padding:9px 18px;opacity:0;transition:opacity .22s;
   pointer-events:none;z-index:99;max-width:88vw;text-align:center}
 .toast.on{opacity:1}
+.foot{display:flex;gap:9px;margin-top:14px}
+.btn{
+  flex:1;border:0;border-radius:9px;padding:12px;font-size:13px;font-weight:800;
+  letter-spacing:.08em;cursor:pointer;font-family:inherit;min-height:44px;
+  background:linear-gradient(160deg,var(--gold2),#b98a34);color:#241503}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
+.btn.ghost{background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink2);flex:0 0 96px}
+.note{font-size:10.5px;color:var(--ink3);line-height:1.65;text-align:center;margin-top:12px}
+.note.warn{color:var(--danger)}
+.note.ok{color:var(--ok)}
+@media (prefers-reduced-motion: reduce){
+  .opt,.toast{transition:none}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="hd">
     <div class="ttl">开 局 登 记</div>
-    <div class="sub">王历规定：五至六岁行觉醒礼。下面这些将决定你站在这个世界的哪一层。</div>
+    <div class="sub">孩子生下来就带着自己的兽。是凡种还是王种，出生那天就定了 —— 下面这些决定你现在站在哪。</div>
+    <div class="restored" id="restored" style="display:none">已恢复上次未提交的填写。</div>
     <div class="done" id="done" style="display:none">
       <span id="done-text"></span>
-      <button class="btn ghost" id="reset" style="flex:0 0 auto;padding:4px 10px;font-size:11px">重置</button>
+      <button type="button" class="btn ghost" id="reset" style="flex:0 0 auto;padding:5px 10px;font-size:11px;min-height:32px">重置</button>
     </div>
   </div>
 
-  <!-- 1 身份 -->
-  <div class="sec">
-    <div class="sec-hd">一 · 你 是 谁</div>
+  <fieldset>
+    <legend>一 · 你 是 谁</legend>
     <div class="row" style="margin-bottom:8px">
-      <div><span class="lbl">姓名</span><input class="inp" id="name" placeholder="你的名字"></div>
-      <div style="flex:0 0 120px"><span class="lbl">觉醒年龄</span><input class="inp" id="age" type="number" min="5" max="6" value="6"></div>
+      <div style="flex:1 1 180px"><label class="lbl" for="name">姓名</label><input class="inp" id="name" placeholder="你的名字"></div>
+      <div style="flex:0 1 110px"><label class="lbl" for="age">年龄</label><input class="inp" id="age" type="number" min="6" max="200" value="18"></div>
     </div>
-    <div class="hint">觉醒年龄固定在五至六岁之间。它不决定天赋高低 —— 决定命运的是你带出了什么。</div>
-    <span class="lbl">觉醒结果</span>
-    <div class="opts" id="awaken">
-      <button class="opt" data-k="awaken" data-v="已觉醒">已觉醒<span class="od">正常带出召唤兽</span></button>
-      <button class="opt" data-k="awaken" data-v="未觉醒">未觉醒<span class="od">破例者：没有兽，处境真实</span></button>
-    </div>
-  </div>
+    <label class="lbl" for="origin">籍贯</label>
+    <input class="inp" id="origin" placeholder="例：霜镜城·下城 / 南境·香料港 / 北境某村">
+    <div class="hint" style="margin-top:8px">年龄只影响别人怎么看你，不换算成任何数值。这个世界也没有等级。</div>
+  </fieldset>
 
-  <!-- 2 你自己的路 -->
-  <div class="sec">
-    <div class="sec-hd">二 · 你 自 己 的 路</div>
+  <fieldset>
+    <legend>二 · 血 统 品 阶</legend>
+    <div class="hint">出生定死，终身不改。它决定进化树的阶段上限与技能树的 SP 总量。</div>
+    <div class="opts" id="rank" role="group" aria-label="血统品阶"></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>三 · 天 赋</legend>
+    <div class="hint">出生那一刻定下的底子，<b>终身不变</b>。每项 1–6，合计正好 15 点。之后的成长靠属性点。</div>
+    <div class="tal" id="talents"></div>
+    <div class="tal-total" id="tal-total">合计 <b>15</b> / 15</div>
+    <div class="hint" id="derived" style="margin-top:8px"></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>四 · 你 自 己 的 路</legend>
     <div class="hint">召唤兽是辅助，不是你的战力来源。你靠什么打，由你自己定 —— <b>不限制搭配</b>。</div>
     <div class="row" style="margin-bottom:8px">
-      <div><span class="lbl">流派（自由填写）</span><input class="inp" id="style" placeholder="例：剑术 / 火系 / 治疗 / 匕术 / 魔武双修"></div>
-      <div><span class="lbl">专精（自由填写）</span><input class="inp" id="spec" placeholder="例：重剑 / 塑能 / 净化 / 毒"></div>
+      <div><label class="lbl" for="style">流派（自由填写）</label><input class="inp" id="style" placeholder="例：剑术 / 火系 / 治疗 / 匕术 / 魔武双修"></div>
+      <div><label class="lbl" for="spec">专精（自由填写）</label><input class="inp" id="spec" placeholder="例：重剑 / 塑能 / 净化 / 毒"></div>
     </div>
     <div class="row">
-      <div><span class="lbl">武器</span><input class="inp" id="weapon" placeholder="例：父亲的旧剑 / 法杖 / 徒手"></div>
-      <div><span class="lbl">搭配倾向（可留空）</span><input class="inp" id="style-hint" placeholder="例：偏正面接战 / 偏远程"></div>
+      <div><label class="lbl" for="weapon">武器</label><input class="inp" id="weapon" placeholder="例：父亲的旧剑 / 法杖 / 徒手"></div>
+      <div><label class="lbl" for="style-hint">搭配倾向（可选）</label><input class="inp" id="style-hint" placeholder="例：偏正面接战 / 偏远程"></div>
     </div>
-  </div>
+  </fieldset>
 
-  <!-- 3 品阶 -->
-  <div class="sec">
-    <div class="sec-hd">三 · 血 统 品 阶</div>
-    <div class="hint" id="rank-hint">决定进化树的阶段上限与技能树的 SP 总量。觉醒礼那一刻定下，此生不可更改。</div>
-    <div class="opts" id="rank"></div>
-  </div>
+  <fieldset>
+    <legend>五 · 出 身</legend>
+    <span class="lbl" id="lbl-family">家族背景</span>
+    <div class="opts" id="family" role="group" aria-labelledby="lbl-family" style="margin-bottom:10px"></div>
+    <span class="lbl" id="lbl-faction">出身势力</span>
+    <div class="opts" id="faction" role="group" aria-labelledby="lbl-faction"></div>
+  </fieldset>
 
-  <!-- 4 出身 -->
-  <div class="sec">
-    <div class="sec-hd">四 · 出 身</div>
-    <span class="lbl">家族背景</span>
-    <div class="opts" id="family" style="margin-bottom:10px"></div>
-    <span class="lbl">出身势力</span>
-    <div class="opts" id="faction" style="margin-bottom:10px"></div>
-    <span class="lbl">就读学院</span>
-    <div class="opts" id="academy"></div>
-  </div>
-
-  <!-- 5 初始召唤兽 -->
-  <div class="sec" id="beast-sec">
-    <div class="sec-hd">五 · 初 始 召 唤 兽</div>
-    <div class="hint">觉醒礼上先看出的是「像什么」—— 细节与名字是后来才定下来的。</div>
-    <span class="lbl">类别</span>
-    <div class="opts" id="beast-cat" style="margin-bottom:10px"></div>
-    <span class="lbl">元素倾向</span>
-    <div class="opts" id="beast-elem" style="margin-bottom:10px"></div>
+  <fieldset id="beast-sec">
+    <legend>六 · 你 的 召 唤 兽</legend>
+    <div class="hint">出生那天先看出的是「像什么」，细节与名字是后来才定的。</div>
+    <span class="lbl" id="lbl-cat">类别</span>
+    <div class="opts" id="beast-cat" role="group" aria-labelledby="lbl-cat" style="margin-bottom:10px"></div>
+    <span class="lbl" id="lbl-elem">元素倾向</span>
+    <div class="opts" id="beast-elem" role="group" aria-labelledby="lbl-elem" style="margin-bottom:10px"></div>
     <div class="row" style="margin-bottom:4px">
-      <div><span class="lbl">给它取名</span><input class="inp" id="beast-name" placeholder="例：灰耳 / 阿炭 / 雪团"></div>
-      <div style="flex:0 0 118px"><span class="lbl">&nbsp;</span><button class="opt" id="roll-name" style="width:100%;padding:9px 10px">换个名字</button></div>
+      <div><label class="lbl" for="beast-name">给它取名</label><input class="inp" id="beast-name" placeholder="例：灰耳 / 阿炭 / 雪团"></div>
+      <div style="flex:0 0 118px"><span class="lbl">&nbsp;</span><button type="button" class="opt" id="roll-name" style="width:100%;justify-content:center">换个名字</button></div>
     </div>
-    <div class="hint" id="name-hint">名字你说了算。觉醒当场通常来不及取，几天后才定下来也正常 —— 但这一栏定了，它就一直是这个名。</div>
+    <div class="hint" id="name-hint">名字你说了算。出生当场通常来不及取，几天后才定下来也正常 —— 但这一栏定了，它就一直是这个名。</div>
     <div class="row" style="margin-bottom:8px">
-      <div><span class="lbl">最显眼的特征</span><input class="inp" id="beast-mark" placeholder="例：右翼缺一羽"></div>
+      <div><label class="lbl" for="beast-mark">最显眼的特征</label><input class="inp" id="beast-mark" placeholder="例：右翼缺一羽"></div>
     </div>
-    <span class="lbl">战力倾向（决定它在战斗里做什么）</span>
-    <div class="opts" id="beast-role" style="margin-bottom:10px"></div>
+    <span class="lbl" id="lbl-role">战力倾向（决定它在战斗里做什么）</span>
+    <div class="opts" id="beast-role" role="group" aria-labelledby="lbl-role" style="margin-bottom:10px"></div>
     <div class="row">
-      <div><span class="lbl">性格（自定义）</span><input class="inp" id="beast-temper" placeholder="例：护食、认生、懒散但真出事时最快"></div>
-      <div><span class="lbl">外貌（自定义）</span><input class="inp" id="beast-look" placeholder="例：灰白杂毛，左耳缺一块"></div>
+      <div><label class="lbl" for="beast-temper">性格（自定义）</label><input class="inp" id="beast-temper" placeholder="例：护食、认生、懒散但真出事时最快"></div>
+      <div><label class="lbl" for="beast-look">外貌（自定义）</label><input class="inp" id="beast-look" placeholder="例：灰白杂毛，左耳缺一块"></div>
     </div>
-  </div>
+  </fieldset>
 
-  <!-- 6 初始资源 -->
-  <div class="sec">
-    <div class="sec-hd">六 · 初 始 天 赋 与 随 身</div>
-    <div class="hint">觉醒者获得 3 点天赋点，可在养成面板自由分配。破例者没有召唤兽，因此没有天赋点，但有别的路。</div>
-    <span class="lbl">随身物品（两件，用顿号分隔）</span>
-    <input class="inp" id="items" placeholder="例：母亲的铜扣、一把钝匕首">
-  </div>
+  <fieldset>
+    <legend>七 · 冒 险 者 公 会</legend>
+    <div class="hint">「等级」在这个世界只有一个来源：去公会登记，让鉴定师给你的兽评一个级。评级决定你能接什么契级的活。</div>
+    <span class="lbl" id="lbl-reg">登记状态</span>
+    <div class="opts" id="reg" role="group" aria-labelledby="lbl-reg" style="margin-bottom:10px"></div>
+    <div id="rating-box">
+      <span class="lbl" id="lbl-rating">评级（刚登记一般从 D 起）</span>
+      <div class="opts" id="rating" role="group" aria-labelledby="lbl-rating"></div>
+    </div>
+  </fieldset>
 
-  <!-- 7 开局设定 -->
-  <div class="sec">
-    <div class="sec-hd">七 · 开 局 设 定</div>
-    <span class="lbl">起始地点</span>
-    <div class="opts" id="place" style="margin-bottom:6px"></div>
-    <input class="inp" id="place-custom" placeholder="或自己写一个：例，灰石要塞的关卡前" style="margin-bottom:10px">
-    <span class="lbl">开局风格</span>
-    <div class="opts" id="tone" style="margin-bottom:6px"></div>
-    <input class="inp" id="tone-custom" placeholder="或自己写一个：例，刚从北境退下来，身上还带着伤">
-    <span class="lbl" style="margin-top:10px">开局处境补充（可选）</span>
+  <fieldset>
+    <legend>八 · 开 局 面 貌</legend>
+    <span class="lbl" id="lbl-place">起始地点</span>
+    <div class="opts" id="place" role="group" aria-labelledby="lbl-place" style="margin-bottom:6px"></div>
+    <label class="lbl" for="place-custom">或自己写一个</label>
+    <input class="inp" id="place-custom" placeholder="例：灰石要塞的关卡前" style="margin-bottom:10px">
+    <span class="lbl" id="lbl-tone">开局处境</span>
+    <div class="opts" id="tone" role="group" aria-labelledby="lbl-tone" style="margin-bottom:6px"></div>
+    <label class="lbl" for="tone-custom">或自己写一个</label>
+    <input class="inp" id="tone-custom" placeholder="例：刚从北境退下来，身上还带着伤" style="margin-bottom:10px">
+    <label class="lbl" for="items">随身物品（用顿号分隔）</label>
+    <input class="inp" id="items" placeholder="例：母亲的铜扣、一把钝匕首" style="margin-bottom:10px">
+    <label class="lbl" for="situation">补充（可选）</label>
     <input class="inp" id="situation" placeholder="例：欠了赤铜商会一笔钱，月底到期">
-  </div>
+  </fieldset>
 
-  <!-- 注入控制 -->
-  <div class="sec">
-    <div class="sec-hd">八 · 注 入 控 制</div>
-    <div class="opts" id="inject"></div>
-  </div>
-
-  <!-- 预览与发送 -->
-  <div class="sec">
-    <div class="sec-hd">开 局 陈 述</div>
+  <fieldset>
+    <legend>开 局 陈 述</legend>
     <div class="hint">下面是根据你的选择生成的陈述。可以直接改，也可以全部重写。</div>
-    <textarea class="prev" id="text" style="min-height:150px;resize:vertical"></textarea>
-  </div>
+    <label class="lbl" for="text" style="position:absolute;left:-9999px">开局陈述</label>
+    <textarea class="prev" id="text" style="min-height:170px"></textarea>
+  </fieldset>
 
   <div class="foot">
-    <button class="btn" id="send">确认并开始</button>
-    <button class="btn ghost" id="copy">复制</button>
+    <button type="button" class="btn" id="send">确认并开始</button>
+    <button type="button" class="btn ghost" id="copy">复制</button>
   </div>
 
-  <div class="note" id="note">提交后会写入你的状态，并把这段陈述作为第一条消息发送。</div>
+  <div class="note" id="note" role="status" aria-live="polite">提交后会先把选择写进你的状态，再把这段陈述作为第一条消息发送。</div>
 </div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function () {
@@ -213,17 +228,10 @@ body{
       ['弃子', '被家族除名，来历不明。没有后盾，也没有束缚']
     ],
     faction: [
-      ['灰塔学院', '学术至上，掌握觉醒档案与品阶鉴定权'],
+      ['灰塔学院', '学术至上，掌握名册与品阶鉴定权'],
       ['铁蔷薇骑士团', '尚武。认实力不认出身，凡种出身者唯一被平等看待的地方'],
       ['赤铜商会', '重利。情报最灵通，什么都能谈'],
       ['无籍游民', '没有靠山，也没有约束']
-    ],
-    academy: [
-      ['白垩塔', '正统召唤学，资源最厚，最讲规矩'],
-      ['灰烬所', '专收异种与问题儿童。名声差，教习多是实战派'],
-      ['未入学', '没拿到名额。可能因为品阶太低，也可能因为交不起荐书钱'],
-      ['家族私塾', '由家族自己教养。资源看家族'],
-      ['破例者不入学', '不入册，不被招生名册收录']
     ],
     beastCat: [
       ['兽类', '犬、狼、狮、豹、熊、犀。最常见，最看体格'],
@@ -233,7 +241,7 @@ body{
       ['爬行类', '蜥、蛇、龟、鳄。皮糙，抗性强，动作慢'],
       ['虫类', '蜂、蛛、甲虫、螳。群体或单体的极端'],
       ['水生类', '鲸、鲨、鳐、章。要有水才发挥得开'],
-      ['异种类', '归不进上面任何一类的。多被送进灰烬所']
+      ['异种类', '归不进上面任何一类的。多是麻烦'],
     ],
     beastElem: [
       ['无', '大多数。没有元素倾向，就是普通的兽'],
@@ -253,23 +261,33 @@ body{
       ['驮运', '背东西、驮人、走长路'],
       ['示警', '提前发现危险，叫一声让你知道']
     ],
+    reg: [
+      ['未登记', '没去公会登记过。评级是「未评级」，只能接最轻的活'],
+      ['已登记', '在公会名册上。按评级接活，出了事公会认']
+    ],
+    rating: [
+      ['D', '刚登记。杂活与短途护送'],
+      ['C', '有实绩了。清剿、探查、护商队'],
+      ['B', '会伤人的活。抓逃犯、清理据点'],
+      ['A', '会死人的活。协助军务、讨伐巢穴']
+    ],
     place: [
-      ['灰塔学院·东院', '入学第一天，宿舍通铺'],
       ['霜镜城·下城', '铁砧巷或麦穗酒馆一带'],
       ['霜镜城·上城', '白鸦街，鉴定所门口'],
-      ['城外·梯田', '采集课或自己去'],
-      ['旧矿道', '没有来路的地方']
+      ['灰塔学院·东院', '学院里'],
+      ['城外·崖壁梯田', '采集课或自己去'],
+      ['旧矿道', '没有来路的地方'],
+      ['白桦镇', '中部平原的集镇，三天路程'],
+      ['香料港', '南境大港，半个月路程'],
+      ['灰石要塞', '南北必经的关口，五天路程']
     ],
     tone: [
-      ['入学日', '从踏入学院的那一天开始'],
-      ['觉醒之后', '从觉醒礼结束、众人散去之后开始'],
-      ['已入学一年', '已经在学院待了一年，熟悉了规矩'],
-      ['游离在外', '不在学院体系内，自己在城里讨生活']
-    ],
-    inject: [
-      ['nopreset', '不用预设', '开局那一条不套用当前预设的提示词'],
-      ['noworldbook', '不带世界书', '开局那一条不注入世界书设定条目'],
-      ['nohistory', '不带对话', '开局那一条不携带已有聊天历史']
+      ['寻常日子', '就是一个普通的日子，什么也没发生'],
+      ['学徒期', '跟着人或铺子学手艺，还什么都没成'],
+      ['第一份委托', '刚接下公会的头一份活'],
+      ['从北境退下来', '身上还带着伤，钱快花完了'],
+      ['欠债中', '欠了一笔钱，期限不远'],
+      ['刚搬来', '人生地不熟，谁都不认识']
     ]
   };
 
@@ -279,157 +297,31 @@ body{
     '薄雾', '灯芯', '阿灰', '铜钱', '沙砾', '短耳', '小蓟', '阿岚', '绯瞳', '骨朵'
   ];
 
-  var pick = {};   // 单选结果
-  var inject = {}; // 注入开关
+  var ATTRS = ['力量', '敏捷', '体质', '智力', '精神'];
+  var TALENT_TOTAL = 15;
+  var TALENT_MIN = 1, TALENT_MAX = 6;
+
+  var pick = {};
+  var talents = { 力量: 3, 敏捷: 3, 体质: 3, 智力: 3, 精神: 3 };
 
   var $ = function (s) { return document.querySelector(s); };
-  function toast(msg, ok) {
-    var el = $('#toast');
-    el.textContent = msg;
-    el.style.borderColor = ok === false ? 'rgba(217,106,116,.75)' : 'rgba(217,177,104,.6)';
-    el.classList.add('on');
-    clearTimeout(el._t);
-    el._t = setTimeout(function () { el.classList.remove('on'); }, 2600);
-  }
-  function esc(s) { return String(s == null ? '' : s); }
+  function byId(id) { return document.getElementById(id); }
 
-  function renderOpts(hostId, key, list) {
-    var host = document.getElementById(hostId);
-    if (!host) return;
-    host.innerHTML = list.map(function (r) {
-      var on = pick[key] === r[0] ? ' on' : '';
-      return '<button class="opt' + on + '" data-k="' + key + '" data-v="' + r[0] + '">' +
-        r[0] + (r[1] ? '<span class="od">' + r[1] + '</span>' : '') + '</button>';
-    }).join('');
-  }
-
-  function renderInject() {
-    var host = document.getElementById('inject');
-    host.innerHTML = DATA.inject.map(function (r) {
-      var on = inject[r[0]] ? ' on' : '';
-      return '<button class="opt' + on + '" data-inj="' + r[0] + '">' + r[1] +
-        '<span class="od">' + r[2] + '</span></button>';
-    }).join('');
-  }
-
-  function buildText() {
-    function v(sel) { var el = $(sel); return el ? String(el.value || '').trim() : ''; }
-    var name = v('#name') || '我';
-    var age = $('#age').value || 6;
-    var unawakened = pick.awaken === '未觉醒';
-    var place = v('#place-custom') || pick.place || '灰塔学院·东院';
-    var tone = v('#tone-custom') || pick.tone || '入学日';
-    var L = [];
-
-    L.push('【开局登记】');
-    L.push('姓名：' + name + '　觉醒年龄：' + age + ' 岁　觉醒结果：' + (pick.awaken || '已觉醒'));
-    L.push('我的路：' + (v('#style') || '未定') +
-      (v('#spec') ? '（' + v('#spec') + '）' : '') +
-      (v('#style-hint') ? '　倾向：' + v('#style-hint') : '') +
-      '　武器：' + (v('#weapon') || '徒手'));
-    L.push(unawakened ? '血统品阶：无（破例者）' : '血统品阶：' + (pick.rank || '凡种'));
-    L.push('家族背景：' + (pick.family || '平民') +
-      '　出身势力：' + (pick.faction || '无籍游民') +
-      '　就读：' + (pick.academy || '未入学'));
-
-    if (!unawakened) {
-      var nm = v('#beast-name');
-      var mk = v('#beast-mark');
-      var look = v('#beast-look');
-      var tem = v('#beast-temper');
-      var cat = pick.beastCat || '兽类';
-      var elem = pick.beastElem || '无';
-      if (!nm) nm = '未命名';
-      var line = '初始召唤兽：' + (pick.rank || '凡种') + '·' + cat +
-        (elem !== '无' ? '（' + elem + '元素）' : '') +
-        '　名字：' + nm;
-      if (mk) line += '　特征：' + mk;
-      if (look) line += '　外貌：' + look;
-      if (tem) line += '　性格：' + tem;
-      if (pick.beastRole) line += '　战力倾向：' + pick.beastRole;
-      L.push(line);
-    }
-
-    L.push('随身物品：' + (v('#items') || '身无长物'));
-    L.push('起始地点：' + place);
-    L.push('开局风格：' + tone);
-    if (v('#situation')) L.push('开局处境：' + v('#situation'));
-    L.push('');
-    L.push('请从这个局面开始。按〈世界规则〉与〈五维与职业体系〉判定。');
-    L.push('记住：召唤兽是辅助，不是我的战力来源 —— 我自己靠' + (v('#style') || '流派') + '打。');
-    L.push('不要替我决定，也不要给我无依据的优待。');
-    return L.join('\n');
-  }
-
-  function refresh() {
-    // 未觉醒者没有召唤兽，隐藏该段
-    var un = pick.awaken === '未觉醒';
-    $('#beast-sec').style.display = un ? 'none' : '';
-    if ($('#rank-hint')) {
-      $('#rank-hint').textContent = un
-        ? '破例者：不入觉醒册，没有召唤兽。品阶与你无关 —— 这是设计如此。'
-        : '决定进化树的阶段上限与技能树的 SP 总量。觉醒礼那一刻定下，此生不可更改。';
-    }
-    document.getElementById('rank').style.opacity = un ? '.35' : '1';
-    document.getElementById('rank').style.pointerEvents = un ? 'none' : '';
-    $('#text').value = buildText();
-  }
-
-  document.addEventListener('click', function (e) {
-    var t = e.target;
-    if (!t.closest) return;
-    var o = t.closest('[data-k]');
-    if (o) {
-      pick[o.getAttribute('data-k')] = o.getAttribute('data-v');
-      var k = o.getAttribute('data-k');
-      var map = { awaken: ['awaken', []], rank: ['rank', DATA.rank],
-        family: ['family', DATA.family], faction: ['faction', DATA.faction],
-        academy: ['academy', DATA.academy],
-        beastCat: ['beast-cat', DATA.beastCat], beastElem: ['beast-elem', DATA.beastElem],
-        beastRole: ['beast-role', DATA.beastRole],
-        place: ['place', DATA.place], tone: ['tone', DATA.tone] };
-      if (k === 'awaken') {
-        var host = document.getElementById('awaken');
-        Array.prototype.forEach.call(host.querySelectorAll('.opt'), function (b) {
-          b.className = 'opt' + (b.getAttribute('data-v') === pick.awaken ? ' on' : '');
-        });
-      } else if (map[k]) {
-        renderOpts(map[k][0], k, map[k][1]);
-      }
-      refresh();
-      return;
-    }
-    var inj = t.closest('[data-inj]');
-    if (inj) {
-      var key = inj.getAttribute('data-inj');
-      inject[key] = !inject[key];
-      renderInject();
-      return;
-    }
-  });
-
-  var rollBtn = document.getElementById('roll-name');
-  if (rollBtn) rollBtn.addEventListener('click', function () {
-    var used = {};
-    var pool = NAME_POOL.filter(function (n) { return n !== $('#beast-name').value.trim(); });
-    var nm = pool[Math.floor(Math.random() * pool.length)] || '灰耳';
-    $('#beast-name').value = nm;
-    $('#text').value = buildText();
-    $('#name-hint').textContent = '已填入「' + nm + '」。不满意就再点一次，或者自己改。';
-  });
-
-  ['#name', '#age', '#items', '#beast-name', '#beast-mark', '#beast-look',
-   '#style', '#spec', '#weapon', '#style-hint', '#place-custom', '#tone-custom', '#situation'].forEach(function (sel) {
-    var el = $(sel);
-    if (el) el.addEventListener('input', function () { $('#text').value = buildText(); });
-  });
-
-  /* ---------- 宿主桥接（三级探测 + 降级） ---------- */
+  /* ---------- 宿主桥接（三级探测） ---------- */
   function hosts() {
     var out = [window];
     try { if (window.parent && window.parent !== window) out.push(window.parent); } catch (e) {}
     try { if (window.top && window.top !== window && window.top !== window.parent) out.push(window.top); } catch (e) {}
     return out;
+  }
+  function ctxOf() {
+    var hs = hosts();
+    for (var i = 0; i < hs.length; i++) {
+      try {
+        if (hs[i].SillyTavern && typeof hs[i].SillyTavern.getContext === 'function') return hs[i].SillyTavern.getContext();
+      } catch (e) {}
+    }
+    return null;
   }
   function findHostApi(path) {
     var hs = hosts();
@@ -464,185 +356,440 @@ body{
     for (var i = 0; i < hs.length; i++) { try { if (hs[i].Mvu) return hs[i].Mvu; } catch (e) {} }
     return null;
   }
-  function ctxOf() {
-    var hs = hosts();
-    for (var i = 0; i < hs.length; i++) {
-      try {
-        if (hs[i].SillyTavern && typeof hs[i].SillyTavern.getContext === 'function') return hs[i].SillyTavern.getContext();
-      } catch (e) {}
-    }
-    return null;
-  }
-  function applyInject() {
+  function chatId() {
     var ctx = ctxOf();
-    if (!ctx || !ctx.chatMetadata) return false;
-    var md = ctx.chatMetadata;
-    if (inject.nopreset) md.skip_preset = true;
-    if (inject.noworldbook) md.disable_world_info = true;
-    if (inject.nohistory) md.max_chat_history = 1;
-    try { if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata(); } catch (e) {}
-    return true;
-  }
-  function clearInject() {
-    var ctx = ctxOf();
-    if (!ctx || !ctx.chatMetadata) return;
-    var md = ctx.chatMetadata;
-    delete md.skip_preset; delete md.disable_world_info; delete md.max_chat_history;
-    try { if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata(); } catch (e) {}
+    if (!ctx) return 'default';
+    try {
+      if (ctx.chatId) return String(ctx.chatId);
+      if (ctx.chatMetadata && ctx.chatMetadata.chat_id) return String(ctx.chatMetadata.chat_id);
+      if (ctx.chat && ctx.chat.length && ctx.characters && ctx.characterId !== undefined) {
+        return 'char' + ctx.characterId + ':msgs' + ctx.chat.length;
+      }
+    } catch (e) {}
+    return 'default';
   }
 
+  /* ---------- 提示 ---------- */
+  function toast(msg, ok) {
+    var el = byId('toast');
+    el.textContent = msg;
+    el.style.borderColor = ok === false ? 'rgba(217,106,116,.75)' : 'rgba(217,177,104,.6)';
+    el.classList.add('on');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove('on'); }, 2800);
+  }
+  function note(msg, cls) {
+    var el = byId('note');
+    el.className = 'note' + (cls ? ' ' + cls : '');
+    el.textContent = msg;
+  }
+
+  /* ---------- 选项渲染（DOM 构造，不用 innerHTML 拼用户数据） ---------- */
+  function renderOpts(hostId, key, list) {
+    var host = byId(hostId);
+    if (!host) return;
+    host.textContent = '';
+    list.forEach(function (r) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.setAttribute('data-k', key);
+      b.setAttribute('data-v', r[0]);
+      b.setAttribute('aria-pressed', pick[key] === r[0] ? 'true' : 'false');
+      b.appendChild(document.createTextNode(r[0]));
+      if (r[1]) {
+        var s = document.createElement('span');
+        s.className = 'od';
+        s.textContent = r[1];
+        b.appendChild(s);
+      }
+      host.appendChild(b);
+    });
+  }
+  function syncPressed(hostId, key) {
+    var host = byId(hostId);
+    if (!host) return;
+    Array.prototype.forEach.call(host.querySelectorAll('.opt'), function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-v') === pick[key] ? 'true' : 'false');
+    });
+  }
+
+  var RENDER_MAP = {
+    rank: ['rank', 'rank'], family: ['family', 'family'], faction: ['faction', 'faction'],
+    beastCat: ['beast-cat', 'beastCat'], beastElem: ['beast-elem', 'beastElem'],
+    beastRole: ['beast-role', 'beastRole'], reg: ['reg', 'reg'],
+    rating: ['rating', 'rating'], place: ['place', 'place'], tone: ['tone', 'tone']
+  };
+
+  /* ---------- 天赋分配 ---------- */
+  function talentSum() {
+    return ATTRS.reduce(function (a, k) { return a + (talents[k] || 0); }, 0);
+  }
+  function renderTalents() {
+    var host = byId('talents');
+    host.textContent = '';
+    ATTRS.forEach(function (k) {
+      var row = document.createElement('div');
+      row.className = 'tal-row';
+
+      var name = document.createElement('span');
+      name.className = 'tal-name';
+      name.textContent = k;
+
+      var minus = document.createElement('button');
+      minus.type = 'button'; minus.className = 'tal-btn'; minus.textContent = '−';
+      minus.setAttribute('aria-label', k + ' 减一');
+      minus.disabled = talents[k] <= TALENT_MIN;
+
+      var val = document.createElement('span');
+      val.className = 'tal-val';
+      val.textContent = String(talents[k]);
+
+      var plus = document.createElement('button');
+      plus.type = 'button'; plus.className = 'tal-btn'; plus.textContent = '+';
+      plus.setAttribute('aria-label', k + ' 加一');
+      plus.disabled = talents[k] >= TALENT_MAX || talentSum() >= TALENT_TOTAL;
+
+      minus.addEventListener('click', function () {
+        if (talents[k] > TALENT_MIN) { talents[k]--; renderTalents(); refresh(); }
+      });
+      plus.addEventListener('click', function () {
+        if (talents[k] < TALENT_MAX && talentSum() < TALENT_TOTAL) { talents[k]++; renderTalents(); refresh(); }
+      });
+
+      row.appendChild(name); row.appendChild(minus); row.appendChild(val); row.appendChild(plus);
+      host.appendChild(row);
+    });
+    var sum = talentSum();
+    var tot = byId('tal-total');
+    tot.className = 'tal-total' + (sum === TALENT_TOTAL ? '' : ' bad');
+    tot.textContent = '';
+    tot.appendChild(document.createTextNode('合计 '));
+    var b = document.createElement('b');
+    b.textContent = String(sum);
+    tot.appendChild(b);
+    tot.appendChild(document.createTextNode(' / ' + TALENT_TOTAL +
+      (sum === TALENT_TOTAL ? '' : (sum < TALENT_TOTAL ? '（还有 ' + (TALENT_TOTAL - sum) + ' 点没分）' : '（超了 ' + (sum - TALENT_TOTAL) + ' 点）'))));
+
+    var con = talents['体质'] || 1, int = talents['智力'] || 1, spi = talents['精神'] || 1;
+    byId('derived').textContent = '按此推算：生命上限 ' + (con * 10) + '　法力上限 ' + ((int + spi) * 3);
+  }
+
+  /* ---------- 陈述生成 ---------- */
+  function v(sel) { var el = $(sel); return el ? String(el.value || '').trim() : ''; }
+  function curPlace() { return v('#place-custom') || pick.place || '霜镜城·下城'; }
+  function curTone() { return v('#tone-custom') || pick.tone || '寻常日子'; }
+  function beastSpecies() {
+    var cat = pick.beastCat || '兽类';
+    var el = pick.beastElem || '无';
+    return cat + (el !== '无' ? '·' + el : '');
+  }
+  function isRegistered() { return pick.reg === '已登记'; }
+
+  function buildText() {
+    var name = v('#name') || '我';
+    var age = parseInt(v('#age'), 10) || 18;
+    var L = [];
+
+    L.push('【开局登记】');
+    L.push('姓名：' + name + '　年龄：' + age + '　籍贯：' + (v('#origin') || '未定'));
+    L.push('血统品阶：' + (pick.rank || '凡种'));
+    L.push('五维（天赋基础）：' + ATTRS.map(function (k) { return k + ' ' + talents[k]; }).join('　'));
+    L.push('我的路：' + (v('#style') || '未定') +
+      (v('#spec') ? '（' + v('#spec') + '）' : '') +
+      (v('#style-hint') ? '　倾向：' + v('#style-hint') : '') +
+      '　武器：' + (v('#weapon') || '徒手'));
+    L.push('家族背景：' + (pick.family || '平民') + '　出身势力：' + (pick.faction || '无籍游民'));
+
+    var nm = v('#beast-name') || '未命名';
+    var line = '召唤兽：' + (pick.rank || '凡种') + '·' + beastSpecies() + '　名字：' + nm;
+    if (v('#beast-mark')) line += '　特征：' + v('#beast-mark');
+    if (v('#beast-look')) line += '　外貌：' + v('#beast-look');
+    if (v('#beast-temper')) line += '　性格：' + v('#beast-temper');
+    if (pick.beastRole) line += '　战力倾向：' + pick.beastRole;
+    L.push(line);
+
+    L.push('冒险者公会：' + (isRegistered() ? '已登记，评级 ' + (pick.rating || 'D') : '未登记'));
+    L.push('随身物品：' + (v('#items') || '身无长物'));
+    L.push('起始地点：' + curPlace());
+    L.push('开局处境：' + curTone());
+    if (v('#situation')) L.push('补充：' + v('#situation'));
+    L.push('');
+    L.push('请从这个局面开始。判定用〈世界规则〉与〈核心数值表〉。');
+    L.push('记住：召唤兽是辅助，不是我的战力来源 —— 我自己靠' + (v('#style') || '流派') + '打。');
+    L.push('这个世界没有等级。不要写我升级，也不要凭空给我属性。');
+    L.push('不要替我决定，也不要给我无依据的优待。');
+    return L.join('\n');
+  }
+
+  function refresh() {
+    byId('rating-box').style.display = isRegistered() ? '' : 'none';
+    byId('text').value = buildText();
+    scheduleSave();
+  }
+
+  /* ---------- 草稿持久化 ----------
+     开局页是远程裸 load 进消息体的：滑页、编辑、刷新、切聊天都会重建消息 DOM、
+     重载 iframe。页面本身不留状态，但**还没提交的填写**必须活下来，
+     否则玩家填了七八项就全丢了。按聊天 id 隔离。 */
+  function draftKey() { return 'zhaohuan:draft:' + chatId(); }
+  function collectDraft() {
+    var f = {};
+    ['#name', '#age', '#origin', '#style', '#spec', '#weapon', '#style-hint',
+     '#beast-name', '#beast-mark', '#beast-look', '#beast-temper',
+     '#place-custom', '#tone-custom', '#items', '#situation'].forEach(function (s) {
+      f[s] = v(s);
+    });
+    return { v: 1, pick: pick, talents: talents, fields: f, ts: Date.now() };
+  }
+  var saveTimer = null;
+  function scheduleSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveDraft, 400);
+  }
+  function saveDraft() {
+    try { window.localStorage.setItem(draftKey(), JSON.stringify(collectDraft())); return true; }
+    catch (e) { return false; }
+  }
+  function loadDraft() {
+    try {
+      var raw = window.localStorage.getItem(draftKey());
+      if (!raw) return false;
+      var d = JSON.parse(raw);
+      if (!d || d.v !== 1) return false;
+      if (d.pick) Object.keys(d.pick).forEach(function (k) { pick[k] = d.pick[k]; });
+      if (d.talents) ATTRS.forEach(function (k) {
+        var n = parseInt(d.talents[k], 10);
+        if (n >= TALENT_MIN && n <= TALENT_MAX) talents[k] = n;
+      });
+      if (d.fields) Object.keys(d.fields).forEach(function (s) {
+        var el = $(s); if (el) el.value = d.fields[s];
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+  function clearDraft() {
+    try { window.localStorage.removeItem(draftKey()); } catch (e) {}
+  }
+
+  /* ---------- 变量写入 ---------- */
+  function q(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
   async function writeVars(cmds) {
     var M = findMvu();
-    if (!M) return false;
+    if (!M || typeof M.getMvuData !== 'function' || typeof M.parseMessage !== 'function') {
+      return { ok: false, reason: 'MVU 未就绪' };
+    }
     try {
       var old = M.getMvuData({ type: 'message', message_id: 'latest' });
-      if (!old) return false;
+      if (!old) return { ok: false, reason: '读不到变量' };
       var next = await M.parseMessage(cmds.join('\n'), old);
-      if (!next) return false;
+      if (!next) return { ok: false, reason: '未能解析变量更新' };
       await M.replaceMvuData(next, { type: 'message', message_id: 'latest' });
-      return true;
-    } catch (e) { console.warn('[开局] 写入失败', e); return false; }
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, reason: (e && e.message) ? e.message : String(e) };
+    }
   }
-  function q(s) { return String(s == null ? '' : s).replace(/'/g, ''); }
 
+  function buildCmds() {
+    var age = parseInt(v('#age'), 10) || 18;
+    if (age < 6) age = 6; if (age > 200) age = 200;
+    var itemsArr = ($('#items').value || '').split(/[、,，]/)
+      .map(function (x) { return x.trim(); })
+      .filter(function (x) { return x; });
+    var stats = {};
+    ATTRS.forEach(function (k) { stats[k] = talents[k]; });
+    var con = talents['体质'] || 1, int = talents['智力'] || 1, spi = talents['精神'] || 1;
+    var hpMax = con * 10, mpMax = (int + spi) * 3;
+
+    var cmds = [
+      "_.set('自身.姓名', '" + q(v('#name') || 'user') + "');",
+      "_.set('自身.年龄', " + age + ");",
+      "_.set('自身.籍贯', '" + q(v('#origin') || '未定') + "');",
+      "_.set('自身.家族背景', '" + q(pick.family || '平民') + "');",
+      "_.set('自身.出身势力', '" + q(pick.faction || '无籍游民') + "');",
+      "_.set('自身.流派', '" + q(v('#style') || '未定') + "');",
+      "_.set('自身.专精', '" + q(v('#spec') || '未定') + "');",
+      "_.set('自身.武器', '" + q(v('#weapon') || '徒手') + "');",
+      "_.set('自身.天赋', " + JSON.stringify(stats) + ");",
+      "_.set('自身.属性', " + JSON.stringify(stats) + ");",
+      "_.set('自身.资源.生命上限', " + hpMax + ");",
+      "_.set('自身.资源.生命', " + hpMax + ");",
+      "_.set('自身.资源.法力上限', " + mpMax + ");",
+      "_.set('自身.资源.法力', " + mpMax + ");",
+      "_.set('自身.随身物品', " + JSON.stringify(itemsArr) + ");",
+      "_.set('常态状态.地点', '" + q(curPlace()) + "');",
+      "_.set('冒险者.已登记', " + (isRegistered() ? 'true' : 'false') + ");",
+      "_.set('冒险者.评级', '" + (isRegistered() ? (pick.rating || 'D') : '未评级') + "');",
+      "_.set('开局配置.初始召唤兽', '" + q((pick.rank || '凡种') + '·' + beastSpecies()) + "');",
+      "_.set('开局配置.开局预设', '开局登记页');",
+      "_.set('开局配置.开局注入', '默认');",
+      "_.set('开局配置.已完成', true);",
+      "_.set('召唤兽.血统品阶', '" + q(pick.rank || '凡种') + "');",
+      "_.set('召唤兽.评级', '" + (isRegistered() ? (pick.rating || 'D') : '未评级') + "');",
+      "_.set('召唤兽.名字', '" + q(v('#beast-name') || '未命名') + "');",
+      "_.set('召唤兽.类别', '" + q(pick.beastCat || '兽类') + "');",
+      "_.set('召唤兽.元素', '" + q(pick.beastElem || '无') + "');",
+      "_.set('召唤兽.物种', '" + q(beastSpecies()) + "');",
+      "_.set('召唤兽.特征', '" + q(v('#beast-mark')) + "');",
+      "_.set('召唤兽.外貌', '" + q(v('#beast-look')) + "');",
+      "_.set('召唤兽.性格', '" + q(v('#beast-temper') || '未定') + "');",
+      "_.set('召唤兽.战力倾向', '" + q(pick.beastRole || '未定') + "');"
+    ];
+    return cmds;
+  }
+
+  /* ---------- 提交 ---------- */
   var busy = false;
-  $('#send').addEventListener('click', async function () {
+  byId('send').addEventListener('click', async function () {
     if (busy) { toast('正在提交，请稍候'); return; }
     var text = ($('#text').value || '').trim();
     if (!text) { toast('开局陈述为空', false); return; }
-
+    if (talentSum() !== TALENT_TOTAL) {
+      toast('天赋合计要正好 ' + TALENT_TOTAL + ' 点（现在是 ' + talentSum() + '）', false);
+      return;
+    }
     var api = findHostApi('TavernHelper.sendMessage') || findHostApi('sendMessage')
       || apiOnHosts('sendMessage', 'Generate');
     if (!api || typeof api.fn !== 'function') {
       toast('拿不到发送接口（跨域限制），请点「复制」手动发送', false);
+      note('未检测到酒馆发送接口。可以点「复制」把开局陈述粘贴到输入框手动发送；变量仍需在 MVU 就绪后由脚本写入。', 'warn');
       return;
     }
 
     busy = true;
-    var btn = $('#send');
+    var btn = byId('send');
     btn.disabled = true; btn.textContent = '提交中…';
-    var injected = false;
+
     try {
-      var un = pick.awaken === '未觉醒';
-      var inj = Object.keys(inject).filter(function (k) { return inject[k]; });
-      var injText = inj.length ? inj.map(function (k) {
-        return { nopreset: '无预设', noworldbook: '无世界书', nohistory: '无历史' }[k];
-      }).join(' ') : '默认';
-
-      injected = applyInject();
-      await api.fn.call(api.context, text, { name: 'user' });
-
-      function fv(sel) { var el = $(sel); return el ? String(el.value || '').trim() : ''; }
-      var place = fv('#place-custom') || pick.place || '灰塔学院·东院';
-      var tone = fv('#tone-custom') || pick.tone || '入学日';
-      var itemsArr = ($('#items').value || '').split(/[、,，]/)
-        .map(function (x) { return "'" + q(x.trim()) + "'"; })
-        .filter(function (x) { return x !== "''"; });
-
-      var cmds = [
-        "_.set('自身.姓名', '" + q(fv('#name') || 'user') + "');",
-        "_.set('自身.觉醒年龄', " + (Number($('#age').value) || 6) + ");",
-        "_.set('自身.觉醒状态', '" + q(pick.awaken || '已觉醒') + "');",
-        "_.set('自身.家族背景', '" + q(pick.family || '平民') + "');",
-        "_.set('自身.出身势力', '" + q(pick.faction || '无籍游民') + "');",
-        "_.set('自身.学院', '" + q(pick.academy || '未入学') + "');",
-        "_.set('自身.流派', '" + q(fv('#style') || '未定') + "');",
-        "_.set('自身.专精', '" + q(fv('#spec') || '未定') + "');",
-        "_.set('自身.武器', '" + q(fv('#weapon') || '徒手') + "');",
-        "_.set('自身.随身物品', [" + itemsArr.join(', ') + "]);",
-        "_.set('常态状态.地点', '" + q(place) + "');",
-        "_.set('开局配置.开局预设', '开局登记页');",
-        "_.set('开局配置.开局注入', '" + q(injText) + "');",
-        "_.set('开局配置.初始召唤兽', '" + (un ? '无（破例者）' : q((pick.rank || '凡种') + '·' + (pick.beastCat || '兽类') + (pick.beastElem && pick.beastElem !== '无' ? '·' + pick.beastElem : ''))) + "');",
-        "_.set('开局配置.已完成', true);"
-      ];
-      if (!un) {
-        cmds.push("_.set('召唤兽.血统品阶', '" + q(pick.rank || '凡种') + "');");
-        cmds.push("_.set('召唤兽.名字', '" + q(fv('#beast-name') || '未命名') + "');");
-        cmds.push("_.set('召唤兽.类别', '" + q(pick.beastCat || '兽类') + "');");
-        cmds.push("_.set('召唤兽.元素', '" + q(pick.beastElem || '无') + "');");
-        cmds.push("_.set('召唤兽.物种', '" + q((pick.beastCat || '兽类') + (pick.beastElem && pick.beastElem !== '无' ? '·' + pick.beastElem : '')) + "');");
-        cmds.push("_.set('召唤兽.特征', '" + q(fv('#beast-mark')) + "');");
-        cmds.push("_.set('召唤兽.外貌', '" + q(fv('#beast-look')) + "');");
-        cmds.push("_.set('召唤兽.性格', '" + q(fv('#beast-temper') || '未定') + "');");
-        cmds.push("_.set('召唤兽.战力倾向', '" + q(pick.beastRole || '未定') + "');");
-        cmds.push("_.set('养成.当前天赋点', 3);");
-        cmds.push("_.set('天赋点来源.累计获得', 3);");
-      } else {
-        cmds.push("_.set('养成.当前天赋点', 0);");
-        cmds.push("_.set('天赋点来源.累计获得', 0);");
+      // 顺序很重要：**先写变量并确认，再发消息**。
+      // 反过来会让模型在变量落地之前就读到旧值。
+      var res = await writeVars(buildCmds());
+      if (!res.ok) {
+        toast('变量未写入（' + res.reason + '）。已保留填写，可重试或点「复制」', false);
+        note('变量写入失败：' + res.reason + '。请确认 Tavern Helper 已启用、MVU 已加载。', 'warn');
+        return;
       }
-      var okVar = await writeVars(cmds);
-      var optNote = inj.length ? (injected ? '（已按开关调整注入）' : '（开关未生效：拿不到宿主设置）') : '';
-      toast(okVar ? '已提交，开局开始' + optNote : '已发送；变量未写入，请检查 MVU', okVar);
+
+      await api.fn.call(api.context, text, { name: 'user' });
+      clearDraft();
+      toast('已提交，开局开始');
+      note('提交完成。变量已写入，第一条消息已发送。', 'ok');
       showDone();
     } catch (e) {
       toast('提交失败：' + (e && e.message ? e.message : e), false);
     } finally {
-      if (injected) clearInject();
       busy = false; btn.disabled = false; btn.textContent = '确认并开始';
     }
   });
 
-  $('#copy').addEventListener('click', function () {
+  byId('copy').addEventListener('click', function () {
     var t = $('#text').value;
     if (!t.trim()) { toast('内容为空', false); return; }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(t).then(function () { toast('已复制，粘贴到输入框发送即可'); },
-        function () { toast('复制失败，请手动选中', false); });
-    } else { $('#text').select(); toast('已选中，按 Ctrl+C 复制'); }
+    function fallback() { $('#text').select(); toast('已选中，按 Ctrl+C 复制'); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(function () { toast('已复制，粘贴到输入框发送即可'); }, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
   });
 
+  /* ---------- 已完成标记 ---------- */
   function showDone() {
     var M = findMvu();
     var done = false, preset = '';
     try {
       var d = M && M.getMvuData({ type: 'message', message_id: 'latest' });
-      var s = d && d.stat_data ? d.stat_data.开局配置 : null;
-      if (s) { done = !!s.已完成; preset = s.开局预设 || ''; }
+      var s = d && d.stat_data ? d.stat_data['开局配置'] : null;
+      if (s) { done = !!s['已完成']; preset = s['开局预设'] || ''; }
     } catch (e) {}
-    $('#done').style.display = done ? 'flex' : 'none';
-    if (done) $('#done-text').textContent = '本局已登记：' + (preset || '自定义');
+    byId('done').style.display = done ? 'flex' : 'none';
+    if (done) byId('done-text').textContent = '本局已登记：' + (preset || '自定义');
+    return done;
   }
-  $('#reset').addEventListener('click', async function () {
-    var ok = await writeVars(["_.set('开局配置.已完成', false);", "_.set('开局配置.开局预设', '');"]);
-    toast(ok ? '已重置登记标记' : '重置失败', ok);
+  byId('reset').addEventListener('click', async function () {
+    var res = await writeVars(["_.set('开局配置.已完成', false);", "_.set('开局配置.开局预设', '');"]);
+    if (res.ok) { clearDraft(); toast('已重置登记标记与草稿'); }
+    else { toast('重置失败：' + res.reason, false); }
     showDone();
   });
 
-  // 初始化
+  /* ---------- 事件绑定 ---------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var o = t.closest('[data-k]');
+    if (!o) return;
+    var k = o.getAttribute('data-k');
+    pick[k] = o.getAttribute('data-v');
+    var m = RENDER_MAP[k];
+    if (m) syncPressed(m[0], m[1]);
+    refresh();
+  });
+
+  byId('roll-name').addEventListener('click', function () {
+    var cur = v('#beast-name');
+    var pool = NAME_POOL.filter(function (n) { return n !== cur; });
+    var nm = pool[Math.floor(Math.random() * pool.length)] || '灰耳';
+    byId('beast-name').value = nm;
+    byId('name-hint').textContent = '已填入「' + nm + '」。不满意就再点一次，或者自己改。';
+    byId('text').value = buildText();
+    scheduleSave();
+  });
+
+  ['#name', '#age', '#origin', '#style', '#spec', '#weapon', '#style-hint',
+   '#beast-name', '#beast-mark', '#beast-look', '#beast-temper',
+   '#place-custom', '#tone-custom', '#items', '#situation'].forEach(function (s) {
+    var el = $(s);
+    if (el) el.addEventListener('input', function () {
+      byId('text').value = buildText();
+      scheduleSave();
+    });
+  });
+
+  window.addEventListener('beforeunload', function () { if (saveTimer) saveDraft(); });
+
+  /* ---------- 初始化 ---------- */
+  // 默认值
+  pick.rank = '凡种'; pick.family = '平民'; pick.faction = '无籍游民';
+  pick.beastCat = '兽类'; pick.beastElem = '无'; pick.beastRole = '牵制';
+  pick.reg = '未登记'; pick.rating = 'D';
+  pick.place = '霜镜城·下城'; pick.tone = '寻常日子';
+
+  var restored = loadDraft();
+
   renderOpts('rank', 'rank', DATA.rank);
   renderOpts('family', 'family', DATA.family);
   renderOpts('faction', 'faction', DATA.faction);
-  renderOpts('academy', 'academy', DATA.academy);
+  renderOpts('beast-cat', 'beastCat', DATA.beastCat);
+  renderOpts('beast-elem', 'beastElem', DATA.beastElem);
+  renderOpts('beast-role', 'beastRole', DATA.beastRole);
+  renderOpts('reg', 'reg', DATA.reg);
+  renderOpts('rating', 'rating', DATA.rating);
   renderOpts('place', 'place', DATA.place);
   renderOpts('tone', 'tone', DATA.tone);
-  renderInject();
-  // 默认值
-  pick.awaken = '已觉醒'; pick.rank = '凡种'; pick.family = '平民';
-  pick.faction = '无籍游民'; pick.academy = '白垩塔';
-  pick.beastCat = '兽类'; pick.beastElem = '无'; pick.beastRole = '牵制';
-  pick.place = '灰塔学院·东院'; pick.tone = '入学日';
-  ['#awaken', '#rank', '#family', '#faction', '#academy', '#beast-cat', '#beast-elem', '#beast-role', '#place', '#tone'].forEach(function (id) {
-    var host = document.getElementById(id.replace('#', ''));
-    if (!host) return;
-    var k = { awaken: 'awaken', rank: 'rank', family: 'family', faction: 'faction', academy: 'academy',
-      'beast-cat': 'beastCat', 'beast-elem': 'beastElem', 'beast-role': 'beastRole',
-      place: 'place', tone: 'tone' }[id.replace('#', '')];
-    Array.prototype.forEach.call(host.querySelectorAll('.opt'), function (b) {
-      if (b.getAttribute('data-v') === pick[k]) b.className = 'opt on';
-    });
-  });
-  refresh();
-  showDone();
-  setTimeout(showDone, 900);
 
+  Object.keys(RENDER_MAP).forEach(function (k) { syncPressed(RENDER_MAP[k][0], RENDER_MAP[k][1]); });
+
+  renderTalents();
+  refresh();
+
+  if (restored) byId('restored').style.display = '';
+
+  /* ---------- 环境探测 ---------- */
   (function probe() {
     var api = findHostApi('TavernHelper.sendMessage') || findHostApi('sendMessage') || apiOnHosts('sendMessage');
-    if (!api && !findMvu()) {
-      $('#note').className = 'note warn';
-      $('#note').textContent = '未检测到酒馆接口（可能是跨域 iframe 限制）。可以用「复制」把开局陈述粘贴到输入框发送。';
+    var M = findMvu();
+    if (!api && !M) {
+      note('未检测到酒馆接口（可能是跨域 iframe 限制）。可以用「复制」把开局陈述粘贴到输入框发送。', 'warn');
+    } else if (!M) {
+      note('检测到发送接口，但没有 MVU。请确认 Tavern Helper 已启用且 MVU bundle 已加载。', 'warn');
+    } else if (!api) {
+      note('检测到 MVU，但拿不到发送接口。点击「确认并开始」会先写入变量，再用「复制」手动发送。', 'warn');
+    } else {
+      note('提交后会先把选择写进你的状态，再把这段陈述作为第一条消息发送。', 'ok');
     }
+    if (!restored) showDone();
   })();
 })();
 </script>
