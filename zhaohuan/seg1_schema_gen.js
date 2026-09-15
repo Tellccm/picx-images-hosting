@@ -256,18 +256,26 @@ $(() => { registerMvuSchema(Schema); });
     const oldData = M.getMvuData({ type: 'message', message_id: 'latest' });
     if (!oldData) return { ok: false, reason: '读取变量失败' };
 
+    /* generateRaw 的语义（已核对酒馆助手 @types/function/generate.d.ts v4.9.1）：
+       ordered_prompts 就是「本次生成使用的完整预设」。未列入其中的提示词一律不生效——
+       预设与世界书分别靠 PlaceholderPrompt 'world_info_before' / 'world_info_after' 注入。
+       所以控制「带不带预设与世界书」的正确做法是增删这两个占位符，
+       而不是传 disable_world_info / no_world_info —— 后者不是合法参数，会被静默忽略。 */
+    const tail = [
+      { role: 'system', content: sys },
+      { role: 'user', content: usr },
+    ];
+    // 标准模式：不用预设、不注世界书，只发本次生成的提示词
+    // 默认模式：把世界书占位符一并排进去，让设定条目参与生成
+    const ordered_prompts = standardMode
+      ? tail
+      : ['world_info_before', ...tail, 'world_info_after'];
+
     const genOpts = {
       should_silence: true,
       max_chat_history: 0,          // 开局生成不引剧情历史，避免把不存在的"经历"喂进去
-      ordered_prompts: [
-        { role: 'system', content: sys },
-        { role: 'user', content: usr },
-      ],
+      ordered_prompts,
     };
-    if (standardMode) {
-      genOpts.disable_world_info = true;
-      genOpts.no_world_info = true;
-    }
     const raw = String(await g(genOpts) || '').trim();
 
     if (!/<UpdateVariable/i.test(raw)) return { ok: false, reason: '模型结果未含 <UpdateVariable> 块' };
