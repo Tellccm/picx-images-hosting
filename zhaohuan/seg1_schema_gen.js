@@ -149,6 +149,26 @@ const Schema = z.preprocess(normalizeRoot, z.object({
     势力声望: intNum(0, -9999, 9999),
     学院排名: intNum(-1, -1, 99999),
     随身物品: z.array(z.string()).prefault([]),
+
+    /* 玩家自身的战斗体系。召唤兽是辅助，不是唯一战力。
+       近战与魔法是独立的一等体系。 */
+    职业: z.enum(['未定', '近战', '魔法', '神术', '游走']).prefault('未定'),
+    专精: z.string().prefault('未定'),
+    武器: z.string().prefault('徒手'),
+    属性: z.object({
+      力量: intNum(1, 1, 99),
+      敏捷: intNum(1, 1, 99),
+      体质: intNum(1, 1, 99),
+      智力: intNum(1, 1, 99),
+      精神: intNum(1, 1, 99),
+    }).prefault({}),
+    资源: z.object({
+      生命: intNum(10, 0, 99999),
+      生命上限: intNum(10, 0, 99999),
+      法力: intNum(0, 0, 99999),
+      法力上限: intNum(0, 0, 99999),
+    }).prefault({}),
+    技能: z.array(z.string()).prefault([]),
   }).prefault({}),
 
   常态状态: z.object({
@@ -177,11 +197,13 @@ const Schema = z.preprocess(normalizeRoot, z.object({
     训练度: intNum(0, 0, 100),
     进化路线摘要: z.string().prefault('未定'),
     当前天赋点: intNum(0, 0, 999),
+    // 五维与人物同制，便于并排比较与计算
     属性: z.object({
       力量: intNum(1, 1, 99),
       敏捷: intNum(1, 1, 99),
-      感知: intNum(1, 1, 99),
-      灵性: intNum(1, 1, 99),
+      体质: intNum(1, 1, 99),
+      智力: intNum(1, 1, 99),
+      精神: intNum(1, 1, 99),
     }).prefault({}),
     天赋: z.record(z.string(), intNum(0, 0, 5)).prefault({}),
   }).prefault({}),

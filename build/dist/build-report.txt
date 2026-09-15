@@ -1,12 +1,12 @@
 卡名        : 召唤纪
 版本        : 0.1.0  spec=chara_card_v3/3.0
-世界书条目  : 33  (常量 8 / 关键词 25)
+世界书条目  : 37  (常量 9 / 关键词 28)
 正则规则    : 7
 TH 脚本     : 2  (MVU, 变量结构·召唤纪)
 first_mes   : "<customized>\n</customized>"
 description : 617 字符
 mes_example : 387 字符
-整卡大小    : 112.3 KB
+整卡大小    : 123.6 KB
 
 图标扫描      : 14 个目标，发现 0 种图标字符
 内嵌脚本校验  : 7 段已过 node --check
