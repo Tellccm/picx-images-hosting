@@ -94,15 +94,17 @@ body{
     </div>
   </div>
 
-  <!-- 2 你自己的战斗体系 -->
+  <!-- 2 你自己的路 -->
   <div class="sec">
     <div class="sec-hd">二 · 你 自 己 的 路</div>
-    <div class="hint">召唤兽是辅助，不是你的战力来源。你靠什么打，由这一项决定。定型后不得随意更改。</div>
-    <span class="lbl">职业方向</span>
-    <div class="opts" id="job" style="margin-bottom:10px"></div>
+    <div class="hint">召唤兽是辅助，不是你的战力来源。你靠什么打，由你自己定 —— <b>不限制搭配</b>。</div>
+    <div class="row" style="margin-bottom:8px">
+      <div><span class="lbl">流派（自由填写）</span><input class="inp" id="style" placeholder="例：剑术 / 火系 / 治疗 / 匕术 / 魔武双修"></div>
+      <div><span class="lbl">专精（自由填写）</span><input class="inp" id="spec" placeholder="例：重剑 / 塑能 / 净化 / 毒"></div>
+    </div>
     <div class="row">
-      <div><span class="lbl">专精（可自定义）</span><input class="inp" id="spec" placeholder="例：长剑 / 火系 / 治疗 / 匕首"></div>
-      <div><span class="lbl">武器</span><input class="inp" id="weapon" placeholder="例：父亲的旧剑 / 徒手"></div>
+      <div><span class="lbl">武器</span><input class="inp" id="weapon" placeholder="例：父亲的旧剑 / 法杖 / 徒手"></div>
+      <div><span class="lbl">搭配倾向（可留空）</span><input class="inp" id="style-hint" placeholder="例：偏正面接战 / 偏远程"></div>
     </div>
   </div>
 
@@ -127,9 +129,13 @@ body{
   <!-- 5 初始召唤兽 -->
   <div class="sec" id="beast-sec">
     <div class="sec-hd">五 · 初 始 召 唤 兽</div>
-    <div class="hint">品阶已在上一步选定。这里定「是什么兽」「它能做什么」「它的脾气」。</div>
+    <div class="hint">觉醒礼上先看出的是「像什么」—— 细节与名字是后来才定下来的。</div>
+    <span class="lbl">类别</span>
+    <div class="opts" id="beast-cat" style="margin-bottom:10px"></div>
+    <span class="lbl">元素倾向</span>
+    <div class="opts" id="beast-elem" style="margin-bottom:10px"></div>
     <div class="row" style="margin-bottom:8px">
-      <div><span class="lbl">物种</span><input class="inp" id="beast-species" placeholder="例：灰狼 / 银鹰 / 麻雀"></div>
+      <div><span class="lbl">名字（可留空，之后再由剧情定）</span><input class="inp" id="beast-name" placeholder="例：灰耳 / 未命名"></div>
       <div><span class="lbl">最显眼的特征</span><input class="inp" id="beast-mark" placeholder="例：右翼缺一羽"></div>
     </div>
     <span class="lbl">战力倾向（决定它在战斗里做什么）</span>
@@ -215,12 +221,26 @@ body{
       ['家族私塾', '由家族自己教养。资源看家族'],
       ['破例者不入学', '不入册，不被招生名册收录']
     ],
-    job: [
-      ['近战', '剑、斧、盾、枪。正面接战的主力，吃装备'],
-      ['魔法', '火冰风土、塑能、幻术。贵且慢，被近身就危险'],
-      ['神术', '治疗、净化、祝福。需要教会授权'],
-      ['游走', '匕首、短弓、陷阱、交涉。最不挑出身'],
-      ['未定', '还没定型。可以普攻，不能发挥特长']
+    beastCat: [
+      ['兽类', '犬、狼、狮、豹、熊、犀。最常见，最看体格'],
+      ['狐类', '狐、貂、獾、狸。机敏，幻术倾向'],
+      ['猫类', '猫、猞猁、山猫。静、快、独，不好指挥'],
+      ['鸟类', '鹰、隼、枭、鸦、鹤。视野与机动，能飞'],
+      ['爬行类', '蜥、蛇、龟、鳄。皮糙，抗性强，动作慢'],
+      ['虫类', '蜂、蛛、甲虫、螳。群体或单体的极端'],
+      ['水生类', '鲸、鲨、鳐、章。要有水才发挥得开'],
+      ['异种类', '归不进上面任何一类的。多被送进灰烬所']
+    ],
+    beastElem: [
+      ['无', '大多数。没有元素倾向，就是普通的兽'],
+      ['火', '体温偏高，呼气带热'],
+      ['水', '体表湿润，能在水里久待'],
+      ['风', '体轻，动作快，落点轻'],
+      ['地', '体沉，抗打，脚步重'],
+      ['雷', '反应极快，毛羽常有静电'],
+      ['冰', '体表偏凉，呼气成霜'],
+      ['光', '少见。外观偏白，夜里微微发亮'],
+      ['暗', '少见。多于夜间活跃，被说不祥']
     ],
     beastRole: [
       ['牵制', '咬住、拖住、替你看住一个方向'],
@@ -293,8 +313,9 @@ body{
 
     L.push('【开局登记】');
     L.push('姓名：' + name + '　觉醒年龄：' + age + ' 岁　觉醒结果：' + (pick.awaken || '已觉醒'));
-    L.push('我的路：' + (pick.job || '未定') +
+    L.push('我的路：' + (v('#style') || '未定') +
       (v('#spec') ? '（' + v('#spec') + '）' : '') +
+      (v('#style-hint') ? '　倾向：' + v('#style-hint') : '') +
       '　武器：' + (v('#weapon') || '徒手'));
     L.push(unawakened ? '血统品阶：无（破例者）' : '血统品阶：' + (pick.rank || '凡种'));
     L.push('家族背景：' + (pick.family || '平民') +
@@ -302,11 +323,16 @@ body{
       '　就读：' + (pick.academy || '未入学'));
 
     if (!unawakened) {
-      var sp = v('#beast-species') || '未定';
+      var nm = v('#beast-name');
       var mk = v('#beast-mark');
       var look = v('#beast-look');
       var tem = v('#beast-temper');
-      var line = '初始召唤兽：' + (pick.rank || '凡种') + '·' + sp + (mk ? '（' + mk + '）' : '');
+      var cat = pick.beastCat || '兽类';
+      var elem = pick.beastElem || '无';
+      var line = '初始召唤兽：' + (pick.rank || '凡种') + '·' + cat +
+        (elem !== '无' ? '（' + elem + '元素）' : '') +
+        '　名字：' + (nm || '尚未取名');
+      if (mk) line += '　特征：' + mk;
       if (look) line += '　外貌：' + look;
       if (tem) line += '　性格：' + tem;
       if (pick.beastRole) line += '　战力倾向：' + pick.beastRole;
@@ -319,7 +345,7 @@ body{
     if (v('#situation')) L.push('开局处境：' + v('#situation'));
     L.push('');
     L.push('请从这个局面开始。按〈世界规则〉与〈五维与职业体系〉判定。');
-    L.push('记住：召唤兽是辅助，不是我的战力来源 —— 我自己靠' + (pick.job || '未定') + '打。');
+    L.push('记住：召唤兽是辅助，不是我的战力来源 —— 我自己靠' + (v('#style') || '流派') + '打。');
     L.push('不要替我决定，也不要给我无依据的优待。');
     return L.join('\n');
   }
@@ -347,7 +373,8 @@ body{
       var k = o.getAttribute('data-k');
       var map = { awaken: ['awaken', []], rank: ['rank', DATA.rank],
         family: ['family', DATA.family], faction: ['faction', DATA.faction],
-        academy: ['academy', DATA.academy], job: ['job', DATA.job],
+        academy: ['academy', DATA.academy],
+        beastCat: ['beast-cat', DATA.beastCat], beastElem: ['beast-elem', DATA.beastElem],
         beastRole: ['beast-role', DATA.beastRole],
         place: ['place', DATA.place], tone: ['tone', DATA.tone] };
       if (k === 'awaken') {
@@ -370,8 +397,8 @@ body{
     }
   });
 
-  ['#name', '#age', '#items', '#beast-species', '#beast-mark', '#beast-look',
-   '#spec', '#weapon', '#place-custom', '#tone-custom', '#situation'].forEach(function (sel) {
+  ['#name', '#age', '#items', '#beast-name', '#beast-mark', '#beast-look',
+   '#style', '#spec', '#weapon', '#style-hint', '#place-custom', '#tone-custom', '#situation'].forEach(function (sel) {
     var el = $(sel);
     if (el) el.addEventListener('input', function () { $('#text').value = buildText(); });
   });
@@ -498,20 +525,26 @@ body{
         "_.set('自身.家族背景', '" + q(pick.family || '平民') + "');",
         "_.set('自身.出身势力', '" + q(pick.faction || '无籍游民') + "');",
         "_.set('自身.学院', '" + q(pick.academy || '未入学') + "');",
-        "_.set('自身.职业', '" + q(pick.job || '未定') + "');",
+        "_.set('自身.流派', '" + q(fv('#style') || '未定') + "');",
         "_.set('自身.专精', '" + q(fv('#spec') || '未定') + "');",
         "_.set('自身.武器', '" + q(fv('#weapon') || '徒手') + "');",
         "_.set('自身.随身物品', [" + itemsArr.join(', ') + "]);",
         "_.set('常态状态.地点', '" + q(place) + "');",
         "_.set('开局配置.开局预设', '开局登记页');",
         "_.set('开局配置.开局注入', '" + q(injText) + "');",
-        "_.set('开局配置.初始召唤兽', '" + (un ? '无（破例者）' : q((pick.rank || '凡种') + '·' + (fv('#beast-species') || '未定'))) + "');",
+        "_.set('开局配置.初始召唤兽', '" + (un ? '无（破例者）' : q((pick.rank || '凡种') + '·' + (pick.beastCat || '兽类') + (pick.beastElem && pick.beastElem !== '无' ? '·' + pick.beastElem : ''))) + "');",
         "_.set('开局配置.已完成', true);"
       ];
       if (!un) {
         cmds.push("_.set('召唤兽.血统品阶', '" + q(pick.rank || '凡种') + "');");
-        cmds.push("_.set('召唤兽.物种', '" + q(fv('#beast-species') || '未定') + "');");
+        cmds.push("_.set('召唤兽.名字', '" + q(fv('#beast-name') || '未命名') + "');");
+        cmds.push("_.set('召唤兽.类别', '" + q(pick.beastCat || '兽类') + "');");
+        cmds.push("_.set('召唤兽.元素', '" + q(pick.beastElem || '无') + "');");
+        cmds.push("_.set('召唤兽.物种', '" + q((pick.beastCat || '兽类') + (pick.beastElem && pick.beastElem !== '无' ? '·' + pick.beastElem : '')) + "');");
+        cmds.push("_.set('召唤兽.特征', '" + q(fv('#beast-mark')) + "');");
+        cmds.push("_.set('召唤兽.外貌', '" + q(fv('#beast-look')) + "');");
         cmds.push("_.set('召唤兽.性格', '" + q(fv('#beast-temper') || '未定') + "');");
+        cmds.push("_.set('召唤兽.战力倾向', '" + q(pick.beastRole || '未定') + "');");
         cmds.push("_.set('养成.当前天赋点', 3);");
         cmds.push("_.set('天赋点来源.累计获得', 3);");
       } else {
@@ -567,13 +600,14 @@ body{
   // 默认值
   pick.awaken = '已觉醒'; pick.rank = '凡种'; pick.family = '平民';
   pick.faction = '无籍游民'; pick.academy = '白垩塔';
-  pick.job = '近战'; pick.beastRole = '牵制';
+  pick.beastCat = '兽类'; pick.beastElem = '无'; pick.beastRole = '牵制';
   pick.place = '灰塔学院·东院'; pick.tone = '入学日';
-  ['#awaken', '#rank', '#family', '#faction', '#academy', '#job', '#beast-role', '#place', '#tone'].forEach(function (id) {
+  ['#awaken', '#rank', '#family', '#faction', '#academy', '#beast-cat', '#beast-elem', '#beast-role', '#place', '#tone'].forEach(function (id) {
     var host = document.getElementById(id.replace('#', ''));
     if (!host) return;
     var k = { awaken: 'awaken', rank: 'rank', family: 'family', faction: 'faction', academy: 'academy',
-      job: 'job', 'beast-role': 'beastRole', place: 'place', tone: 'tone' }[id.replace('#', '')];
+      'beast-cat': 'beastCat', 'beast-elem': 'beastElem', 'beast-role': 'beastRole',
+      place: 'place', tone: 'tone' }[id.replace('#', '')];
     Array.prototype.forEach.call(host.querySelectorAll('.opt'), function (b) {
       if (b.getAttribute('data-v') === pick[k]) b.className = 'opt on';
     });

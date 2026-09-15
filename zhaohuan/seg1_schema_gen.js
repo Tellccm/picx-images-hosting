@@ -151,8 +151,8 @@ const Schema = z.preprocess(normalizeRoot, z.object({
     随身物品: z.array(z.string()).prefault([]),
 
     /* 玩家自身的战斗体系。召唤兽是辅助，不是唯一战力。
-       近战与魔法是独立的一等体系。 */
-    职业: z.enum(['未定', '近战', '魔法', '神术', '游走']).prefault('未定'),
+       流派不做限制，玩家自由搭配：流派 + 专精 + 武器 三段都是自由文本。 */
+    流派: z.string().prefault('未定'),
     专精: z.string().prefault('未定'),
     武器: z.string().prefault('徒手'),
     属性: z.object({
@@ -163,10 +163,12 @@ const Schema = z.preprocess(normalizeRoot, z.object({
       精神: intNum(1, 1, 99),
     }).prefault({}),
     资源: z.object({
-      生命: intNum(10, 0, 99999),
-      生命上限: intNum(10, 0, 99999),
-      法力: intNum(0, 0, 99999),
-      法力上限: intNum(0, 0, 99999),
+      生命: intNum(20, 0, 999999),
+      生命上限: intNum(20, 0, 999999),
+      法力: intNum(0, 0, 999999),
+      法力上限: intNum(0, 0, 999999),
+      体力: intNum(100, 0, 999999),
+      体力上限: intNum(100, 0, 999999),
     }).prefault({}),
     技能: z.array(z.string()).prefault([]),
   }).prefault({}),
@@ -183,12 +185,19 @@ const Schema = z.preprocess(normalizeRoot, z.object({
   势力关系: z.record(z.string(), clampNum(0, -100, 100)).prefault({}),
 
   召唤兽: z.object({
-    名字: z.string().prefault('未定'),
+    名字: z.string().prefault('未命名'),
+    // 类别：按大类分（狐类、狮类、鸟类…），物种名由类别 + 元素 + 品阶推导
+    类别: z.string().prefault('未定'),
     物种: z.string().prefault('未定'),
+    // 元素倾向：火/水/风/地/雷/冰/光/暗/无
+    元素: z.string().prefault('无'),
     血统品阶: 血统品阶.prefault('凡种'),
     契约形态: 契约形态.prefault('未定'),
     进化阶段: intNum(1, 1, 5),
+    特征: z.string().prefault(''),
+    外貌: z.string().prefault(''),
     性格: z.string().prefault('未定'),
+    战力倾向: z.string().prefault('未定'),
     羁绊: intNum(0, 0, 100),
     技能: z.array(z.string()).prefault([]),
   }).prefault({}),
@@ -349,7 +358,13 @@ $(() => { registerMvuSchema(Schema); });
 
         const usr = [
           '【生成依据（全部为开局已确定的值）】',
+          '名字：' + (beast.名字 || '未命名'),
+          '类别：' + (beast.类别 || '未定'),
+          '元素：' + (beast.元素 || '无'),
           '物种：' + beast.物种,
+          '特征：' + (beast.特征 || '无'),
+          '外貌：' + (beast.外貌 || '未定'),
+          '战力倾向：' + (beast.战力倾向 || '未定'),
           '血统品阶：' + rank + '（阶段上限 ' + maxStage + '，分支建议 ' + branches + '）',
           '契约形态：' + (beast.契约形态 || '未定'),
           '召唤兽性格：' + (beast.性格 || '未定'),
@@ -404,12 +419,17 @@ $(() => { registerMvuSchema(Schema); });
 
         const 基线 = [
           '【召唤兽】',
+          '名字：' + (beast.名字 || '未命名'),
+          '类别：' + (beast.类别 || '未定'),
+          '元素：' + (beast.元素 || '无'),
           '物种：' + (beast.物种 || '未定'),
+          '特征：' + (beast.特征 || '无'),
+          '战力倾向：' + (beast.战力倾向 || '未定'),
           '血统品阶：' + rank,
           '契约形态：' + (beast.契约形态 || '未定'),
           '性格：' + (beast.性格 || '未定'),
           '进化阶段：' + (beast.进化阶段 || 1),
-          '【玩家风格要求】' + (style || '（未指定，按物种与品阶自行决定）'),
+          '【玩家风格要求】' + (style || '（未指定，按元素与品阶自行决定）'),
         ].join('\n');
 
         if (!twoStep) {
