@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    召唤纪 · 卡组装脚本
    输入：../seg*.{js,html}（卡内前端与生成器）、./worldbook-*.json、./card-identity.json
    输出：./dist/召唤纪.json           —— chara_card_v3 内嵌世界书，可直接导入
@@ -19,16 +19,35 @@ const DIST = join(HERE, 'dist');
 if (!existsSync(DIST)) mkdirSync(DIST, { recursive: true });
 
 const read = (p) => readFileSync(p, 'utf8');
-const readJson = (p) => JSON.parse(read(p));
+
+/* 读 JSON 源：顺手拦掉 UTF-8 BOM。
+   PS 5.1 的 `Set-Content -Encoding UTF8` 会写 BOM，而 JSON.parse 见到 BOM 直接抛
+   "Unexpected token ''"，报错信息完全看不出是 BOM 造成的 —— 这里给个明确提示。 */
+const readJson = (p) => {
+  const raw = read(p);
+  if (raw.charCodeAt(0) === 0xfeff) {
+    throw new Error('源文件带 UTF-8 BOM，请去掉后重试: ' + p +
+      '\n  修法（PowerShell）：[IO.File]::WriteAllText($p, ([IO.File]::ReadAllText($p) -replace "^\\uFEFF",""), (New-Object Text.UTF8Encoding $false))');
+  }
+  return JSON.parse(raw);
+};
+// 组件也检查一遍（JS/HTML 带 BOM 同样可能出问题）
+const readText = (p) => {
+  const raw = read(p);
+  if (raw.charCodeAt(0) === 0xfeff) {
+    throw new Error('组件文件带 UTF-8 BOM: ' + p);
+  }
+  return raw;
+};
 
 /* ---------------- 1. 组件 ---------------- */
 const seg = {
-  schema: read(join(SRC, 'seg1_schema_gen.js')),
-  statusbar: read(join(SRC, 'seg2_statusbar.html')),
-  panel: read(join(SRC, 'seg3_panel.html')),
-  evolution: read(join(SRC, 'seg4_evolution.html')),
-  skillJs: read(join(SRC, 'seg8_skill_panel.js')),
-  skillHtml: read(join(SRC, 'seg9_skill_panel.html')),
+  schema: readText(join(SRC, 'seg1_schema_gen.js')),
+  statusbar: readText(join(SRC, 'seg2_statusbar.html')),
+  panel: readText(join(SRC, 'seg3_panel.html')),
+  evolution: readText(join(SRC, 'seg4_evolution.html')),
+  skillJs: readText(join(SRC, 'seg8_skill_panel.js')),
+  skillHtml: readText(join(SRC, 'seg9_skill_panel.html')),
 };
 
 // 技能树面板：布局块 + 逻辑块合成一个可挂载单元
@@ -43,7 +62,7 @@ const regex_scripts = [
     findRegex: '<customized>\\s*([\\s\\S]*?)\\s*</customized>',
     replaceString:
       '<body>\n<script>\n' +
-      "$('body').load('https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v51/zhaohuan/start.html')\n" +
+      "$('body').load('https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v52/zhaohuan/start.html')\n" +
       '</script>\n</body>',
     placement: [2],
     disabled: false,
@@ -202,7 +221,7 @@ const data = {
         evolution: 'seg4_evolution.html',
         skillPanel: ['seg9_skill_panel.html', 'seg8_skill_panel.js'],
         schemaAndGenerators: 'seg1_schema_gen.js',
-        startPage: 'https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v51/zhaohuan/start.html',
+        startPage: 'https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v52/zhaohuan/start.html',
       },
       worldbookEntries: v3Entries.length,
       regexRules: regex_scripts.length,
@@ -266,7 +285,7 @@ regex_scripts.forEach((r) => {
 // 挂载 URL 必须可解析且指向 v48
 const mountRx = regex_scripts.find(r => r.scriptName.includes('开局预设挂载'));
 if (!mountRx) errors.push('缺少开局预设挂载规则');
-else if (!/picx-images-hosting@v51\/zhaohuan\/start\.html/.test(mountRx.replaceString)) errors.push('挂载 URL 不是 v51 版本');
+else if (!/picx-images-hosting@v52\/zhaohuan\/start\.html/.test(mountRx.replaceString)) errors.push('挂载 URL 不是 v52 版本');
 
 // 占位标记必须与正则一致
 const markerPairs = [

@@ -199,6 +199,8 @@ const Schema = z.preprocess(normalizeRoot, z.object({
     步骤: z.record(z.string(), z.coerce.boolean()).prefault({}),
     初始召唤兽: z.string().prefault('未选'),
     开局预设: z.string().prefault(''),
+    // 开局页三个注入开关的结果：默认 / 无预设 / 无世界书 / 无历史（可组合）
+    开局注入: z.string().prefault('默认'),
   }).prefault({}),
 }));
 
