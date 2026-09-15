@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    召唤纪 · 卡组装脚本
    输入：../seg*.{js,html}（卡内前端与生成器）、./worldbook-*.json、./card-identity.json
    输出：./dist/召唤纪.json           —— chara_card_v3 内嵌世界书，可直接导入
@@ -43,7 +43,7 @@ const regex_scripts = [
     findRegex: '<customized>\\s*([\\s\\S]*?)\\s*</customized>',
     replaceString:
       '<body>\n<script>\n' +
-      "$('body').load('https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v50/zhaohuan/start.html')\n" +
+      "$('body').load('https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v51/zhaohuan/start.html')\n" +
       '</script>\n</body>',
     placement: [2],
     disabled: false,
@@ -202,7 +202,7 @@ const data = {
         evolution: 'seg4_evolution.html',
         skillPanel: ['seg9_skill_panel.html', 'seg8_skill_panel.js'],
         schemaAndGenerators: 'seg1_schema_gen.js',
-        startPage: 'https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v50/zhaohuan/start.html',
+        startPage: 'https://testingcf.jsdelivr.net/gh/Tellccm/picx-images-hosting@v51/zhaohuan/start.html',
       },
       worldbookEntries: v3Entries.length,
       regexRules: regex_scripts.length,
@@ -266,7 +266,7 @@ regex_scripts.forEach((r) => {
 // 挂载 URL 必须可解析且指向 v48
 const mountRx = regex_scripts.find(r => r.scriptName.includes('开局预设挂载'));
 if (!mountRx) errors.push('缺少开局预设挂载规则');
-else if (!/picx-images-hosting@v50\/zhaohuan\/start\.html/.test(mountRx.replaceString)) errors.push('挂载 URL 不是 v50 版本');
+else if (!/picx-images-hosting@v51\/zhaohuan\/start\.html/.test(mountRx.replaceString)) errors.push('挂载 URL 不是 v51 版本');
 
 // 占位标记必须与正则一致
 const markerPairs = [
