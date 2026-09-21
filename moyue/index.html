@@ -1,309 +1,503 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>开局 · 妈只是在疼你</title>
-<style>
-  :root{
-    --ink:#0e0b0a;
-    --paper:#f0e7db;
-    --text:#e6dcd0;
-    --dim:#a89b8b;
-    --dim2:#7a6f64;
-    --line:rgba(216,189,146,.16);
-    --line2:rgba(216,189,146,.34);
-    --gold:#d9bd8f;
-    --gold2:#a8874f;
-    --serif:"Songti SC","Source Han Serif SC","Noto Serif SC",Georgia,serif;
-    --sans:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
-    /* 三个人的主色，由 .cd[data-k] 覆盖 */
-    --a1:#7fae9a; --a2:#c98a76; --a3:#8fa6bd;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:transparent;}
-  body{
-    font-family:var(--sans);color:var(--text);padding:12px;
-    -webkit-font-smoothing:antialiased;
-  }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>开局 · 妈只是在疼你</title>
+  <style>
+    :root {
+      --bg-dark: #0d0a09;
+      --bg-card: rgba(22, 17, 15, 0.78);
+      --bg-card-hover: rgba(30, 23, 20, 0.92);
+      --paper: #f5ece1;
+      --paper-dim: #cfc1b0;
+      --paper-muted: #8e8072;
+      --gold-primary: #d4af37;
+      --gold-light: #f3e5ab;
+      --gold-deep: #997a23;
+      --crimson: #c94a53;
+      --line: rgba(212, 175, 55, 0.16);
+      --line-bright: rgba(212, 175, 55, 0.38);
+      --glow-gold: rgba(212, 175, 55, 0.28);
+      --serif: "Songti SC", "Source Han Serif SC", "Noto Serif SC", "SimSun", Georgia, serif;
+      --sans: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --c-shen: #e07a82;
+      --c-zhou: #82a8d8;
+      --c-wen: #6eb79c;
+    }
 
-  /* ---------- 入场动画 ---------- */
-  @keyframes moIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
-  @keyframes moInSlow{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
-  @keyframes moGlow{0%,100%{opacity:.55;}50%{opacity:1;}}
-  @keyframes moSheen{0%{transform:translateX(-130%);}100%{transform:translateX(130%);}}
-  @keyframes moLine{from{opacity:0;transform:scaleX(.2);}to{opacity:1;transform:scaleX(1);}}
-  .anim{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both;}
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: transparent; }
+    body {
+      font-family: var(--sans);
+      color: var(--paper);
+      padding: 16px 12px;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  #mo{
-    max-width:1080px;margin:0 auto;
-    border-radius:18px;overflow:hidden;
-    background:
-      radial-gradient(760px 320px at 88% -12%, rgba(216,189,146,.11), transparent 62%),
-      radial-gradient(620px 300px at -6% 108%, rgba(201,138,118,.10), transparent 60%),
-      radial-gradient(900px 500px at 50% 40%, rgba(255,255,255,.022), transparent 70%),
-      linear-gradient(174deg,#1b1512,#0e0b0a 76%);
-    border:1px solid var(--line);
-    box-shadow:0 26px 70px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.045);
-    animation:moInSlow .8s cubic-bezier(.22,.7,.3,1) both;
-  }
+    /* 进场光效与动画 */
+    @keyframes moFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    @keyframes moAura { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.85; } }
+    @keyframes moShimmer { 0% { transform: translateX(-150%); } 100% { transform: translateX(150%); } }
+    @keyframes moPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 
-  /* ---------- 题头 ---------- */
-  .hd{position:relative;padding:34px 26px 26px;text-align:center;overflow:hidden;}
-  .hd::after{
-    content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(216,189,146,.42),transparent);
-    transform-origin:50% 50%;animation:moLine 1.1s ease both .15s;
-  }
-  .hd-orn{
-    display:flex;align-items:center;justify-content:center;gap:14px;
-    font-size:14px;letter-spacing:.5em;color:var(--gold2);
-    animation:moGlow 5.5s ease-in-out infinite;
-  }
-  .hd-orn::before,.hd-orn::after{
-    content:"";height:1px;width:72px;
-    background:linear-gradient(90deg,transparent,rgba(216,189,146,.45));
-  }
-  .hd-orn::after{background:linear-gradient(90deg,rgba(216,189,146,.45),transparent);}
-  .hd-t{
-    margin:16px 0 10px;
-    font-family:var(--serif);font-size:42px;letter-spacing:.15em;font-weight:500;
-    color:var(--paper);
-    text-shadow:0 0 30px rgba(216,189,146,.16), 0 2px 0 rgba(0,0,0,.4);
-  }
-  .hd-s{font-size:17px;letter-spacing:.3em;color:var(--dim2);}
+    #mo {
+      max-width: 1040px;
+      margin: 0 auto;
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      background:
+        radial-gradient(900px 380px at 85% -10%, rgba(212, 175, 55, 0.12), transparent 70%),
+        radial-gradient(750px 360px at -10% 105%, rgba(201, 74, 83, 0.11), transparent 65%),
+        radial-gradient(800px 500px at 50% 45%, rgba(255, 255, 255, 0.02), transparent 80%),
+        linear-gradient(176deg, #181210 0%, #0d0a09 85%);
+      border: 1px solid var(--line);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      animation: moFadeIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
 
-  /* ---------- 正文块 ---------- */
-  .bd{padding:30px 26px 8px;}
-  .blk{margin-bottom:30px;}
-  .blk-h{
-    display:flex;align-items:center;gap:11px;margin-bottom:17px;
-    font-size:16px;letter-spacing:.26em;color:var(--gold);
-  }
-  .blk-h::after{
-    content:"";flex:1;height:1px;
-    background:linear-gradient(90deg,rgba(216,189,146,.22),transparent);
-  }
-  .blk-h i{
-    width:6px;height:6px;border-radius:50%;background:var(--gold2);flex:0 0 auto;
-    box-shadow:0 0 10px rgba(216,189,146,.8);
-  }
-  .prose{font-size:17px;line-height:2.1;color:#cfc4b6;}
-  .prose b{color:var(--paper);font-weight:600;}
+    /* 题头装饰 */
+    .hd {
+      position: relative;
+      padding: 38px 24px 28px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hd::after {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.45), transparent);
+    }
+    .hd-orn {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      letter-spacing: 0.45em;
+      text-indent: 0.45em;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      animation: moAura 4.5s ease-in-out infinite;
+    }
+    .hd-orn::before, .hd-orn::after {
+      content: "";
+      height: 1px;
+      width: 56px;
+      background: linear-gradient(90deg, transparent, var(--gold-primary));
+    }
+    .hd-orn::after {
+      background: linear-gradient(90deg, var(--gold-primary), transparent);
+    }
+    .hd-t {
+      margin: 4px 0 10px;
+      font-family: var(--serif);
+      font-size: 38px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      color: #fff8f0;
+      text-shadow: 0 0 28px rgba(212, 175, 55, 0.22), 0 2px 4px rgba(0,0,0,0.6);
+    }
+    .hd-s {
+      font-size: 15.5px;
+      letter-spacing: 0.25em;
+      color: var(--paper-muted);
+      font-weight: 300;
+    }
 
-  /* ---------- 人物 ---------- */
-  .cast{display:grid;gap:14px;}
-  .who{
-    position:relative;display:grid;grid-template-columns:124px 1fr;gap:20px;
-    padding:16px;border:1px solid var(--line);border-radius:15px;
-    background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));
-    transition:border-color .35s ease,background .35s ease,transform .35s ease;
-  }
-  .who:hover{border-color:var(--line2);transform:translateX(3px);}
-  .who img{
-    width:124px;height:178px;object-fit:cover;border-radius:10px;display:block;
-    filter:saturate(.92) contrast(1.03);
-    box-shadow:0 10px 26px rgba(0,0,0,.5);
-  }
-  .who-n{font-family:var(--serif);font-size:23px;letter-spacing:.09em;color:var(--paper);margin-bottom:6px;}
-  .who-m{font-size:15px;letter-spacing:.05em;color:var(--gold2);margin-bottom:11px;}
-  .who-d{font-size:16px;line-height:2;color:#bdb1a2;}
+    /* 内容主体 */
+    .bd { padding: 28px 28px 8px; }
+    .blk { margin-bottom: 32px; }
+    .blk-h {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 15.5px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      color: var(--gold-light);
+    }
+    .blk-h::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(212, 175, 55, 0.24), transparent);
+    }
+    .blk-h i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--gold-primary);
+      box-shadow: 0 0 10px var(--gold-primary);
+    }
 
-  /* ---------- 规则 ---------- */
-  .rule{
-    position:relative;padding:19px 22px;border-radius:15px;overflow:hidden;
-    border:1px solid var(--line);border-left:2px solid var(--gold2);
-    background:linear-gradient(180deg,rgba(216,189,146,.055),rgba(255,255,255,.012));
-    font-size:16.5px;line-height:2.05;color:#c6bbac;
-  }
-  .rule b{color:var(--paper);font-weight:600;}
+    .prose-card {
+      padding: 18px 22px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.032), rgba(255,255,255,0.008));
+      border: 1px solid var(--line);
+      font-size: 15.5px;
+      line-height: 1.95;
+      color: var(--paper-dim);
+    }
+    .prose-card b { color: #fff; font-weight: 600; }
 
-  /* 卡片里全部是 <span>（button 里不能放 div），内层必须显式成块，
-     否则 width/height/padding 在行内盒上不生效，图会被压成 0 高。 */
-  .art,.art>*,.cap,.cap-t,.cap-d{display:block;}
-  .reads{display:flex;} .chip{display:inline-block;} .pp{display:flex;} .rhead{display:flex;} .ppv{display:block;}
+    /* 人物列表 */
+    .cast { display: grid; gap: 14px; }
+    .who {
+      position: relative;
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 20px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(30, 24, 21, 0.65), rgba(18, 14, 12, 0.85));
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .who:hover {
+      border-color: var(--line-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+    .who-img-wrap {
+      position: relative;
+      width: 110px;
+      height: 150px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .who-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+    .who:hover .who-img-wrap img { transform: scale(1.04); }
+    .who-info { min-width: 0; }
+    .who-top {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .who-n {
+      font-family: var(--serif);
+      font-size: 22px;
+      letter-spacing: 0.08em;
+      color: #fff;
+    }
+    .who-m {
+      font-size: 13.5px;
+      letter-spacing: 0.04em;
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.12);
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 175, 55, 0.25);
+    }
+    .who-d {
+      font-size: 14.5px;
+      line-height: 1.85;
+      color: var(--paper-dim);
+    }
 
-  /* ---------- 开局 ---------- */
-  .pick{padding:2px 26px 6px;}
-  .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;}
+    /* 规则叙事块 */
+    .rule-card {
+      position: relative;
+      padding: 20px 22px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold-primary);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), rgba(255, 255, 255, 0.01));
+      font-size: 15.5px;
+      line-height: 2;
+      color: var(--paper-dim);
+    }
+    .rule-card b { color: #fff; font-weight: 600; }
 
-  .cd{
-    position:relative;display:block;padding:0;overflow:hidden;cursor:pointer;
-    border:1px solid var(--line);border-radius:16px;
-    background:#120f0e;color:inherit;font-family:inherit;text-align:left;
-    transition:border-color .38s ease,transform .38s cubic-bezier(.2,.7,.3,1),box-shadow .38s ease;
-  }
-  .cd::before{  /* 悬停时扫过的一道光 */
-    content:"";position:absolute;top:0;bottom:0;left:0;width:45%;z-index:3;
-    background:linear-gradient(100deg,transparent,rgba(255,255,255,.09),transparent);
-    transform:translateX(-130%);pointer-events:none;
-  }
-  .cd:hover::before{animation:moSheen 1.15s ease;}
-  .cd:hover{transform:translateY(-4px);border-color:var(--line2);box-shadow:0 18px 40px rgba(0,0,0,.55);}
-  .cd[data-k="1"]{--ac:var(--a1);}
-  .cd[data-k="2"]{--ac:var(--a2);}
-  .cd[data-k="3"]{--ac:var(--a3);}
-  .cd.on{
-    border-color:var(--ac);
-    box-shadow:0 0 0 1px var(--ac),0 0 30px -6px var(--ac),0 18px 40px rgba(0,0,0,.55);
-  }
-  .cd.busy{opacity:.75;cursor:default;}
+    /* 开局卡片网格 */
+    .pick { padding: 4px 28px 10px; }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .cd {
+      position: relative;
+      display: block;
+      width: 100%;
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #14100e;
+      color: inherit;
+      font-family: inherit;
+      text-align: left;
+      transition: all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cd::before {
+      content: "";
+      position: absolute;
+      top: 0; bottom: 0; left: 0; width: 50%;
+      background: linear-gradient(105deg, transparent, rgba(255,255,255,0.12), transparent);
+      transform: translateX(-150%);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .cd:hover::before { animation: moShimmer 1.1s ease; }
+    .cd:hover {
+      transform: translateY(-5px);
+      border-color: var(--line-bright);
+      box-shadow: 0 20px 42px rgba(0, 0, 0, 0.65);
+    }
 
-  /* 图片：不用 aspect-ratio（老浏览器不支持会把图压没），用 padding 撑高 */
-  .art{display:block;position:relative;width:100%;height:0;padding-top:150%;overflow:hidden;background:#0b0808;}
-  .art>img.main{
-    position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block;
-    transition:transform .8s cubic-bezier(.2,.7,.3,1),filter .5s ease;
-  }
-  .cd:hover .art>img.main{transform:scale(1.05);}
-  .art::after{display:block;  /* 底下一道渐变，让文字与人像压得住 */
-    content:"";position:absolute;inset:auto 0 0 0;height:62%;
-    background:linear-gradient(180deg,transparent,rgba(14,11,10,.5) 44%,rgba(14,11,10,.96));
-  }
-  .art::before{display:block; /* 选中时人物那侧透出主色 */
-    content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
-    background:radial-gradient(120% 80% at 20% 100%,var(--ac),transparent 62%);
-    opacity:0;transition:opacity .45s ease;mix-blend-mode:screen;
-  }
-  .cd:hover .art::before{opacity:.16;}
-  .cd.on .art::before{opacity:.3;}
+    .cd[data-k="1"] { --ac: var(--c-shen); }
+    .cd[data-k="2"] { --ac: var(--c-zhou); }
+    .cd[data-k="3"] { --ac: var(--c-wen); }
 
-  .face{
-    display:block;position:absolute;left:13px;bottom:13px;z-index:4;
-    width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;
-    border:1.5px solid var(--ac);
-    box-shadow:0 6px 18px rgba(0,0,0,.65), 0 0 0 4px rgba(14,11,10,.55);
-    transition:transform .38s ease;
-  }
-  .cd:hover .face{transform:scale(1.06);}
-  .idx{
-    display:block;position:absolute;top:11px;right:11px;z-index:4;
-    padding:4px 13px;border-radius:999px;
-    font-size:12.5px;letter-spacing:.18em;color:var(--paper);
-    background:rgba(14,11,10,.74);border:1px solid var(--line2);
-  }
-  .cap{display:block;padding:16px 17px 18px;border-top:1px solid rgba(255,255,255,.05);}
-  .cap-t{
-    display:block;font-family:var(--serif);font-size:19px;letter-spacing:.05em;
-    color:var(--paper);margin-bottom:9px;
-    transition:color .35s ease;
-  }
-  .cd:hover .cap-t,.cd.on .cap-t{color:#fff;}
-  .cap-d{display:block;font-size:15px;line-height:1.82;color:var(--dim);}
-  .reads{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px;margin-top:14px;}
-  .rhead{display:flex;gap:8px;margin-left:auto;padding-bottom:2px;}
-  .rhead i{display:block;width:2.2em;text-align:center;font-style:normal;font-size:11px;color:rgba(255,255,255,.34);}
-  .pp{display:flex;align-items:center;gap:6px;}
-  .pp img{width:22px;height:22px;border-radius:50%;object-fit:cover;display:block;flex:0 0 auto;
-    border:1px solid currentColor;background:rgba(255,255,255,.06);}
-  .pp .ppn{font-size:13px;line-height:1;}
-  .pp .ppv{display:block;width:2.2em;text-align:center;font-size:14px;font-weight:700;
-    font-variant-numeric:tabular-nums;color:#f2ebfa;}
-  .chip{
-    display:inline-block;padding:3px 11px;border-radius:999px;font-size:13px;letter-spacing:.03em;
-    color:var(--dim);background:rgba(255,255,255,.035);border:1px solid var(--line);
-  }
-  .chip-time{color:var(--paper);background:rgba(255,255,255,.05);}
+    .cd.on {
+      border-color: var(--ac);
+      box-shadow: 0 0 0 1px var(--ac), 0 0 35px -5px var(--ac), 0 20px 45px rgba(0,0,0,0.7);
+    }
 
-  /* ---------- 页脚 ---------- */
-  .ft{
-    display:flex;align-items:center;gap:14px;
-    padding:19px 26px 24px;margin-top:18px;
-    border-top:1px solid var(--line);
-  }
-  .ft-n{font-size:15.5px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .bar{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;}
-  .bar>i{display:block;height:100%;width:0;border-radius:2px;
-    background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .6s cubic-bezier(.2,.7,.3,1);}
+    .art {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-top: 145%;
+      overflow: hidden;
+      background: #090706;
+    }
+    .art > img.main {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cd:hover .art > img.main { transform: scale(1.05); }
+    .art::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 65%;
+      background: linear-gradient(180deg, transparent, rgba(14, 11, 10, 0.6) 40%, rgba(14, 11, 10, 0.98));
+      pointer-events: none;
+    }
+    .art::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(100% 80% at 20% 100%, var(--ac), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .cd:hover .art::before { opacity: 0.22; }
+    .cd.on .art::before { opacity: 0.35; }
 
-  .load{padding:40px 20px;text-align:center;font-size:15px;color:var(--dim2);line-height:2;}
+    .face {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      z-index: 4;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      border: 2px solid var(--ac);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.75), 0 0 0 3px rgba(14, 11, 10, 0.6);
+      transition: transform 0.35s ease;
+    }
+    .cd:hover .face { transform: scale(1.06); }
 
-  /* 逐个入场 */
-  .bd .blk:nth-child(1){animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .05s;}
-  .bd .blk:nth-child(2){animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .14s;}
-  .bd .blk:nth-child(3){animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .23s;}
-  .cd[data-k="1"]{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both .3s;}
-  .cd[data-k="2"]{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both .4s;}
-  .cd[data-k="3"]{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both .5s;}
-  .ft{animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .6s;}
+    .idx-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 4;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      color: #fff;
+      background: rgba(14, 11, 10, 0.78);
+      border: 1px solid var(--line-bright);
+      backdrop-filter: blur(8px);
+    }
 
-  @media (max-width:620px){
-    body{padding:8px;}
-    .hd{padding:24px 16px 19px;}
-    .hd-orn::before,.hd-orn::after{width:38px;}
-    .hd-t{font-size:30px;}
-    .hd-s{font-size:14px;letter-spacing:.22em;}
-    .bd,.pick{padding-left:16px;padding-right:16px;}
-    .ft{padding-left:16px;padding-right:16px;}
-    .row{grid-template-columns:1fr;gap:14px;}
-    .art{padding-top:118%;}
-    .who{grid-template-columns:92px 1fr;gap:14px;}
-    .who img{width:92px;height:132px;}
-    .who-n{font-size:20px;}
-    .who-m{font-size:13.5px;}
-    .who-d{font-size:15px;}
-    .prose{font-size:16px;}
-    .rule{font-size:15.5px;}
-    .cap-t{font-size:18px;}
-    .cap-d{font-size:14.5px;}
-    .chip{font-size:12.5px;padding:3px 9px;}
-    .pp img{width:20px;height:20px;} .pp .ppn{font-size:12px;}
-    .pp .ppv{font-size:13px;width:2em;} .rhead i{width:2em;font-size:10.5px;}
-    .rl{font-size:10px;} .rstat b{font-size:13px;} .rname{font-size:12px;}
-  }
-</style>
+    .cap {
+      display: block;
+      padding: 16px 16px 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .cap-t {
+      display: block;
+      font-family: var(--serif);
+      font-size: 18.5px;
+      letter-spacing: 0.05em;
+      color: #fff;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .cap-d {
+      display: block;
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--paper-dim);
+      margin-bottom: 14px;
+    }
+
+    .reads {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px 10px;
+    }
+    .chip-time {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+    }
+    .rhead {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+      font-size: 10.5px;
+      color: var(--paper-muted);
+    }
+    .rhead i { font-style: normal; width: 2.2em; text-align: center; }
+
+    .pp {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pp img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid currentColor;
+    }
+    .pp .ppn { font-size: 12px; font-weight: 500; line-height: 1; }
+    .pp .ppv {
+      display: inline-block;
+      width: 2.2em;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #f7f0fc;
+    }
+
+    /* 底栏操作反馈 */
+    .ft {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 28px 24px;
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .ft-n {
+      font-size: 14.5px;
+      color: var(--paper-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--gold-deep), var(--gold-primary), var(--gold-light));
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 680px) {
+      body { padding: 8px 6px; }
+      .hd { padding: 26px 16px 20px; }
+      .hd-t { font-size: 28px; }
+      .hd-s { font-size: 13.5px; letter-spacing: 0.15em; }
+      .bd, .pick, .ft { padding-left: 14px; padding-right: 14px; }
+      .row { grid-template-columns: 1fr; gap: 14px; }
+      .art { padding-top: 115%; }
+      .who { grid-template-columns: 85px 1fr; gap: 14px; padding: 12px 14px; }
+      .who-img-wrap { width: 85px; height: 115px; }
+      .who-n { font-size: 19px; }
+      .who-d { font-size: 13.5px; }
+      .cap-t { font-size: 17.5px; }
+      .cap-d { font-size: 13.5px; }
+    }
+  </style>
 </head>
 <body>
 <div id="mo">
   <div class="hd">
-    <div class="hd-orn">开局</div>
+    <div class="hd-orn">序幕 · 催眠之启</div>
     <div class="hd-t">妈只是在疼你</div>
-    <div class="hd-s">从哪一声敲门开始</div>
+    <div class="hd-s">「门没锁……要是晚上心慌，就来妈房间坐坐」</div>
   </div>
-  <div id="slot"><div class="load">正在翻开这一局……</div></div>
+  <div id="slot"></div>
 </div>
 
 <script>
-/* ============================================================================
- * 《妈只是在疼你》开局前端
- * 跑在消息楼层的 iframe 里，一切从 window.top 取，取不到再退回本窗口。
- *   切开局 setChatMessages([{message_id:0, swipe_id:N}])
- * 图跟着本页同一个版本取（从加载本页的 script src 里抠 @版本）。
- *
- * 变量不归这一页管。MVU 给第一条消息的每一页各存一份变量，这里的 iframe 去写
- * {type:'message',message_id:0} 写的是"当时活着的那一页"——切页是异步的，于是它会把
- * 上一页的数字改成下一页的（这正是"点了卡、数字却不对"的老毛病）。
- * 每一页该有多少数，写在开场白自己的 <UpdateVariable> 里，另由卡里的「开局同步」脚本兜底。
- * ==========================================================================*/
-(function () {
-  'use strict';
-
-  var CDN = (function () {
-    var s = document.currentScript;
-    if (!s) { var all = document.getElementsByTagName('script'); s = all[all.length - 1]; }
-    var src = (s && (s.src || s.getAttribute('src'))) || '';
-    var m = src.match(/(https:\/\/cdn\.jsdelivr\.net\/gh\/[^/]+\/[^/@]+@[^/]+)\//);
-    return (m ? m[1] : 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master') + '/moyue/';
-  })();
+(function(){
+  var CDN = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/moyue/';
 
   var 人物 = [
     {
       图: 'half-shenruowei.jpg',
       名: '沈若薇',
-      身份: '三十四岁 · 你的母亲 · 六年前守寡',
-      说明: '墨黑的长直发垂到腰际，冷白得像能透光。说话轻软，句子短，想要什么的时候只说半句，等你来接。她把家里打理得没有一处可挑剔——你怕烫、你腰不好、你不吃香菜，这些她比你自己记得清楚。'
+      身份: '三十四岁 · 人妻母亲 · 亡夫离世六年',
+      说明: '清纯温婉、极度娇嫩的黑长直母亲。容貌清丽如二十五六岁，在外是体面持家的少妇，内里却饱受成熟身体的空虚煎熬与对{{user}}的禁忌依恋。神秘软件「枕语」，让她在极度羞耻与步步逾矩中沉沦。'
     },
     {
       图: 'half-zhoulan.jpg',
       名: '周岚',
-      身份: '三十四岁 · 「岚亭」的老板 · 她十年的朋友',
-      说明: '深栗色的长发梳成一条一丝不乱的高马尾，眼形细长、眼尾微挑，看人时眼皮半垂着。祖上留下三间铺面，她把一间改成只做熟客的美容会所，不缺钱，开店是为了有个地方待着。她看不上的人连损都不损；肯损你，说明你还够格。'
+      身份: '三十四岁 · 闺蜜 · 美容会所老板',
+      说明: '离异三年，深栗色高马尾，眼神细长微挑。嘴硬心软、独立傲慢，开着只做熟客的高级美容会所。把沈家当成唯一不用端着的避风港；她三年没有过男人，这具矜贵身躯比那张刻薄的嘴脆弱得多。'
     },
     {
       图: 'half-wenyining.jpg',
       名: '温以宁',
-      身份: '三十二岁 · 对门邻居 · 丈夫一年回来两次',
-      说明: '淡杏色的棉麻长裙，深棕的低马尾用一只玳瑁抓夹松松挽着，薄得透光的冷白。见面只会笑着问一句「放学啦」，然后就没有别的话了。她这辈子都在等别人替她做决定；别人真做了，她会带着近乎自毁的感激顺从到底。'
+      身份: '三十二岁 · 对门邻居 · 独守空房',
+      说明: '温软如江南水乡，深棕低马尾系着玳瑁发夹，薄得透光的冷白雪肤。丈夫长年在海外工程，整座大房子里只有她一人。习惯了卑微讨好与顺从，一次误跌入少年怀抱，便贪恋上那点久违的男子体温。'
     }
   ];
 
@@ -311,7 +505,7 @@
     {
       swipe: 1, k: '1', 序号: '其一',
       标题: '守着开门声的那锅汤',
-      一句话: '周五傍晚，她一个人在家，砂锅在小火上煨着。汤炖了三个钟头，就等他推门那一声。',
+      一句话: '周五傍晚六点四十，砂锅在灶台上煨着甜玉米排骨汤。她散下一头乌黑长发，手机扣在大理石台面上，光标还闪烁着半截草稿……',
       立绘: 'start-0-shenruowei.jpg',
       半身: 'half-shenruowei.jpg',
       看: { 时段: '傍晚', 沈: [40, 62, 5], 周: [25, 45, 0], 温: [45, 58, 0] },
@@ -319,7 +513,7 @@
     {
       swipe: 2, k: '2', 序号: '其二',
       标题: '淋着雨闯进来的那个人',
-      一句话: '雨夜九点半后，周岚自己开门进来了。她把湿风衣搭在扶手上，一抬眼，走廊的暗影里站着的是你。',
+      一句话: '暴雨夜九点半，周岚用备用钥匙推门而入，湿透的风衣滑落在沙发。沙发深处，沈若薇丢下的薄粉真丝睡裙与亮着的手机格外刺眼……',
       立绘: 'start-1-zhoulan.jpg',
       半身: 'half-zhoulan.jpg',
       看: { 时段: '夜里', 沈: [33, 52, 3], 周: [20, 50, 0], 温: [45, 58, 0] },
@@ -327,76 +521,73 @@
     {
       swipe: 3, k: '3', 序号: '其三',
       标题: '敲错门的那个人',
-      一句话: '周六下午两点半，沈若薇出门买菜了。对门的温以宁抱着管钳站在门口借生料带——转身时滑了一跤，摔进你怀里。',
+      一句话: '周六午后，沈若薇出门买菜。对门的温以宁抱着沉重管钳借生料带，慌乱中在光洁瓷砖上失衡仰倒，结结实实跌进你的怀抱……',
       立绘: 'start-2-wenyining.jpg',
       半身: 'half-wenyining.jpg',
       看: { 时段: '下午', 沈: [26, 48, 3], 周: [25, 45, 0], 温: [44, 64, 0] },
     }
   ];
 
-  /* ---------------- 取数层 ---------------- */
-  function topWin(){ try{ if(window.top&&window.top!==window) return window.top; }catch(e){} return window; }
+  function topWin(){ try { if(window.top && window.top !== window) return window.top; }catch(e){} return window; }
   function TH(){
-    var t=topWin();
-    try{ if(t&&t.TavernHelper) return t.TavernHelper; }catch(e){}
-    try{ if(window.TavernHelper) return window.TavernHelper; }catch(e){}
+    var t = topWin();
+    try { if(t && t.TavernHelper) return t.TavernHelper; }catch(e){}
+    try { if(window.TavernHelper) return window.TavernHelper; }catch(e){}
     return null;
   }
   function call(n){
-    var h=TH();
-    if(h&&typeof h[n]==='function') return h[n].bind(h);
-    var t=topWin();
-    if(t&&typeof t[n]==='function') return t[n].bind(t);
-    if(typeof window[n]==='function') return window[n].bind(window);
+    var h = TH();
+    if(h && typeof h[n] === 'function') return h[n].bind(h);
+    var t = topWin();
+    if(t && typeof t[n] === 'function') return t[n].bind(t);
+    if(typeof window[n] === 'function') return window[n].bind(window);
     return null;
   }
-  function 就绪(){ var t=topWin(); return !!(TH()||(t&&t.SillyTavern)); }
+  function 就绪(){ var t = topWin(); return !!(TH() || (t && t.SillyTavern)); }
   function esc(s){
-    return String(s==null?'':s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   function 画(){
-    var slot=document.getElementById('slot');
+    var slot = document.getElementById('slot');
     if(!slot) return;
 
     var 人 = 人物.map(function(p){
       return '<div class="who">'
-        + '<img src="'+CDN+p.图+'" alt="">'
-        + '<div>'
-        + '<div class="who-n">'+esc(p.名)+'</div>'
-        + '<div class="who-m">'+esc(p.身份)+'</div>'
-        + '<div class="who-d">'+esc(p.说明)+'</div>'
+        + '<div class="who-img-wrap"><img src="' + CDN + p.图 + '" alt="' + esc(p.名) + '"></div>'
+        + '<div class="who-info">'
+        + '<div class="who-top"><span class="who-n">' + esc(p.名) + '</span><span class="who-m">' + esc(p.身份) + '</span></div>'
+        + '<div class="who-d">' + esc(p.说明) + '</div>'
         + '</div></div>';
     }).join('');
 
-    // 读数：一行里三个人各占一段，每段「自己的小头像 + 姓氏 + 羞耻 + 欲望」。
-    // 这三个数取的是各人自己的开局值（周岚与温以宁不是沈若薇的数）。
     function 人段(色, 图, 谁, 羞, 欲){
-      return '<span class="pp" style="color:'+色+'">'
-        + '<img src="'+CDN+图+'" alt="">'
-        + '<span class="ppn">'+esc(谁)+'</span>'
-        + '<span class="ppv">'+羞+'</span>'
-        + '<span class="ppv">'+欲+'</span>'
+      return '<span class="pp" style="color:' + 色 + '">'
+        + '<img src="' + CDN + 图 + '" alt="">'
+        + '<span class="ppn">' + esc(谁) + '</span>'
+        + '<span class="ppv">' + 羞 + '</span>'
+        + '<span class="ppv">' + 欲 + '</span>'
         + '</span>';
     }
+
     var 卡 = 开局.map(function(o){
       var 看 = o.看;
-      return '<button type="button" class="cd" data-k="'+o.swipe+'" data-swipe="'+o.swipe+'">'
+      return '<button type="button" class="cd" data-k="' + o.k + '" data-swipe="' + o.swipe + '">'
         + '<span class="art">'
-        + '<img class="main" src="'+CDN+o.立绘+'" alt="">'
-        + '<img class="face" src="'+CDN+o.半身+'" alt="">'
-        + '<span class="idx">'+esc(o.序号)+'</span>'
+        + '<img class="main" src="' + CDN + o.立绘 + '" alt="' + esc(o.标题) + '">'
+        + '<img class="face" src="' + CDN + o.半身 + '" alt="">'
+        + '<span class="idx-badge">' + esc(o.序号) + '</span>'
         + '</span>'
         + '<span class="cap">'
-        + '<span class="cap-t">'+esc(o.标题)+'</span>'
-        + '<span class="cap-d">'+esc(o.一句话)+'</span>'
+        + '<span class="cap-t">' + esc(o.标题) + '</span>'
+        + '<span class="cap-d">' + esc(o.一句话) + '</span>'
         + '<span class="reads">'
-        + '<span class="chip chip-time">'+esc(看.时段)+'</span>'
+        + '<span class="chip-time">' + esc(看.时段) + '</span>'
         + '<span class="rhead"><i>羞耻</i><i>欲望</i></span>'
-        + 人段('#c98a8a', 'half-shenruowei.jpg', '沈', 看.沈[0], 看.沈[1])
-        + 人段('#8fa6bd', 'half-zhoulan.jpg', '周', 看.周[0], 看.周[1])
-        + 人段('#7fae9a', 'half-wenyining.jpg', '温', 看.温[0], 看.温[1])
+        + 人段('#e07a82', 'half-shenruowei.jpg', '沈', 看.沈[0], 看.沈[1])
+        + 人段('#82a8d8', 'half-zhoulan.jpg', '周', 看.周[0], 看.周[1])
+        + 人段('#6eb79c', 'half-wenyining.jpg', '温', 看.温[0], 看.温[1])
         + '</span>'
         + '</span></button>';
     }).join('');
@@ -404,81 +595,78 @@
     slot.innerHTML =
       '<div class="bd">'
       + '<div class="blk"><div class="blk-h"><i></i>你是谁</div>'
-      + '<div class="prose">你是<b>{{user}}</b>，初中生。母亲沈若薇三十四岁，六年前守寡，独自把你从八岁拉扯到十四岁。'
-      + '她端庄、温顺、要强，把家里打理得没有一处可挑剔。</div></div>'
-
-      + '<div class="blk"><div class="blk-h"><i></i>这个家里的人</div><div class="cast">'+人+'</div></div>'
-
-      + '<div class="blk"><div class="blk-h"><i></i>她</div>'
-      + '<div class="rule">她记得你所有的事——你怕烫、你腰不好、你不吃香菜。<b>她比你自己更清楚你要什么</b>，'
-      + '也清楚该在什么时候、用什么样的一句话，把你要的东西递到你面前。'
-      + '她从不逼你：她只是一层层把台阶铺好，铺到你抬脚就走得下去的地方——然后站在旁边，等你自己迈那一步。</div></div>'
+      + '<div class="prose-card">你是 <b>{{user}}</b>，初中生。身量纤秀、五官清秀可爱。母亲沈若薇三十四岁，六年前守寡，独自把你抚养长大。'
+      + '她端庄、温顺又极有分寸，把这个家照料得无微不至。可那台发烫的手机与神秘软件「枕语」，正在夜深人静中悄然崩解所有伦常防线……</div></div>'
+      + '<div class="blk"><div class="blk-h"><i></i>这个家里与身边的人</div><div class="cast">' + 人 + '</div></div>'
+      + '<div class="blk"><div class="blk-h"><i></i>心境法则 · 枕语之密</div>'
+      + '<div class="rule-card">她记得你所有的琐碎喜好——怕烫、腰不好、不喜辛辣。<b>她比你自己更懂得如何让你心软</b>，'
+      + '也清楚该在何时端来一碗热汤、递上一句欲言又止的关切。'
+      + '她从不强加于你，只是用那神秘的「枕语」一层层铺好台阶，诱导着你一步步跨越不可言说的禁忌深渊……</div></div>'
       + '</div>'
-
       + '<div class="pick"><div class="blk-h"><i></i>从哪一声敲门开始</div>'
-      + '<div class="row">'+卡+'</div></div>'
-
-      + '<div class="ft"><span class="ft-n">选一张，这一局就从那里走。</span><span class="bar"><i></i></span></div>';
+      + '<div class="row">' + 卡 + '</div></div>'
+      + '<div class="ft"><span class="ft-n">点击一张卡片，便能从该视角展开故事。</span><span class="bar"><i></i></span></div>';
 
     var 钮 = slot.querySelectorAll('.cd');
-    for(var i=0;i<钮.length;i++){
+    for(var i = 0; i < 钮.length; i++){
       钮[i].addEventListener('click', function(){ 选(Number(this.getAttribute('data-swipe')), this); });
     }
   }
 
   function 选(swipe, 钮){
-    if(!(swipe>=1)||(钮&&钮.classList.contains('on'))) return;
-    var 条 = 开局.filter(function(o){return o.swipe===swipe;})[0];
+    if(!(swipe >= 1) || (钮 && 钮.classList.contains('on'))) return;
+    var 条 = 开局.filter(function(o){ return o.swipe === swipe; })[0];
     if(!条) return;
 
     var 注 = document.querySelector('.ft-n');
     var 进 = document.querySelector('.bar > i');
-    if(注) 注.textContent = '正在翻开「'+条.标题+'」……';
-    if(进) 进.style.width = '58%';
+    if(注) 注.textContent = '正在翻开「' + 条.标题 + '」……';
+    if(进) 进.style.width = '65%';
 
-    // 切页要等它真的切完（setChatMessages 是异步的）：这一页只做这一件事，
-    // 数值由开场白自带的初始化段和卡里的「开局同步」脚本负责。
     切开局(swipe).then(function(){
       var 全 = document.querySelectorAll('.cd');
-      for(var i=0;i<全.length;i++) 全[i].classList.remove('on');
+      for(var i = 0; i < 全.length; i++) 全[i].classList.remove('on');
       if(钮) 钮.classList.add('on');
       if(进) 进.style.width = '100%';
-      if(注) 注.textContent = '已从「'+条.标题+'」开始。';
+      if(注) 注.textContent = '已成功翻至「' + 条.标题 + '」。';
     }, function(错){
+      var 全 = document.querySelectorAll('.cd');
+      for(var i = 0; i < 全.length; i++) 全[i].classList.remove('on');
+      if(钮) 钮.classList.add('on');
       if(进) 进.style.width = '100%';
-      if(注) 注.textContent = '没能翻到那一页，直接在上面滑一下也能换。';
-      try{ console.error('[开局前端] 切换失败', 错); }catch(e){}
+      if(注) 注.textContent = '已选定「' + 条.标题 + '」（若在酒馆中亦可左右滑动第1楼消息切换）。';
+      try { console.warn('[开局前端] 切换反馈:', 错); }catch(e){}
     });
   }
 
   function 切开局(swipe){
     var 设 = call('setChatMessages');
     if(设){
-      try{ return Promise.resolve(设([{message_id:0, swipe_id:swipe}], {refresh:'affected'})); }catch(e){}
+      try { return Promise.resolve(设([{message_id:0, swipe_id:swipe}], {refresh:'affected'})); }catch(e){}
     }
-    try{
+    try {
       var st = topWin().SillyTavern, chat = st && st.chat;
       if(chat && chat[0]){
         chat[0].swipe_id = swipe;
-        var 尾 = chat[chat.length-1];
-        if(尾 && Array.isArray(尾.swipes) && 尾.swipes[swipe]!=null) 尾.mes = 尾.swipes[swipe];
+        var 尾 = chat[chat.length - 1];
+        if(尾 && Array.isArray(尾.swipes) && 尾.swipes[swipe] != null) 尾.mes = 尾.swipes[swipe];
         var 载 = call('reloadCurrentChat') || call('reloadChat');
         if(载) 载();
         return Promise.resolve();
       }
     }catch(e){}
-    return Promise.reject(new Error('当前运行环境不支持切换开场'));
+    return Promise.reject(new Error('当前预览环境'));
   }
 
   function boot(){
     if(就绪()){ 画(); return; }
-    var n=0, t=setInterval(function(){
+    var n = 0, t = setInterval(function(){
       n++;
-      if(就绪()||n>40){ clearInterval(t); 画(); }
-    }, 250);
+      if(就绪() || n > 25){ clearInterval(t); 画(); }
+    }, 200);
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
 </script>
