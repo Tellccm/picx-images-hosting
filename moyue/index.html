@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>开局 · 母上大人想要催眠我</title>
+<style>
+  :root {
+    --bg0: #0b0910;
+    --bg1: #14101c;
+    --panel: #17141f;
+    --line: rgba(255, 255, 255, 0.10);
+    --line2: rgba(255, 255, 255, 0.16);
+    --violet: rgba(168, 85, 247, 1);
+    --violet-soft: rgba(168, 85, 247, 0.45);
+    --pink: #ec4899;
+    --text: #ece7f3;
+    --dim: #9c95ad;
+    --dim2: #6f6880;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: transparent; }
+  body {
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    padding: 10px;
+  }
+  #mo-root {
+    max-width: 720px;
+    margin: 0 auto;
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+      radial-gradient(760px 320px at 88% -8%, rgba(236, 72, 153, 0.16), transparent 62%),
+      radial-gradient(620px 300px at 2% 108%, rgba(168, 85, 247, 0.16), transparent 58%),
+      linear-gradient(168deg, var(--bg1), var(--bg0) 72%);
+    border: 1px solid var(--violet-soft);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.62), 0 0 30px rgba(168, 85, 247, 0.18);
+  }
+
+  /* ---------- 顶栏 ---------- */
+  .mo-head {
+    padding: 16px 18px 13px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(49, 16, 66, 0.55), rgba(20, 16, 28, 0.2));
+  }
+  .mo-title {
+    font-family: "Songti SC", "SimSun", serif;
+    font-size: 19px;
+    letter-spacing: 0.22em;
+    background: linear-gradient(120deg, #c4b5fd, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .mo-sub {
+    margin-top: 5px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--dim2);
+  }
+
+  /* ---------- 正文 ---------- */
+  .mo-body { padding: 15px 18px 6px; }
+  .mo-lead {
+    font-size: 12.5px;
+    line-height: 1.85;
+    color: #cdc6da;
+    margin: 0 0 14px;
+  }
+  .mo-lead strong { color: #f0d9ee; font-weight: 600; }
+
+  .mo-sec { margin-bottom: 13px; }
+  .mo-sec-h {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 11.5px;
+    letter-spacing: 0.18em;
+    color: #c4b5fd;
+  }
+  .mo-sec-h::before {
+    content: "";
+    width: 3px; height: 13px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--violet), var(--pink));
+  }
+
+  .mo-people { display: grid; gap: 8px; }
+  .mo-person {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 11px;
+    padding: 9px;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--line);
+  }
+  .mo-person img {
+    width: 62px; height: 88px;
+    object-fit: cover;
+    border-radius: 9px;
+    display: block;
+    background: #09090d;
+  }
+  .mo-p-name { font-size: 13.5px; color: #f2ebfa; margin-bottom: 3px; }
+  .mo-p-meta { font-size: 11px; color: var(--dim2); margin-bottom: 6px; letter-spacing: 0.04em; }
+  .mo-p-desc { font-size: 12px; line-height: 1.7; color: #b8b0c6; }
+
+  .mo-rule {
+    font-size: 12.5px;
+    line-height: 1.85;
+    color: #bdb5cb;
+    padding: 11px 13px;
+    border-radius: 13px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.028);
+  }
+  .mo-rule em { font-style: normal; color: #f0c4dd; }
+
+  /* ---------- 开局卡 ---------- */
+  .mo-pick { padding: 4px 18px 6px; }
+  .mo-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .mo-card {
+    position: relative;
+    padding: 0;
+    border: 1.5px solid var(--violet-soft);
+    border-radius: 15px;
+    overflow: hidden;
+    background: #14131a;
+    color: inherit;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  }
+  .mo-card:hover {
+    border-color: rgba(196, 132, 252, 0.9);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.32);
+    transform: translateY(-2px);
+  }
+  .mo-card.is-on {
+    border-color: rgba(244, 114, 182, 0.95);
+    box-shadow: 0 0 24px rgba(236, 72, 153, 0.4);
+  }
+  .mo-art { position: relative; aspect-ratio: 2 / 3; overflow: hidden; background: #09090d; }
+  .mo-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mo-art-fade {
+    position: absolute; inset: auto 0 0 0; height: 52%;
+    background: linear-gradient(180deg, transparent, rgba(11, 9, 16, 0.92));
+  }
+  .mo-tag {
+    position: absolute; top: 8px; left: 8px;
+    padding: 2px 9px;
+    border-radius: 9px;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: #f5d9ee;
+    background: rgba(49, 16, 66, 0.82);
+    border: 1px solid var(--violet-soft);
+  }
+  .mo-copy { display: block; padding: 9px 10px 11px; }
+  .mo-t { display: block; font-size: 13.5px; color: #f4eefb; margin-bottom: 4px; }
+  .mo-d { display: block; font-size: 11.5px; line-height: 1.6; color: var(--dim); }
+
+  /* ---------- 页脚 ---------- */
+  .mo-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 18px 15px;
+  }
+  .mo-note { font-size: 11.5px; color: var(--dim2); }
+  .mo-bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+  .mo-bar > i {
+    display: block; height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--violet), var(--pink));
+    transition: width 0.5s ease;
+  }
+
+  .mo-empty {
+    padding: 22px 4px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--dim2);
+    line-height: 1.9;
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 6px; }
+    .mo-row { grid-template-columns: 1fr; }
+    .mo-art { aspect-ratio: 3 / 2; }
+    .mo-title { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div id="mo-root">
+  <div class="mo-head">
+    <div class="mo-title">母上大人想要催眠我</div>
+    <div class="mo-sub">开局 · 从哪一声敲门开始</div>
+  </div>
+  <div id="mo-slot">
+    <div class="mo-empty">正在读取这一局的资料……</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+ * 《母上大人想要催眠我》开局前端
+ *
+ * 跑在消息楼层的 iframe 里，所以一切都从 window.top 取；取不到再退回本窗口。
+ * - 读变量：TavernHelper.getVariables({type:'message', message_id:0})
+ * - 写变量：TavernHelper.replaceVariables(..., {type:'message', message_id:0})
+ * - 切开局：setChatMessages([{message_id:0, swipe_id:N}])，
+ *           老版本酒馆没有它，退回直接改 SillyTavern.chat[0].swipe_id 再自己重渲染。
+ * 六张图走 jsDelivr，和本页同一个仓库。
+ * ==========================================================================*/
+(function () {
+  'use strict';
+
+  var CDN = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/moyue/';
+
+  var 开局 = [
+    {
+      swipe: 1,
+      标签: '其一',
+      标题: '守着开门声的那锅汤',
+      一句话: '周五傍晚六点四十。她一个人在家，手机扣在灶台上，屏幕朝上。',
+      图: 'start-0-shenruowei.jpg',
+      变量: {
+        催眠: {
+          深度: 1,
+          枕语: [
+            { 序号: 1, 第几天: 1, 身份: '已写', 内容: '今晚不要关门睡', 来源: '昨夜第一次动手，门确实没反锁' },
+            { 序号: 2, 第几天: 1, 身份: '草稿', 内容: '来妈房间坐一会儿', 来源: '开场白天反复打字又删掉，到傍晚还悬着' }
+          ],
+          玩家指令: '',
+          允许越权: false,
+          越界记录: { 房门不落锁: { 次数: 1, 最近: '昨晚第一次生效' } }
+        },
+        沈若薇: { 阶段: '阶段1·温情日常', 羞耻: 70, 欲望: 62, 沉溺: 5 },
+        人物: { 周岚: { 沉溺: 0 }, 温以宁: { 沉溺: 0 } },
+        时间: { 第几天: 1, 时段: '傍晚' }
+      }
+    },
+    {
+      swipe: 2,
+      标签: '其二',
+      标题: '淋着雨闯进来的那个人',
+      一句话: '雨夜九点半后。玄关的顶灯坏了一只，她湿着半边肩站在门口。',
+      图: 'start-1-zhoulan.jpg',
+      变量: {
+        催眠: {
+          深度: 1,
+          枕语: [
+            { 序号: 1, 第几天: 1, 身份: '已写', 内容: '今晚不要关门睡', 来源: '昨夜第一次动手，门确实没反锁' },
+            { 序号: 2, 第几天: 1, 身份: '草稿', 内容: '来妈房间坐一会儿', 来源: '白天反复打字又删掉，一直没写下去' }
+          ],
+          玩家指令: '',
+          允许越权: false,
+          越界记录: { 房门不落锁: { 次数: 1, 最近: '昨晚第一次生效' } }
+        },
+        沈若薇: { 阶段: '阶段1·温情日常', 羞耻: 55, 欲望: 58, 沉溺: 5 },
+        人物: { 周岚: { 沉溺: 0 }, 温以宁: { 沉溺: 0 } },
+        时间: { 第几天: 1, 时段: '夜晚' }
+      }
+    },
+    {
+      swipe: 3,
+      标签: '其三',
+      标题: '敲错门的那个人',
+      一句话: '周六下午两点半。沈若薇出门买菜了，门口站着对门的邻居。',
+      图: 'start-2-wenyining.jpg',
+      变量: {
+        催眠: {
+          深度: 1,
+          枕语: [
+            { 序号: 1, 第几天: 1, 身份: '已写', 内容: '今晚不要关门睡', 来源: '昨夜第一次动手，门确实没反锁' },
+            { 序号: 2, 第几天: 1, 身份: '草稿', 内容: '来妈房间坐一会儿', 来源: '白天反复打字又删掉，一直没写下去' }
+          ],
+          玩家指令: '',
+          允许越权: false,
+          越界记录: { 房门不落锁: { 次数: 1, 最近: '昨晚第一次生效' } }
+        },
+        沈若薇: { 阶段: '阶段1·温情日常', 羞耻: 60, 欲望: 50, 沉溺: 5 },
+        人物: { 周岚: { 沉溺: 0 }, 温以宁: { 沉溺: 0 } },
+        时间: { 第几天: 1, 时段: '下午' }
+      }
+    }
+  ];
+
+  var 人物 = [
+    {
+      图: 'half-shenruowei.jpg',
+      名: '沈若薇',
+      标签: '三十四岁 · 全职主妇 · 你的母亲',
+      说明: '墨黑的长直发垂到腰际，冷白得像能透光，眼睛是浅褐近琥珀的、水润而下垂的那种。说话轻软，句子短，想要什么的时候只说半句，等你来接。她手里攥着一件能随意摆弄心智的东西，骨子里却是个胆小的、守着妇道的女人——越是按下去，越是厌恶自己，而手停不下来。'
+    },
+    {
+      图: 'half-zhoulan.jpg',
+      名: '周岚',
+      标签: '三十四岁 · 「岚亭」的老板 · 她十年的朋友',
+      说明: '深栗色的长发梳成一条一丝不乱的高马尾，眼形细长、眼尾微挑，看人的时候眼皮半垂着。祖上留下三间铺面，她把一间改成只做熟客的美容会所，不缺钱，开店是为了有个地方待着。她看不上的人连损都不损；肯损你，说明你还够格。'
+    },
+    {
+      图: 'half-wenyining.jpg',
+      名: '温以宁',
+      标签: '三十二岁 · 对门邻居 · 丈夫一年回来两次',
+      说明: '淡杏色的棉麻长裙，深棕的低马尾用一只玳瑁抓夹松松挽着，薄得透光的冷白。见面只会笑着问一句「放学啦」，然后就没有别的话了。她这辈子在等别人替她做决定；别人真做了，她会带着近乎自毁的感激顺从到底。'
+    }
+  ];
+
+  /* ---------------- 取数层 ---------------- */
+  function topWin() {
+    try { if (window.top && window.top !== window) return window.top; } catch (e) {}
+    return window;
+  }
+  function TH() {
+    var t = topWin();
+    try { if (t && t.TavernHelper) return t.TavernHelper; } catch (e) {}
+    try { if (window.TavernHelper) return window.TavernHelper; } catch (e) {}
+    return null;
+  }
+  function call(name) {
+    var h = TH();
+    if (h && typeof h[name] === 'function') return h[name].bind(h);
+    var t = topWin();
+    if (t && typeof t[name] === 'function') return t[name].bind(t);
+    if (typeof window[name] === 'function') return window[name].bind(window);
+    return null;
+  }
+  function 就绪() { return !!(TH() || topWin().SillyTavern); }
+
+  /* ---------------- 页面 ---------------- */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function 画() {
+    var slot = document.getElementById('mo-slot');
+    if (!slot) return;
+
+    var 人 = 人物.map(function (p) {
+      return '<div class="mo-person">'
+        + '<img src="' + CDN + p.图 + '" alt="">'
+        + '<div>'
+        + '<div class="mo-p-name">' + esc(p.名) + '</div>'
+        + '<div class="mo-p-meta">' + esc(p.标签) + '</div>'
+        + '<div class="mo-p-desc">' + esc(p.说明) + '</div>'
+        + '</div></div>';
+    }).join('');
+
+    var 卡 = 开局.map(function (o) {
+      return '<button type="button" class="mo-card" data-swipe="' + o.swipe + '">'
+        + '<span class="mo-art">'
+        + '<img src="' + CDN + o.图 + '" alt="">'
+        + '<span class="mo-art-fade"></span>'
+        + '<span class="mo-tag">' + esc(o.标签) + '</span>'
+        + '</span>'
+        + '<span class="mo-copy">'
+        + '<span class="mo-t">' + esc(o.标题) + '</span>'
+        + '<span class="mo-d">' + esc(o.一句话) + '</span>'
+        + '</span>'
+        + '</button>';
+    }).join('');
+
+    slot.innerHTML =
+      '<div class="mo-body">'
+      + '<p class="mo-lead">你是<strong>{{user}}</strong>，初中生。母亲沈若薇三十四岁，六年前守寡，独自把你从八岁拉扯到十四岁。'
+      + '她端庄、温顺、要强，把家里打理得没有一处可挑剔——直到三天前，一部没有图标、没有名字的手机软件住进了她的屏幕里。'
+      + '它叫<strong>「枕语」</strong>。</p>'
+
+      + '<div class="mo-sec"><div class="mo-sec-h">这个家里的人</div><div class="mo-people">' + 人 + '</div></div>'
+
+      + '<div class="mo-sec"><div class="mo-sec-h">「枕语」</div>'
+      + '<div class="mo-rule">没有等级、没有额度、没有冷却——<em>她什么时候想写就什么时候写</em>。'
+      + '写下的那句会在你身上生效：不是提线木偶式的操控，而是你会自己给这件事补一个天衣无缝的理由。'
+      + '她手机里那份记录你也能看见：她此刻想写的那句、今夜已经生效的那句、你开口要过而她还没答应的那句。</div></div>'
+      + '</div>'
+
+      + '<div class="mo-pick"><div class="mo-sec-h" style="margin-left:0">从哪一声敲门开始</div>'
+      + '<div class="mo-row">' + 卡 + '</div></div>'
+
+      + '<div class="mo-foot"><span class="mo-note">选一张，这一局就从那里走。</span><span class="mo-bar"><i></i></span></div>';
+
+    var 按钮们 = slot.querySelectorAll('.mo-card');
+    for (var i = 0; i < 按钮们.length; i++) {
+      按钮们[i].addEventListener('click', function () { 选(Number(this.getAttribute('data-swipe')), this); });
+    }
+  }
+
+  /* ---------------- 动作 ---------------- */
+  function 选(swipe, 按钮) {
+    if (!(swipe >= 1)) return;
+    if (按钮 && 按钮.classList.contains('is-on')) return;
+
+    var 条 = 开局.filter(function (o) { return o.swipe === swipe; })[0];
+    if (!条) return;
+
+    var 注 = document.querySelector('.mo-note');
+    var 进 = document.querySelector('.mo-bar > i');
+    if (注) 注.textContent = '正在翻开「' + 条.标题 + '」……';
+    if (进) 进.style.width = '55%';
+
+    切开局(swipe);
+    写变量(条.变量);
+
+    var 全部 = document.querySelectorAll('.mo-card');
+    for (var i = 0; i < 全部.length; i++) 全部[i].classList.remove('is-on');
+    if (按钮) 按钮.classList.add('is-on');
+
+    if (进) 进.style.width = '100%';
+    if (注) 注.textContent = '已从「' + 条.标题 + '」开始。';
+  }
+
+  function 切开局(swipe) {
+    var 设 = call('setChatMessages');
+    if (设) {
+      try {
+        设([{ message_id: 0, swipe_id: swipe }], { refresh: 'affected' });
+        return;
+      } catch (e) { /* 落到下面的老办法 */ }
+    }
+    try {
+      var st = topWin().SillyTavern;
+      var chat = st && st.chat;
+      if (chat && chat[0]) {
+        chat[0].swipe_id = swipe;
+        var 尾 = chat[chat.length - 1];
+        if (尾 && Array.isArray(尾.swipes) && 尾.swipes[swipe] != null) 尾.mes = 尾.swipes[swipe];
+        var 载 = call('reloadCurrentChat') || call('reloadChat');
+        if (载) 载();
+      }
+    } catch (e) {}
+  }
+
+  function 写变量(值) {
+    var 写 = call('replaceVariables');
+    if (!写) return;
+    var 读 = call('getVariables');
+    var 当前 = {};
+    try { if (读) 当前 = 读({ type: 'message', message_id: 0 }) || {}; } catch (e) {}
+    当前.stat_data = 值;
+    try {
+      写(当前, { type: 'message', message_id: 0 });
+    } catch (e) {
+      try { 写({ stat_data: 值 }, { type: 'message', message_id: 0 }); } catch (e2) {}
+    }
+  }
+
+  /* ---------------- 启动 ---------------- */
+  function boot() {
+    if (就绪()) { 画(); return; }
+    var n = 0;
+    var t = setInterval(function () {
+      n++;
+      if (就绪() || n > 40) {
+        clearInterval(t);
+        画();
+      }
+    }, 250);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+</body>
+</html>
