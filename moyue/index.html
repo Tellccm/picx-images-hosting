@@ -200,7 +200,18 @@
 (function () {
   'use strict';
 
-  var CDN = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/moyue/';
+  /* 图跟着本页同一个版本取：从加载本页的 <script src> 里把 @版本 抠出来。
+     页面与六张图永远同版本，以后换图也不会出现「页面是新的、图还是旧的」。 */
+  var CDN = (function () {
+    var s = document.currentScript;
+    if (!s) {
+      var all = document.getElementsByTagName('script');
+      s = all[all.length - 1];
+    }
+    var src = (s && s.src) || '';
+    var m = src.match(/(https:\/\/cdn\.jsdelivr\.net\/gh\/[^/]+\/[^/@]+@[^/]+)\//);
+    return (m ? m[1] : 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master') + '/moyue/';
+  })();
 
   var 枕语 = [
     { 序号: 1, 第几天: 1, 身份: '已写', 内容: '今晚不要关门睡', 来源: '昨夜第一次动手，门确实没反锁' }
