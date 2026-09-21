@@ -120,8 +120,8 @@
 
   /* 卡片里全部是 <span>（button 里不能放 div），内层必须显式成块，
      否则 width/height/padding 在行内盒上不生效，图会被压成 0 高。 */
-  .art,.art>*,.cap,.cap-t,.cap-d,.reads,.rrow,.rstat{display:block;}
-  .rrow{display:flex;} .rstat{display:flex;} .rtime{display:inline-block;}
+  .art,.art>*,.cap,.cap-t,.cap-d{display:block;}
+  .reads{display:flex;} .chip{display:inline-block;} .rface{display:block;}
 
   /* ---------- 开局 ---------- */
   .pick{padding:2px 26px 6px;}
@@ -190,18 +190,17 @@
   }
   .cd:hover .cap-t,.cd.on .cap-t{color:#fff;}
   .cap-d{display:block;font-size:15px;line-height:1.82;color:var(--dim);}
-  .reads{display:block;margin-top:15px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px;}
-  .rtime{display:inline-block;margin-bottom:9px;padding:3px 12px;border-radius:999px;
-    font-size:13px;letter-spacing:.06em;color:var(--paper);background:rgba(255,255,255,.05);border:1px solid var(--line);}
-  .rrow{display:flex;align-items:center;gap:7px;padding:4px 0;}
-  .rrow + .rrow{border-top:1px solid rgba(255,255,255,.045);}
-  .rrow img{width:23px;height:23px;border-radius:50%;object-fit:cover;flex:0 0 auto;
-    border:1px solid currentColor;background:rgba(255,255,255,.06);}
-  .rname{flex:0 0 1.1em;font-size:13px;opacity:.9;}
-  .rstat{display:flex;align-items:baseline;gap:2px;margin-left:auto;padding-left:8px;}
-  .rstat + .rstat{margin-left:0;padding-left:8px;}
-  .rl{font-size:11px;opacity:.5;}
-  .rstat b{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#f2ebfa;min-width:1.5em;text-align:right;}
+  .reads{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:14px;}
+  .chip{
+    display:inline-block;padding:3px 11px;border-radius:999px;font-size:13px;letter-spacing:.03em;
+    color:var(--dim);background:rgba(255,255,255,.035);border:1px solid var(--line);
+  }
+  .chip-time{color:var(--paper);background:rgba(255,255,255,.05);}
+  .chip-name{padding:3px 9px;background:transparent;}
+  .rface{
+    width:24px;height:24px;border-radius:50%;object-fit:cover;display:block;flex:0 0 auto;
+    border:1.5px solid var(--ac);background:rgba(255,255,255,.06);margin-left:5px;
+  }
 
   /* ---------- 页脚 ---------- */
   .ft{
@@ -244,7 +243,7 @@
     .rule{font-size:15.5px;}
     .cap-t{font-size:18px;}
     .cap-d{font-size:14.5px;}
-    .rl{font-size:10px;} .rstat b{font-size:13px;} .rname{font-size:12px;}
+    .chip{font-size:12.5px;padding:3px 9px;} .rface{width:22px;height:22px;}
     .rl{font-size:10px;} .rstat b{font-size:13px;} .rname{font-size:12px;}
   }
 </style>
@@ -363,16 +362,13 @@
         + '</div></div>';
     }).join('');
 
-    // 读数行：三个人各一行，各带自己的头像与主色；每格是「名 + 数值」
-    function 行(色, 图, 名, 格){
-      return '<span class="rrow" style="color:'+色+'">'
-        + '<img src="'+CDN+图+'" alt="">'
-        + '<span class="rname">'+esc(名)+'</span>'
-        + 格
-        + '</span>';
-    }
-    function 格(标, 值){
-      return '<span class="rstat"><span class="rl">'+esc(标)+'</span><b>'+值+'</b></span>';
+    // 读数：一行小标。时段在最前，然后每人两枚——各自的头像、各自的数
+    // 注意别把这个函数叫「人」：画() 里已经有一个 var 人 = 人物.map(...)，
+    // 同名的话函数声明会被那个 var 覆盖掉，调用就报 not a function。
+    function 读数段(色, 图, 谁, 羞, 欲){
+      return '<img class="rface" style="border-color:'+色+'" src="'+CDN+图+'" alt="">'
+        + '<span class="chip chip-name" style="color:'+色+'">'+esc(谁)+'</span>'
+        + '<span class="chip">羞耻 '+羞+'</span><span class="chip">欲望 '+欲+'</span>';
     }
     var 卡 = 开局.map(function(o){
       var 看 = o.看;
@@ -386,10 +382,10 @@
         + '<span class="cap-t">'+esc(o.标题)+'</span>'
         + '<span class="cap-d">'+esc(o.一句话)+'</span>'
         + '<span class="reads">'
-        + '<span class="rtime">'+esc(看.时段)+'</span>'
-        + 行('#c98a8a', 'half-shenruowei.jpg', '沈', 格('羞耻',看.沈[0])+格('欲望',看.沈[1])+格('沉溺',看.沈[2]))
-        + 行('#8fa6bd', 'half-zhoulan.jpg', '周', 格('羞耻',看.周[0])+格('欲望',看.周[1])+格('沉溺',看.周[2]))
-        + 行('#7fae9a', 'half-wenyining.jpg', '温', 格('羞耻',看.温[0])+格('欲望',看.温[1])+格('沉溺',看.温[2]))
+        + '<span class="chip chip-time">'+esc(看.时段)+'</span>'
+        + 读数段('#c98a8a', 'half-shenruowei.jpg', '沈', 看.沈[0], 看.沈[1])
+        + 读数段('#8fa6bd', 'half-zhoulan.jpg', '周', 看.周[0], 看.周[1])
+        + 读数段('#7fae9a', 'half-wenyining.jpg', '温', 看.温[0], 看.温[1])
         + '</span>'
         + '</span></button>';
     }).join('');
