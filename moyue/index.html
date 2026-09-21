@@ -267,10 +267,13 @@
 /* ============================================================================
  * 《妈只是在疼你》开局前端
  * 跑在消息楼层的 iframe 里，一切从 window.top 取，取不到再退回本窗口。
- *   读变量 TavernHelper.getVariables({type:'message',message_id:0})
- *   写变量 TavernHelper.replaceVariables(..., {type:'message',message_id:0})
  *   切开局 setChatMessages([{message_id:0, swipe_id:N}])
  * 图跟着本页同一个版本取（从加载本页的 script src 里抠 @版本）。
+ *
+ * 变量不归这一页管。MVU 给第一条消息的每一页各存一份变量，这里的 iframe 去写
+ * {type:'message',message_id:0} 写的是"当时活着的那一页"——切页是异步的，于是它会把
+ * 上一页的数字改成下一页的（这正是"点了卡、数字却不对"的老毛病）。
+ * 每一页该有多少数，写在开场白自己的 <UpdateVariable> 里，另由卡里的「开局同步」脚本兜底。
  * ==========================================================================*/
 (function () {
   'use strict';
@@ -433,20 +436,26 @@
     if(注) 注.textContent = '正在翻开「'+条.标题+'」……';
     if(进) 进.style.width = '58%';
 
-    切开局(swipe);
-    写变量(条);
-
-    var 全 = document.querySelectorAll('.cd');
-    for(var i=0;i<全.length;i++) 全[i].classList.remove('on');
-    if(钮) 钮.classList.add('on');
-
-    if(进) 进.style.width = '100%';
-    if(注) 注.textContent = '已从「'+条.标题+'」开始。';
+    // 切页要等它真的切完（setChatMessages 是异步的）：这一页只做这一件事，
+    // 数值由开场白自带的初始化段和卡里的「开局同步」脚本负责。
+    切开局(swipe).then(function(){
+      var 全 = document.querySelectorAll('.cd');
+      for(var i=0;i<全.length;i++) 全[i].classList.remove('on');
+      if(钮) 钮.classList.add('on');
+      if(进) 进.style.width = '100%';
+      if(注) 注.textContent = '已从「'+条.标题+'」开始。';
+    }, function(错){
+      if(进) 进.style.width = '100%';
+      if(注) 注.textContent = '没能翻到那一页，直接在上面滑一下也能换。';
+      try{ console.error('[开局前端] 切换失败', 错); }catch(e){}
+    });
   }
 
   function 切开局(swipe){
     var 设 = call('setChatMessages');
-    if(设){ try{ 设([{message_id:0, swipe_id:swipe}], {refresh:'affected'}); return; }catch(e){} }
+    if(设){
+      try{ return Promise.resolve(设([{message_id:0, swipe_id:swipe}], {refresh:'affected'})); }catch(e){}
+    }
     try{
       var st = topWin().SillyTavern, chat = st && st.chat;
       if(chat && chat[0]){
@@ -455,26 +464,10 @@
         if(尾 && Array.isArray(尾.swipes) && 尾.swipes[swipe]!=null) 尾.mes = 尾.swipes[swipe];
         var 载 = call('reloadCurrentChat') || call('reloadChat');
         if(载) 载();
+        return Promise.resolve();
       }
     }catch(e){}
-  }
-
-  function 写变量(条){
-    var 写 = call('replaceVariables');
-    if(!写) return;
-    var 值 = {
-      沈若薇: { 羞耻: 条.看.沈[0], 欲望: 条.看.沈[1], 沉溺: 条.看.沈[2] },
-      人物: {
-        周岚: { 羞耻: 条.看.周[0], 欲望: 条.看.周[1], 沉溺: 条.看.周[2] },
-        温以宁: { 羞耻: 条.看.温[0], 欲望: 条.看.温[1], 沉溺: 条.看.温[2] }
-      },
-      时间: { 第几天: 1, 时段: 条.看.时段 }
-    };
-    var 读 = call('getVariables'), 当前 = {};
-    try{ if(读) 当前 = 读({type:'message', message_id:0}) || {}; }catch(e){}
-    当前.stat_data = 值;
-    try{ 写(当前, {type:'message', message_id:0}); }
-    catch(e){ try{ 写({stat_data:值}, {type:'message', message_id:0}); }catch(e2){} }
+    return Promise.reject(new Error('当前运行环境不支持切换开场'));
   }
 
   function boot(){
