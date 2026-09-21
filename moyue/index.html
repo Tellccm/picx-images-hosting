@@ -6,174 +6,232 @@
 <title>开局 · 母上大人想要催眠我</title>
 <style>
   :root{
-    --ink:#0d0a09;
-    --ink2:#171210;
-    --line:rgba(214,190,158,.16);
-    --line2:rgba(214,190,158,.30);
-    --gold:#d8bd92;
-    --gold2:#b5915f;
-    --paper:#efe6da;
-    --text:#e7ddd1;
-    --dim:#a99c8c;
-    --dim2:#7d7266;
-    --rose:#c98a8a;
+    --ink:#0e0b0a;
+    --paper:#f0e7db;
+    --text:#e6dcd0;
+    --dim:#a89b8b;
+    --dim2:#7a6f64;
+    --line:rgba(216,189,146,.16);
+    --line2:rgba(216,189,146,.34);
+    --gold:#d9bd8f;
+    --gold2:#a8874f;
     --serif:"Songti SC","Source Han Serif SC","Noto Serif SC",Georgia,serif;
     --sans:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    /* 三个人的主色，由 .cd[data-k] 覆盖 */
+    --a1:#7fae9a; --a2:#c98a76; --a3:#8fa6bd;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:transparent;}
   body{
-    font-family:var(--sans);
-    color:var(--text);
-    padding:12px;
+    font-family:var(--sans);color:var(--text);padding:12px;
     -webkit-font-smoothing:antialiased;
   }
+
+  /* ---------- 入场动画 ---------- */
+  @keyframes moIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  @keyframes moInSlow{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
+  @keyframes moGlow{0%,100%{opacity:.55;}50%{opacity:1;}}
+  @keyframes moSheen{0%{transform:translateX(-130%);}100%{transform:translateX(130%);}}
+  @keyframes moLine{from{opacity:0;transform:scaleX(.2);}to{opacity:1;transform:scaleX(1);}}
+  .anim{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both;}
+
   #mo{
     max-width:1080px;margin:0 auto;
-    border-radius:16px;overflow:hidden;
+    border-radius:18px;overflow:hidden;
     background:
-      radial-gradient(700px 300px at 90% -10%, rgba(216,189,146,.10), transparent 62%),
-      radial-gradient(560px 280px at 0% 106%, rgba(201,138,138,.09), transparent 60%),
-      linear-gradient(172deg,#1a1411,#0d0a09 74%);
+      radial-gradient(760px 320px at 88% -12%, rgba(216,189,146,.11), transparent 62%),
+      radial-gradient(620px 300px at -6% 108%, rgba(201,138,118,.10), transparent 60%),
+      radial-gradient(900px 500px at 50% 40%, rgba(255,255,255,.022), transparent 70%),
+      linear-gradient(174deg,#1b1512,#0e0b0a 76%);
     border:1px solid var(--line);
-    box-shadow:0 22px 60px rgba(0,0,0,.6);
+    box-shadow:0 26px 70px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.045);
+    animation:moInSlow .8s cubic-bezier(.22,.7,.3,1) both;
   }
 
-  /* ---- 题头 ---- */
-  .hd{
-    padding:30px 26px 24px;text-align:center;
-    border-bottom:1px solid var(--line);
+  /* ---------- 题头 ---------- */
+  .hd{position:relative;padding:34px 26px 26px;text-align:center;overflow:hidden;}
+  .hd::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(216,189,146,.42),transparent);
+    transform-origin:50% 50%;animation:moLine 1.1s ease both .15s;
   }
   .hd-orn{
     display:flex;align-items:center;justify-content:center;gap:14px;
-    color:var(--gold2);font-size:14px;letter-spacing:.5em;
+    font-size:14px;letter-spacing:.5em;color:var(--gold2);
+    animation:moGlow 5.5s ease-in-out infinite;
   }
   .hd-orn::before,.hd-orn::after{
-    content:"";height:1px;width:64px;
-    background:linear-gradient(90deg,transparent,var(--line2));
+    content:"";height:1px;width:72px;
+    background:linear-gradient(90deg,transparent,rgba(216,189,146,.45));
   }
-  .hd-orn::after{background:linear-gradient(90deg,var(--line2),transparent);}
+  .hd-orn::after{background:linear-gradient(90deg,rgba(216,189,146,.45),transparent);}
   .hd-t{
-    margin:15px 0 10px;
-    font-family:var(--serif);
-    font-size:42px;letter-spacing:.14em;color:var(--paper);
-    font-weight:500;
+    margin:16px 0 10px;
+    font-family:var(--serif);font-size:42px;letter-spacing:.15em;font-weight:500;
+    color:var(--paper);
+    text-shadow:0 0 30px rgba(216,189,146,.16), 0 2px 0 rgba(0,0,0,.4);
   }
-  .hd-s{font-size:17px;letter-spacing:.26em;color:var(--dim2);}
+  .hd-s{font-size:17px;letter-spacing:.3em;color:var(--dim2);}
 
-  /* ---- 正文块 ---- */
-  .bd{padding:28px 26px 6px;}
-  .blk{margin-bottom:28px;}
+  /* ---------- 正文块 ---------- */
+  .bd{padding:30px 26px 8px;}
+  .blk{margin-bottom:30px;}
   .blk-h{
-    display:flex;align-items:center;gap:11px;margin-bottom:15px;
-    font-size:16px;letter-spacing:.24em;color:var(--gold);
+    display:flex;align-items:center;gap:11px;margin-bottom:17px;
+    font-size:16px;letter-spacing:.26em;color:var(--gold);
+  }
+  .blk-h::after{
+    content:"";flex:1;height:1px;
+    background:linear-gradient(90deg,rgba(216,189,146,.22),transparent);
   }
   .blk-h i{
-    width:6px;height:6px;border-radius:50%;background:var(--gold2);
-    box-shadow:0 0 8px rgba(216,189,146,.6);flex:0 0 auto;
+    width:6px;height:6px;border-radius:50%;background:var(--gold2);flex:0 0 auto;
+    box-shadow:0 0 10px rgba(216,189,146,.8);
   }
-  .prose{font-size:17px;line-height:2.05;color:#cfc4b6;}
+  .prose{font-size:17px;line-height:2.1;color:#cfc4b6;}
   .prose b{color:var(--paper);font-weight:600;}
-  .prose .q{color:var(--gold);}
 
-  /* ---- 人物 ---- */
+  /* ---------- 人物 ---------- */
   .cast{display:grid;gap:14px;}
   .who{
-    display:grid;grid-template-columns:124px 1fr;gap:20px;
-    padding:16px;border:1px solid var(--line);border-radius:13px;
-    background:rgba(255,255,255,.022);
+    position:relative;display:grid;grid-template-columns:124px 1fr;gap:20px;
+    padding:16px;border:1px solid var(--line);border-radius:15px;
+    background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));
+    transition:border-color .35s ease,background .35s ease,transform .35s ease;
   }
+  .who:hover{border-color:var(--line2);transform:translateX(3px);}
   .who img{
-    width:124px;height:178px;object-fit:cover;border-radius:9px;display:block;
-    filter:saturate(.94) contrast(1.02);
+    width:124px;height:178px;object-fit:cover;border-radius:10px;display:block;
+    filter:saturate(.92) contrast(1.03);
+    box-shadow:0 10px 26px rgba(0,0,0,.5);
   }
-  .who-n{
-    font-family:var(--serif);font-size:23px;letter-spacing:.08em;color:var(--paper);
-    margin-bottom:4px;
-  }
-  .who-m{font-size:15px;letter-spacing:.06em;color:var(--gold2);margin-bottom:10px;}
-  .who-d{font-size:16px;line-height:1.95;color:#bdb1a2;}
+  .who-n{font-family:var(--serif);font-size:23px;letter-spacing:.09em;color:var(--paper);margin-bottom:6px;}
+  .who-m{font-size:15px;letter-spacing:.05em;color:var(--gold2);margin-bottom:11px;}
+  .who-d{font-size:16px;line-height:2;color:#bdb1a2;}
 
+  /* ---------- 规则 ---------- */
   .rule{
-    padding:18px 20px;border-radius:13px;
-    border:1px solid var(--line);
-    border-left:2px solid var(--gold2);
-    background:linear-gradient(180deg,rgba(216,189,146,.05),rgba(255,255,255,.015));
-    font-size:16.5px;line-height:2;color:#c6bbac;
+    position:relative;padding:19px 22px;border-radius:15px;overflow:hidden;
+    border:1px solid var(--line);border-left:2px solid var(--gold2);
+    background:linear-gradient(180deg,rgba(216,189,146,.055),rgba(255,255,255,.012));
+    font-size:16.5px;line-height:2.05;color:#c6bbac;
   }
   .rule b{color:var(--paper);font-weight:600;}
 
-  /* ---- 开局 ---- */
-  .pick{padding:2px 26px 4px;}
-  .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+  /* ---------- 开局 ---------- */
+  .pick{padding:2px 26px 6px;}
+  .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;}
+
   .cd{
-    position:relative;padding:0;overflow:hidden;cursor:pointer;
-    border:1px solid var(--line);border-radius:14px;
-    background:#120e0d;color:inherit;font-family:inherit;text-align:left;
-    transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease;
+    position:relative;display:block;padding:0;overflow:hidden;cursor:pointer;
+    border:1px solid var(--line);border-radius:16px;
+    background:#120f0e;color:inherit;font-family:inherit;text-align:left;
+    transition:border-color .38s ease,transform .38s cubic-bezier(.2,.7,.3,1),box-shadow .38s ease;
   }
-  .cd:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.5);}
-  .cd.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(216,189,146,.35),0 12px 30px rgba(0,0,0,.52);}
-  .cd.busy{opacity:.72;cursor:default;}
+  .cd::before{  /* 悬停时扫过的一道光 */
+    content:"";position:absolute;top:0;bottom:0;left:0;width:45%;z-index:3;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.09),transparent);
+    transform:translateX(-130%);pointer-events:none;
+  }
+  .cd:hover::before{animation:moSheen 1.15s ease;}
+  .cd:hover{transform:translateY(-4px);border-color:var(--line2);box-shadow:0 18px 40px rgba(0,0,0,.55);}
+  .cd[data-k="1"]{--ac:var(--a1);}
+  .cd[data-k="2"]{--ac:var(--a2);}
+  .cd[data-k="3"]{--ac:var(--a3);}
+  .cd.on{
+    border-color:var(--ac);
+    box-shadow:0 0 0 1px var(--ac),0 0 30px -6px var(--ac),0 18px 40px rgba(0,0,0,.55);
+  }
+  .cd.busy{opacity:.75;cursor:default;}
 
-  .art{position:relative;aspect-ratio:2/3;overflow:hidden;background:#0b0808;}
+  /* 图片：不用 aspect-ratio（老浏览器不支持会把图压没），用 padding 撑高 */
+  .art{position:relative;width:100%;height:0;padding-top:150%;overflow:hidden;background:#0b0808;}
   .art>img.main{
-    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
-    transition:transform .5s ease;
+    position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block;
+    transition:transform .8s cubic-bezier(.2,.7,.3,1),filter .5s ease;
   }
-  .cd:hover .art>img.main{transform:scale(1.035);}
-  .veil{
-    position:absolute;inset:auto 0 0 0;height:58%;
-    background:linear-gradient(180deg,transparent,rgba(13,10,9,.55) 46%,rgba(13,10,9,.95));
+  .cd:hover .art>img.main{transform:scale(1.05);}
+  .art::after{  /* 底下一道渐变，让文字与人像压得住 */
+    content:"";position:absolute;inset:auto 0 0 0;height:62%;
+    background:linear-gradient(180deg,transparent,rgba(14,11,10,.5) 44%,rgba(14,11,10,.96));
   }
-  .face{
-    position:absolute;left:12px;bottom:12px;
-    width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;
-    border:1.5px solid rgba(216,189,146,.75);
-    box-shadow:0 4px 12px rgba(0,0,0,.6);
+  .art::before{ /* 选中时人物那侧透出主色 */
+    content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(120% 80% at 20% 100%,var(--ac),transparent 62%);
+    opacity:0;transition:opacity .45s ease;mix-blend-mode:screen;
   }
-  .idx{
-    position:absolute;top:9px;right:9px;
-    padding:3px 12px;border-radius:999px;
-    font-size:12px;letter-spacing:.16em;color:var(--paper);
-    background:rgba(13,10,9,.72);border:1px solid var(--line2);
-    backdrop-filter:blur(2px);
-  }
-  .cap{display:block;padding:15px 16px 17px;}
-  .cap-t{display:block;font-family:var(--serif);font-size:19px;letter-spacing:.05em;color:var(--paper);margin-bottom:8px;}
-  .cap-d{display:block;font-size:15px;line-height:1.8;color:var(--dim);}
-  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;}
-  .chip{
-    padding:3px 11px;border-radius:999px;font-size:13.5px;letter-spacing:.04em;
-    color:var(--gold);background:rgba(216,189,146,.09);border:1px solid var(--line);
-  }
+  .cd:hover .art::before{opacity:.16;}
+  .cd.on .art::before{opacity:.3;}
 
-  /* ---- 页脚 ---- */
+  .face{
+    position:absolute;left:13px;bottom:13px;z-index:4;
+    width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;
+    border:1.5px solid var(--ac);
+    box-shadow:0 6px 18px rgba(0,0,0,.65), 0 0 0 4px rgba(14,11,10,.55);
+    transition:transform .38s ease;
+  }
+  .cd:hover .face{transform:scale(1.06);}
+  .idx{
+    position:absolute;top:11px;right:11px;z-index:4;
+    padding:4px 13px;border-radius:999px;
+    font-size:12.5px;letter-spacing:.18em;color:var(--paper);
+    background:rgba(14,11,10,.74);border:1px solid var(--line2);
+  }
+  .cap{display:block;padding:16px 17px 18px;border-top:1px solid rgba(255,255,255,.05);}
+  .cap-t{
+    display:block;font-family:var(--serif);font-size:19px;letter-spacing:.05em;
+    color:var(--paper);margin-bottom:9px;
+    transition:color .35s ease;
+  }
+  .cd:hover .cap-t,.cd.on .cap-t{color:#fff;}
+  .cap-d{display:block;font-size:15px;line-height:1.82;color:var(--dim);}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;}
+  .chip{
+    padding:4px 12px;border-radius:999px;font-size:13.5px;letter-spacing:.04em;
+    color:var(--ac);background:rgba(255,255,255,.035);border:1px solid var(--line);
+  }
+  .chip:first-child{color:var(--paper);}
+
+  /* ---------- 页脚 ---------- */
   .ft{
-    display:flex;align-items:center;gap:12px;
-    padding:18px 26px 22px;
+    display:flex;align-items:center;gap:14px;
+    padding:19px 26px 24px;margin-top:18px;
     border-top:1px solid var(--line);
-    margin-top:16px;
   }
   .ft-n{font-size:15.5px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .bar{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;}
-  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .55s ease;}
+  .bar>i{display:block;height:100%;width:0;border-radius:2px;
+    background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .6s cubic-bezier(.2,.7,.3,1);}
 
-  .load{padding:36px 20px;text-align:center;font-size:15px;color:var(--dim2);line-height:2;}
+  .load{padding:40px 20px;text-align:center;font-size:15px;color:var(--dim2);line-height:2;}
 
-  @media (max-width:600px){
+  /* 逐个入场 */
+  .bd .blk:nth-child(1){animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .05s;}
+  .bd .blk:nth-child(2){animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .14s;}
+  .bd .blk:nth-child(3){animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .23s;}
+  .cd[data-k="1"]{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both .3s;}
+  .cd[data-k="2"]{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both .4s;}
+  .cd[data-k="3"]{animation:moIn .62s cubic-bezier(.22,.7,.3,1) both .5s;}
+  .ft{animation:moIn .6s cubic-bezier(.22,.7,.3,1) both .6s;}
+
+  @media (max-width:620px){
     body{padding:8px;}
-    .hd{padding:22px 16px 18px;}
-    .hd-t{font-size:32px;}
-    .hd-s{font-size:15px;}
+    .hd{padding:24px 16px 19px;}
+    .hd-orn::before,.hd-orn::after{width:38px;}
+    .hd-t{font-size:30px;}
+    .hd-s{font-size:14px;letter-spacing:.22em;}
     .bd,.pick{padding-left:16px;padding-right:16px;}
     .ft{padding-left:16px;padding-right:16px;}
-    .row{grid-template-columns:1fr;}
-    .art{aspect-ratio:16/11;}
+    .row{grid-template-columns:1fr;gap:14px;}
+    .art{padding-top:118%;}
     .who{grid-template-columns:92px 1fr;gap:14px;}
     .who img{width:92px;height:132px;}
-    .prose{font-size:16px;}
+    .who-n{font-size:20px;}
+    .who-m{font-size:13.5px;}
     .who-d{font-size:15px;}
+    .prose{font-size:16px;}
+    .rule{font-size:15.5px;}
+    .cap-t{font-size:18px;}
     .cap-d{font-size:14.5px;}
   }
 </style>
@@ -195,60 +253,18 @@
  *   读变量 TavernHelper.getVariables({type:'message',message_id:0})
  *   写变量 TavernHelper.replaceVariables(..., {type:'message',message_id:0})
  *   切开局 setChatMessages([{message_id:0, swipe_id:N}])
- * 六张图与本页同仓库，走 jsDelivr。
+ * 图跟着本页同一个版本取（从加载本页的 script src 里抠 @版本）。
  * ==========================================================================*/
 (function () {
   'use strict';
 
-  /* 图跟着本页同一个版本取：从加载本页的 <script src> 里把 @版本 抠出来。
-     页面与六张图永远同版本，以后换图也不会出现「页面是新的、图还是旧的」。 */
   var CDN = (function () {
     var s = document.currentScript;
-    if (!s) {
-      var all = document.getElementsByTagName('script');
-      s = all[all.length - 1];
-    }
-    var src = (s && s.src) || '';
+    if (!s) { var all = document.getElementsByTagName('script'); s = all[all.length - 1]; }
+    var src = (s && (s.src || s.getAttribute('src'))) || '';
     var m = src.match(/(https:\/\/cdn\.jsdelivr\.net\/gh\/[^/]+\/[^/@]+@[^/]+)\//);
     return (m ? m[1] : 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master') + '/moyue/';
   })();
-
-  var 枕语 = [
-    { 序号: 1, 第几天: 1, 身份: '已写', 内容: '今晚不要关门睡', 来源: '昨夜第一次动手，门确实没反锁' }
-  ];
-
-  var 开局 = [
-    {
-      swipe: 1,
-      序号: '其一',
-      标题: '守着开门声的那锅汤',
-      一句话: '周五傍晚六点四十。她一个人在家，手机扣在灶台上，屏幕朝上——里面那句「来妈房间坐一会儿」打了又删，到这时还是一片空白。',
-      立绘: 'start-0-shenruowei.jpg',
-      半身: 'half-shenruowei.jpg',
-      时段: '傍晚',
-      羞耻: 70, 欲望: 62
-    },
-    {
-      swipe: 2,
-      序号: '其二',
-      标题: '淋着雨闯进来的那个人',
-      一句话: '雨夜九点半后。玄关的顶灯坏了一只，她湿着半边肩站在门口——而「若薇」正在浴室里，走廊上只剩你和这个她看大的孩子。',
-      立绘: 'start-1-zhoulan.jpg',
-      半身: 'half-zhoulan.jpg',
-      时段: '夜晚',
-      羞耻: 55, 欲望: 58
-    },
-    {
-      swipe: 3,
-      序号: '其三',
-      标题: '敲错门的那个人',
-      一句话: '周六下午两点半。沈若薇出门买菜了，门口站着对门的邻居——她说她家阳台的水龙头滑了丝，她只是想借一圈生料带。',
-      立绘: 'start-2-wenyining.jpg',
-      半身: 'half-wenyining.jpg',
-      时段: '下午',
-      羞耻: 60, 欲望: 50
-    }
-  ];
 
   var 人物 = [
     {
@@ -271,6 +287,33 @@
     }
   ];
 
+  var 开局 = [
+    {
+      swipe: 1, k: '1', 序号: '其一',
+      标题: '守着开门声的那锅汤',
+      一句话: '周五傍晚六点四十。她一个人在家，手机扣在灶台上，屏幕朝上——「来妈房间坐一会儿」打了又删，到这时还是一片空白。',
+      立绘: 'start-0-shenruowei.jpg',
+      半身: 'half-shenruowei.jpg',
+      时段: '傍晚', 羞耻: 70, 欲望: 62
+    },
+    {
+      swipe: 2, k: '2', 序号: '其二',
+      标题: '淋着雨闯进来的那个人',
+      一句话: '雨夜九点半后。玄关的顶灯坏了一只，她湿着半边肩站在门口——而「若薇」正在浴室里，走廊上只剩你和这个她看大的孩子。',
+      立绘: 'start-1-zhoulan.jpg',
+      半身: 'half-zhoulan.jpg',
+      时段: '夜晚', 羞耻: 55, 欲望: 58
+    },
+    {
+      swipe: 3, k: '3', 序号: '其三',
+      标题: '敲错门的那个人',
+      一句话: '周六下午两点半。沈若薇出门买菜了，门口站着对门的邻居——她说她家阳台的水龙头滑了丝，她只是想借一圈生料带。',
+      立绘: 'start-2-wenyining.jpg',
+      半身: 'half-wenyining.jpg',
+      时段: '下午', 羞耻: 60, 欲望: 50
+    }
+  ];
+
   /* ---------------- 取数层 ---------------- */
   function topWin(){ try{ if(window.top&&window.top!==window) return window.top; }catch(e){} return window; }
   function TH(){
@@ -288,7 +331,6 @@
     return null;
   }
   function 就绪(){ var t=topWin(); return !!(TH()||(t&&t.SillyTavern)); }
-
   function esc(s){
     return String(s==null?'':s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -309,10 +351,9 @@
     }).join('');
 
     var 卡 = 开局.map(function(o){
-      return '<button type="button" class="cd" data-swipe="'+o.swipe+'">'
+      return '<button type="button" class="cd" data-k="'+o.k+'" data-swipe="'+o.swipe+'">'
         + '<span class="art">'
         + '<img class="main" src="'+CDN+o.立绘+'" alt="">'
-        + '<span class="veil"></span>'
         + '<img class="face" src="'+CDN+o.半身+'" alt="">'
         + '<span class="idx">'+esc(o.序号)+'</span>'
         + '</span>'
@@ -339,7 +380,7 @@
       + '她手机里那份记录也摊在你眼前：她此刻想写的那句、今夜已经生效的那句、你开口要过而她还没答应的那句。</div></div>'
       + '</div>'
 
-      + '<div class="pick"><div class="blk-h" style="margin-left:0"><i></i>从哪一声敲门开始</div>'
+      + '<div class="pick"><div class="blk-h"><i></i>从哪一声敲门开始</div>'
       + '<div class="row">'+卡+'</div></div>'
 
       + '<div class="ft"><span class="ft-n">选一张，这一局就从那里走。</span><span class="bar"><i></i></span></div>';
@@ -358,14 +399,14 @@
     var 注 = document.querySelector('.ft-n');
     var 进 = document.querySelector('.bar > i');
     if(注) 注.textContent = '正在翻开「'+条.标题+'」……';
-    if(进) 进.style.width = '55%';
+    if(进) 进.style.width = '58%';
 
     切开局(swipe);
     写变量(条);
 
     var 全 = document.querySelectorAll('.cd');
-    for(var i=0;i<全.length;i++){ 全[i].classList.remove('on'); 全[i].classList.remove('busy'); }
-    if(钮){ 钮.classList.add('on'); }
+    for(var i=0;i<全.length;i++) 全[i].classList.remove('on');
+    if(钮) 钮.classList.add('on');
 
     if(进) 进.style.width = '100%';
     if(注) 注.textContent = '已从「'+条.标题+'」开始。';
@@ -373,9 +414,7 @@
 
   function 切开局(swipe){
     var 设 = call('setChatMessages');
-    if(设){
-      try{ 设([{message_id:0, swipe_id:swipe}], {refresh:'affected'}); return; }catch(e){}
-    }
+    if(设){ try{ 设([{message_id:0, swipe_id:swipe}], {refresh:'affected'}); return; }catch(e){} }
     try{
       var st = topWin().SillyTavern, chat = st && st.chat;
       if(chat && chat[0]){
@@ -394,7 +433,10 @@
     var 值 = {
       催眠: {
         深度: 1,
-        枕语: 枕语.concat([{ 序号: 2, 第几天: 1, 身份: '草稿', 内容: '来妈房间坐一会儿', 来源: '白天反复打字又删掉，一直没写下去' }]),
+        枕语: [
+          { 序号: 1, 第几天: 1, 身份: '已写', 内容: '今晚不要关门睡', 来源: '昨夜第一次动手，门确实没反锁' },
+          { 序号: 2, 第几天: 1, 身份: '草稿', 内容: '来妈房间坐一会儿', 来源: '白天反复打字又删掉，一直没写下去' }
+        ],
         玩家指令: '',
         允许越权: false,
         越界记录: { 房门不落锁: { 次数: 1, 最近: '昨晚第一次生效' } }
