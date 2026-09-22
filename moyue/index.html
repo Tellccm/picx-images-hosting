@@ -547,23 +547,37 @@
 
 <script>
 (function(){
-  var CDN = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/moyue/';
+  // 人物立绘走仓库根目录的三张图床图（不再依赖 moyue/ 下的旧图）
+  var PIC_JSD = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/';
+  var PIC_RAW = 'https://github.com/Tellccm/picx-images-hosting/raw/master/';
+
+  var 图源 = {
+    '沈若薇': '若薇.4clnjnwc7f.webp',
+    '周岚': '周岚.b9o59san9.webp',
+    '温以宁': '温以宁.3d5k6hthuj.webp'
+  };
+
+  // 生成一张立绘 img：jsDelivr 为主，失败自动回落到 GitHub raw
+  function 立绘(谁, 类名, 替代文字, 位置){
+    var f = encodeURIComponent(图源[谁] || '');
+    var pos = 位置 ? ' style="object-position:' + 位置 + '"' : '';
+    return '<img class="' + 类名 + '" src="' + PIC_JSD + f + '" data-fb="' + PIC_RAW + f + '"'
+      + ' alt="' + esc(替代文字 || 谁) + '"' + pos
+      + ' onerror="this.onerror=null;if(this.dataset.fb)this.src=this.dataset.fb;">';
+  }
 
   var 人物 = [
     {
-      图: 'half-shenruowei.jpg',
       名: '沈若薇',
       身份: '三十四岁 · 住家保姆 · {{user}}的母亲',
       说明: '清丽娇嫩如二十五六岁，却把这六年受的所有窝囊气全撒在{{user}}身上。在周岚面前，她被泼了茶也要鞠躬道歉、连声说「是我不好」；一转身回到后厨，摔盘、呵斥、剩饭打发，眼神像在看一件用坏了又不舍得扔的旧物。她对外人越卑微，回头对{{user}}越凶——这一点她自己心里清楚。'
     },
     {
-      图: 'half-zhoulan.jpg',
       名: '周岚',
       身份: '三十四岁 · 周家千金 · 这栋房子的主人',
       说明: '深栗色高马尾，凤眼上挑，十公分细高跟走路没有声音。她不是恨{{user}}，她是当{{user}}不存在——使唤的时候眼睛还留在酒杯上。踩头、泼茶、命{{user}}跪着擦她的鞋底，只是她一天里最轻的一项消遣。她三年没有过男人，这具看着矜贵的身躯，比她那张刻薄的嘴脆得多。'
     },
     {
-      图: 'half-wenyining.jpg',
       名: '温以宁',
       身份: '三十二岁 · 对门太太 · 独守空房',
       说明: '弱不禁风、轻声细语，左眼角一颗浅浅的泪痣。她是三个人里最「软」的一个，也是最坏的一个：真丝睡裙半褪着贴上来蹭，等{{user}}绷紧了、起了反应，就掩唇笑一句「下人家的小杂种也配」，然后当着{{user}}的面摔门。丈夫一年回来两次，剩下三百多天，她有的是时间玩。'
@@ -575,24 +589,21 @@
       swipe: 1, k: '1', 序号: '其一',
       标题: '守着剩饭的那间后厨',
       一句话: '暴雨傍晚六点四十，你淋着雨从后门溜进厨房。她刚伺候完两位主人用膳，把一碟剩菜摔在中岛台上：「吃你的。吃完把两层楼的地全擦一遍。」',
-      立绘: 'start-0-shenruowei.jpg',
-      半身: 'half-shenruowei.jpg',
+      人: '沈若薇',
       看: { 时段: '傍晚', 辱: 25, 沈: [55, 45], 周: [40, 38], 温: [35, 52] },
     },
     {
       swipe: 2, k: '2', 序号: '其二',
       标题: '那杯泼在地毯上的茶',
       一句话: '周末午后，你端着沏好的红茶躬身放下。她抿了一口就扬手连杯带水泼在你的鞋上，再把十公分的细高跟架上了你的膝盖：「跪下，用你的袖子擦干净。」',
-      立绘: 'start-1-zhoulan.jpg',
-      半身: 'half-zhoulan.jpg',
+      人: '周岚',
       看: { 时段: '下午', 辱: 40, 沈: [50, 42], 周: [45, 40], 温: [35, 52] },
     },
     {
       swipe: 3, k: '3', 序号: '其三',
       标题: '门缝里的那点春光',
       一句话: '周六下午，她借口暖风机螺丝拧不动把你叫进套房。你踩着梯子仰头，她就贴着你的后背呵气如兰；察觉你绷紧了，又退开两步笑出声：「滚回你的保姆间洗把冷水脸。」',
-      立绘: 'start-2-wenyining.jpg',
-      半身: 'half-wenyining.jpg',
+      人: '温以宁',
       看: { 时段: '下午', 辱: 45, 沈: [48, 44], 周: [40, 38], 温: [30, 58] },
     }
   ];
@@ -657,16 +668,16 @@
 
     var 人 = 人物.map(function(p){
       return '<div class="who">'
-        + '<div class="who-img-wrap"><img src="' + CDN + p.图 + '" alt="' + esc(p.名) + '"></div>'
+        + '<div class="who-img-wrap">' + 立绘(p.名, '', p.名) + '</div>'
         + '<div class="who-info">'
         + '<div class="who-top"><span class="who-n">' + esc(p.名) + '</span><span class="who-m">' + esc(p.身份) + '</span></div>'
         + '<div class="who-d">' + esc(p.说明) + '</div>'
         + '</div></div>';
     }).join('');
 
-    function 人段(色, 图, 谁, 羞, 欲){
+    function 人段(色, 谁, 羞, 欲){
       return '<span class="pp" style="color:' + 色 + '">'
-        + '<img src="' + CDN + 图 + '" alt="">'
+        + 立绘(谁, '', 谁, '50% 12%')
         + '<span class="ppn">' + esc(谁) + '</span>'
         + '<span class="ppv">' + 羞 + '</span>'
         + '<span class="ppv">' + 欲 + '</span>'
@@ -677,8 +688,8 @@
       var 看 = o.看;
       return '<button type="button" class="cd" data-k="' + o.k + '" data-swipe="' + o.swipe + '">'
         + '<span class="art">'
-        + '<img class="main" src="' + CDN + o.立绘 + '" alt="' + esc(o.标题) + '">'
-        + '<img class="face" src="' + CDN + o.半身 + '" alt="">'
+        + 立绘(o.人, 'main', o.标题)
+        + 立绘(o.人, 'face', '', '50% 12%')
         + '<span class="idx-badge">' + esc(o.序号) + '</span>'
         + '</span>'
         + '<span class="cap">'
@@ -691,9 +702,9 @@
         + '<span class="rlabel">此局开场 · 羞耻 / 欲望</span>'
         + '<span class="reads stack">'
         + '<span class="rhead"><i>羞</i><i>欲</i></span>'
-        + 人段('#e07a82', 'half-shenruowei.jpg', '沈若薇', 看.沈[0], 看.沈[1])
-        + 人段('#82a8d8', 'half-zhoulan.jpg', '周岚', 看.周[0], 看.周[1])
-        + 人段('#6eb79c', 'half-wenyining.jpg', '温以宁', 看.温[0], 看.温[1])
+        + 人段('#e07a82', '沈若薇', 看.沈[0], 看.沈[1])
+        + 人段('#82a8d8', '周岚', 看.周[0], 看.周[1])
+        + 人段('#6eb79c', '温以宁', 看.温[0], 看.温[1])
         + '</span>'
         + '</span></button>';
     }).join('');
