@@ -550,8 +550,10 @@
   // 人物立绘走仓库根目录的三张图床图（不再依赖 moyue/ 下的旧图）
   var PIC_JSD = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/';
   var PIC_RAW = 'https://github.com/Tellccm/picx-images-hosting/raw/master/';
-  // 换头像时把这个数字 +1：图片被浏览器缓存 7 天（max-age=604800），同名覆盖不会刷新
-  var AVATAR_VER = '?v=2';
+  // 图片会被浏览器缓存 7 天（max-age=604800），换图时必须改对应版本号才会立刻生效。
+  // 立绘和头像分开计数、各用各的 key，各换各的，互不影响。
+  var VER_ART    = '?a=1';   // 立绘（人物列表方图、开局大图）
+  var VER_AVATAR = '?v=2';   // 头像（开局左下小圆、双轴小圆）
 
   // 【立绘】矩形大图：人物列表 110x150、开局卡片大图 —— 用原来那三张全身/半身立绘
   var 图源 = {
@@ -569,15 +571,15 @@
   };
 
   // 生成一张 img：jsDelivr 为主，失败自动回落到 GitHub raw
-  function 出图(表, 谁, 类名, 替代文字, 位置){
+  function 出图(表, 版本, 谁, 类名, 替代文字, 位置){
     var f = encodeURIComponent(表[谁] || '');
     var pos = 位置 ? ' style="object-position:' + 位置 + '"' : '';
-    return '<img class="' + 类名 + '" src="' + PIC_JSD + f + AVATAR_VER + '" data-fb="' + PIC_RAW + f + AVATAR_VER + '"'
+    return '<img class="' + 类名 + '" src="' + PIC_JSD + f + 版本 + '" data-fb="' + PIC_RAW + f + 版本 + '"'
       + ' alt="' + esc(替代文字 || 谁) + '"' + pos
       + ' onerror="this.onerror=null;if(this.dataset.fb)this.src=this.dataset.fb;">';
   }
-  function 立绘(谁, 类名, 替代文字, 位置){ return 出图(图源, 谁, 类名, 替代文字, 位置); }
-  function 小圆(谁, 类名, 替代文字, 位置){ return 出图(头像源, 谁, 类名, 替代文字, 位置); }
+  function 立绘(谁, 类名, 替代文字, 位置){ return 出图(图源, VER_ART, 谁, 类名, 替代文字, 位置); }
+  function 小圆(谁, 类名, 替代文字, 位置){ return 出图(头像源, VER_AVATAR, 谁, 类名, 替代文字, 位置); }
 
   var 人物 = [
     {
