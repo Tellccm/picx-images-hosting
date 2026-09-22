@@ -553,20 +553,31 @@
   // 换头像时把这个数字 +1：图片被浏览器缓存 7 天（max-age=604800），同名覆盖不会刷新
   var AVATAR_VER = '?v=2';
 
+  // 【立绘】矩形大图：人物列表 110x150、开局卡片大图 —— 用原来那三张全身/半身立绘
   var 图源 = {
     '沈若薇': '若薇.4clnjnwc7f.webp',
     '周岚': '周岚.b9o59san9.webp',
     '温以宁': '温以宁.3d5k6hthuj.webp'
   };
 
-  // 生成一张立绘 img：jsDelivr 为主，失败自动回落到 GitHub raw
-  function 立绘(谁, 类名, 替代文字, 位置){
-    var f = encodeURIComponent(图源[谁] || '');
+  // 【头像】小圆：开局卡片左下 62px 圆、双轴小圆、以及状态栏 —— 用新的贴脸头像
+  // 与立绘是两套独立文件，换头像不会动到大图
+  var 头像源 = {
+    '沈若薇': '若薇.avatar.webp',
+    '周岚': '周岚.avatar.webp',
+    '温以宁': '温以宁.avatar.webp'
+  };
+
+  // 生成一张 img：jsDelivr 为主，失败自动回落到 GitHub raw
+  function 出图(表, 谁, 类名, 替代文字, 位置){
+    var f = encodeURIComponent(表[谁] || '');
     var pos = 位置 ? ' style="object-position:' + 位置 + '"' : '';
     return '<img class="' + 类名 + '" src="' + PIC_JSD + f + AVATAR_VER + '" data-fb="' + PIC_RAW + f + AVATAR_VER + '"'
       + ' alt="' + esc(替代文字 || 谁) + '"' + pos
       + ' onerror="this.onerror=null;if(this.dataset.fb)this.src=this.dataset.fb;">';
   }
+  function 立绘(谁, 类名, 替代文字, 位置){ return 出图(图源, 谁, 类名, 替代文字, 位置); }
+  function 小圆(谁, 类名, 替代文字, 位置){ return 出图(头像源, 谁, 类名, 替代文字, 位置); }
 
   var 人物 = [
     {
@@ -679,7 +690,7 @@
 
     function 人段(色, 谁, 羞, 欲){
       return '<span class="pp" style="color:' + 色 + '">'
-        + 立绘(谁, '', 谁, '50% 12%')
+        + 小圆(谁, '', 谁, '50% 12%')
         + '<span class="ppn">' + esc(谁) + '</span>'
         + '<span class="ppv">' + 羞 + '</span>'
         + '<span class="ppv">' + 欲 + '</span>'
@@ -691,7 +702,7 @@
       return '<button type="button" class="cd" data-k="' + o.k + '" data-swipe="' + o.swipe + '">'
         + '<span class="art">'
         + 立绘(o.人, 'main', o.标题)
-        + 立绘(o.人, 'face', '', '50% 12%')
+        + 小圆(o.人, 'face', '', '50% 12%')
         + '<span class="idx-badge">' + esc(o.序号) + '</span>'
         + '</span>'
         + '<span class="cap">'
