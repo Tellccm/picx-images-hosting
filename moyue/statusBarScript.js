@@ -91,21 +91,10 @@
     }
   }
 
+  // 某一楼没有变量时补的开局值（与卡里 [initvar] 一致：其一 · 周五傍晚）
   function fallbackInitial() {
     return {
-      催眠: {
-        深度: 1,
-        枕语: [
-          { 序号: 1, 第几天: 1, 身份: '已写', 内容: '今晚让{{user}}不要关门睡', 来源: '昨夜第一次动手，门确实没反锁' },
-          { 序号: 2, 第几天: 1, 身份: '草稿', 内容: '今晚让{{user}}来妈房间坐一会儿……', 来源: '白天反复打字又删掉，到傍晚输入栏里只剩半截' }
-        ],
-        开口未答: '',
-        允许越权: false,
-        越界记录: { '房门不落锁': { 次数: 1, 最近: '昨夜第一次生效' } },
-        待执行: [],
-        待执行已结: ['今晚让{{user}}不要关门睡']
-      },
-      沈若薇: { 阶段: '阶段1·温情日常', 羞耻: 40, 欲望: 62, 沉溺: 5 },
+      沈若薇: { 羞耻: 40, 欲望: 62, 沉溺: 5 },
       人物: { 周岚: { 羞耻: 25, 欲望: 45, 沉溺: 0 }, 温以宁: { 羞耻: 45, 欲望: 58, 沉溺: 0 } },
       时间: { 第几天: 1, 时段: '傍晚' }
     };
@@ -153,91 +142,7 @@
     `;
   }
 
-  function renderZhenyu(floor, data) {
-    const hyp = data.催眠 || {};
-    const zhenyuList = Array.isArray(hyp.枕语) ? hyp.枕语 : [];
-    let draft = '';
-    let cmd = '';
-
-    if (zhenyuList.length) {
-      const getLatest = status => [...zhenyuList].reverse().find(i => i && i.身份 === status && String(i.内容 ?? '').trim());
-      draft = String(getLatest('草稿')?.内容 ?? '').trim();
-      cmd = String(getLatest('已写')?.内容 ?? '').trim();
-    } else {
-      draft = String(hyp.想写的那句 ?? '').trim();
-      cmd = String(hyp.当前指令 ?? '').trim();
-    }
-
-    const unreplied = String(hyp.开口未答 ?? '').trim();
-    const pendingList = Array.isArray(hyp.待执行) ? hyp.待执行 : [];
-    const pendingItem = pendingList[0];
-
-    return `
-      <div class="myz-sec myz-zhenyu-panel">
-        <div class="myz-sec-title">
-          <span class="myz-icon-dot"></span>
-          <span>枕语 · 幽暗终端</span>
-          <span class="myz-terminal-badge">密语监视</span>
-        </div>
-
-        <div class="myz-terminal-screen">
-          <div class="myz-term-row myz-term-draft">
-            <div class="myz-term-meta">
-              <span class="myz-term-tag myz-tag-draft">悬置草稿</span>
-              <span class="myz-term-hint">尚未按下确认键</span>
-            </div>
-            <div class="myz-term-content ${draft ? 'has-content' : 'is-empty'}">
-              ${draft ? `「${esc(draft)}」` : '<span class="myz-muted">心中打字又删去，此刻尚未落笔……</span>'}
-            </div>
-          </div>
-
-          <div class="myz-term-row myz-term-live">
-            <div class="myz-term-meta">
-              <span class="myz-term-tag myz-tag-live">生效密语</span>
-              ${pendingItem ? `<span class="myz-term-pending">落地中 · ${esc(pendingItem.写在 || '进行中')}</span>` : '<span class="myz-term-done">已触发生效</span>'}
-            </div>
-            <div class="myz-term-content ${cmd ? 'has-cmd' : 'is-empty'}">
-              ${cmd ? `「${esc(cmd)}」` : '<span class="myz-muted">今夜尚未确认新的指令</span>'}
-            </div>
-          </div>
-
-          ${unreplied ? `
-            <div class="myz-term-ask">
-              <span class="myz-ask-badge">待答复</span>
-              <span class="myz-ask-text">你开口要过、她还没答应：「<b>${esc(unreplied)}</b>」</span>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  function renderTransgressions(data) {
-    const records = Object.entries(_.get(data, '催眠.越界记录', {}) || {});
-    return `
-      <div class="myz-sec">
-        <div class="myz-sec-title">
-          <span>已经发生过 · 越界记录</span>
-          <span class="myz-count-badge">${records.length} 桩</span>
-        </div>
-        <div class="myz-log-tags">
-          ${records.length ? records.map(([name, item]) => {
-            const count = Number(item?.次数) || 1;
-            const recent = String(item?.最近 || '');
-            return `
-              <div class="myz-log-pill">
-                <span class="myz-log-name">${esc(name)}</span>
-                <span class="myz-log-count">×${count}</span>
-                ${recent ? `<span class="myz-log-recent">${esc(recent)}</span>` : ''}
-              </div>
-            `;
-          }).join('') : '<div class="myz-empty-note">尚未迈过伦常界线。</div>'}
-        </div>
-      </div>
-    `;
-  }
-
-  function renderOtherWomen(data) {
+      function renderOtherWomen(data) {
     const chars = _.get(data, '人物', {}) || {};
     const entries = Object.entries(chars);
     if (!entries.length) return '';
@@ -298,9 +203,6 @@
   }
 
   function buildHtml(floor, data, isLast) {
-    const hyp = data.催眠 || {};
-    const depth = clamp(hyp.深度, 1, 4, 1);
-    const stageName = String(_.get(data, '沈若薇.阶段', `阶段${depth}·温情日常`));
     const day = clamp(_.get(data, '时间.第几天', 1), 1, 999, 1);
     const period = String(_.get(data, '时间.时段', '傍晚'));
     const pIcon = getPeriodIcon(period);
@@ -308,6 +210,11 @@
     const shame = clamp(_.get(data, '沈若薇.羞耻', 0), 0, 100, 0);
     const desire = clamp(_.get(data, '沈若薇.欲望', 0), 0, 100, 0);
     const sub = clamp(_.get(data, '沈若薇.沉溺', 0), 0, 100, 0);
+
+    // 阶段由「沉溺」推出来（40／55／65 三道线，与 getSubmersionDesc 一致）。
+    // 本卡没有独立的阶段变量：原先那套外部数据模型的深度／阶段读取已全部移除。
+    const depth = sub >= 65 ? 4 : sub >= 55 ? 3 : sub >= 40 ? 2 : 1;
+    const stageName = STAGES[depth - 1];
 
     return `
       <div class="myz-sb" data-floor="${floor}">
@@ -342,12 +249,10 @@
         <!-- 详细内容区域 -->
         <div class="myz-detail-body">
           <div class="myz-col">
-            ${isLast ? renderZhenyu(floor, data) : ''}
-            ${renderTransgressions(data)}
+            ${renderOtherWomen(data)}
           </div>
 
           <div class="myz-col">
-            ${renderOtherWomen(data)}
             ${renderStageInfo(depth)}
           </div>
         </div>
@@ -432,6 +337,7 @@
   }
 
   const STYLES = `
+
     .myz-sb {
       box-sizing: border-box;
       width: 100%;
@@ -630,137 +536,6 @@
       letter-spacing: 0.06em;
       margin-bottom: 6px;
     }
-    .myz-icon-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #a855f7;
-      box-shadow: 0 0 8px #a855f7;
-    }
-    .myz-terminal-badge {
-      margin-left: auto;
-      font-size: 9.5px;
-      padding: 1px 6px;
-      border-radius: 4px;
-      background: rgba(168, 85, 247, 0.15);
-      border: 1px solid rgba(168, 85, 247, 0.3);
-      color: #d8b4fe;
-    }
-    .myz-count-badge {
-      margin-left: auto;
-      font-size: 9.5px;
-      padding: 1px 6px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.6);
-    }
-
-    /* 枕语监视卡 */
-    .myz-terminal-screen {
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(8, 6, 12, 0.7);
-      border: 1px solid rgba(168, 85, 247, 0.2);
-    }
-    .myz-term-row + .myz-term-row {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.08);
-    }
-    .myz-term-meta {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    .myz-term-tag {
-      font-size: 9.5px;
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
-    .myz-tag-draft {
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.75);
-    }
-    .myz-tag-live {
-      background: rgba(168, 85, 247, 0.25);
-      color: #e9d5ff;
-      border: 1px solid rgba(168, 85, 247, 0.4);
-    }
-    .myz-term-hint {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.4);
-    }
-    .myz-term-pending {
-      font-size: 10px;
-      color: #fcd34d;
-      margin-left: auto;
-    }
-    .myz-term-done {
-      font-size: 10px;
-      color: #86efac;
-      margin-left: auto;
-    }
-    .myz-term-content {
-      font-size: 11.5px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .myz-term-content.has-content { color: #f5f3ff; }
-    .myz-term-content.has-cmd {
-      color: #e9d5ff;
-      font-weight: 500;
-      background: rgba(168, 85, 247, 0.08);
-      padding: 4px 6px;
-      border-radius: 6px;
-      border: 1px solid rgba(168, 85, 247, 0.2);
-    }
-    .myz-muted { color: rgba(255, 255, 255, 0.38); font-style: italic; }
-
-    .myz-term-ask {
-      margin-top: 8px;
-      padding: 6px 8px;
-      border-radius: 6px;
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      font-size: 11px;
-      color: #fde68a;
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      word-break: break-word;
-    }
-    .myz-ask-badge {
-      font-size: 9px;
-      font-weight: 700;
-      background: #f59e0b;
-      color: #000;
-      padding: 0 4px;
-      border-radius: 3px;
-      flex-shrink: 0;
-    }
-
-    /* 越界记录 */
-    .myz-log-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .myz-log-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 11px;
-    }
-    .myz-log-name { color: #e2e8f0; }
-    .myz-log-count { color: #fb7185; font-weight: 700; }
-    .myz-log-recent { color: rgba(255, 255, 255, 0.45); font-size: 10px; }
-    .myz-empty-note { font-size: 11px; color: rgba(255, 255, 255, 0.4); font-style: italic; }
 
     /* 她与身边人 */
     .myz-women-list { display: grid; gap: 6px; }
