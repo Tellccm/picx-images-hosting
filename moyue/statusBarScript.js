@@ -1,686 +1,384 @@
-(function(){
-  const z = window.z || top.z;
-  const _ = window._ || top._;
-  const $ = window.$ || top.$;
+/* 江湾壹号 · 认知修改终端 —— 状态栏 + 三刻线 + 全景小地图 + 常识控制台 */
+const avatars = {
+  "沈若薇": "https://github.com/Tellccm/picx-images-hosting/raw/master/若薇.4clnjnwc7f.webp",
+  "周岚": "https://github.com/Tellccm/picx-images-hosting/raw/master/周岚.b9o59san9.webp",
+  "温以宁": "https://github.com/Tellccm/picx-images-hosting/raw/master/周岚.b9o59san9.webp",
+  "user": ""
+};
 
-  const STAGES = ['阶段1·温情日常', '阶段2·口舌与足', '阶段3·完整交合', '阶段4·无所顾忌'];
-  const PERIODS = ['清晨', '上午', '下午', '傍晚', '夜里', '深夜'];
-  const NAMES = ['周岚', '温以宁'];
-  const STYLE_ID = 'myz-sb-style-v2';
+const PERSONS = ["沈若薇", "周岚", "温以宁"];
+const MAIN = "沈若薇";
 
-  const STAGE_RULES = [
-    { 名: '阶段1 · 温情日常与亲昵越线', 概要: '亲吻、拥抱、抚摸、夜里同床；口舌与足需阶段2，完整交合需阶段3。' },
-    { 名: '阶段2 · 口舌与足', 概要: '用嘴、用脚替他弄出来；阶段1一切照旧；完整交合仍需阶段3。' },
-    { 名: '阶段3 · 完整交合', 概要: '完整交合，不挑时辰与场合；只差当着别人的面。' },
-    { 名: '阶段4 · 无所顾忌', 概要: '不再遮掩、不再找借口，白天人前也照做。' }
-  ];
+const mapRooms = {
+  "2F": [
+    { id: "201 周岚主卧", name: "201", desc: "周岚主卧" },
+    { id: "202 温以宁套房", name: "202", desc: "温以宁套房" },
+    { id: "203 奢华公卫", name: "203", desc: "奢华公卫" },
+    { id: "204 书房露台", name: "204", desc: "书房露台" }
+  ],
+  "1F": [
+    { id: "101 挑高大客厅", name: "101", desc: "挑高大客厅" },
+    { id: "102 开放式餐厨", name: "102", desc: "开放式餐厨" },
+    { id: "103 入户玄关", name: "103", desc: "入户玄关" },
+    { id: "104 保姆杂物间", name: "104", desc: "保姆杂物间" }
+  ]
+};
 
-  const ACTION_HINTS = [
-    '往周岚那边走',
-    '往温以宁那边走',
-    '记住她们说过的话',
-    '也可以什么都不做，只向妈妈开口要'
-  ];
+const DEFAULT_SPACE = {
+  "沈若薇": { 房间: "102 开放式餐厨", 动作: "低头收拾碗筷" },
+  "周岚": { 房间: "101 挑高大客厅", 动作: "翘腿端着酒杯" },
+  "温以宁": { 房间: "202 温以宁套房", 动作: "半掩着门听动静" },
+  "user": { 房间: "104 保姆杂物间", 动作: "缩在暗间里" }
+};
 
-  function clamp(val, min, max, def) {
-    if (val == null || val === '') return def;
-    const n = Number(val);
-    return Number.isFinite(n) ? _.clamp(n, min, max) : def;
-  }
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
-  function esc(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
+function num(v, d) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+}
 
-  function getPeriodIcon(period) {
-    switch (period) {
-      case '清晨': return '🌅';
-      case '上午': return '☀️';
-      case '下午': return '🌤️';
-      case '傍晚': return '🌆';
-      case '夜里': return '🌙';
-      case '深夜': return '🌌';
-      default: return '🕰️';
-    }
-  }
-
-  function getShameDesc(val) {
-    if (val >= 80) return '羞极难堪 · 掩面无措';
-    if (val >= 55) return '紧咬下唇 · 别开视线';
-    if (val >= 30) return '心虚脸红 · 欲盖弥彰';
-    return '信以为真 · 寻常照拂';
-  }
-
-  function getDesireDesc(val) {
-    if (val >= 80) return '骨酥体软 · 难抑渴求';
-    if (val >= 55) return '盼君近身 · 呼吸紊乱';
-    if (val >= 30) return '暗生温热 · 心跳微乱';
-    return '深闺未醒 · 隐隐空落';
-  }
-
-  function getSubmersionDesc(val) {
-    if (val >= 65) return '无所顾忌 · 沉沦不悔';
-    if (val >= 55) return '直白索取 · 难掩痴迷';
-    if (val >= 40) return '防线漏空 · 逾矩入骨';
-    return '理智犹存 · 母职借口';
-  }
-
-  function getRelationDesc(name, sub) {
-    if (sub <= 0) {
-      return name === '周岚' ? '六年交情，界线没动过' : name === '温以宁' ? '对门的客气邻居' : '这条线还没被越过';
-    }
-    if (sub < 21) return '还都是老样子';
-    if (sub < 41) return '自己会再来串门';
-    if (sub < 61) return '主动找借口上门';
-    if (sub < 81) return '不再费心解释';
-    return '自己主动索求';
-  }
-
-  const renderCache = new Map();
-
-  function getMsgVars(msgId) {
+/* ============ 取数 ============ */
+function readStat(msgId) {
+  try {
+    return _.get(getVariables({ type: 'message', message_id: msgId }), 'stat_data', {}) || {};
+  } catch (e) {
     try {
-      return _.get(getVariables({ type: 'message', message_id: msgId }), 'stat_data', {});
-    } catch (e) {
+      return _.get(Mvu.getMvuData({ type: 'message', message_id: msgId }), 'stat_data', {}) || {};
+    } catch (e2) {
       return {};
     }
   }
+}
 
-  // 某一楼没有变量时补的开局值（与卡里 [initvar] 一致：其一 · 周五傍晚）
-  function fallbackInitial() {
-    return {
-      沈若薇: { 羞耻: 40, 欲望: 62, 沉溺: 5 },
-      人物: { 周岚: { 羞耻: 25, 欲望: 45, 沉溺: 0 }, 温以宁: { 羞耻: 45, 欲望: 58, 沉溺: 0 } },
-      时间: { 第几天: 1, 时段: '傍晚' }
-    };
+/* ============ 渲染：某人的三条刻线 ============ */
+function bars(stat, who) {
+  const base = who === MAIN ? stat[MAIN] : _.get(stat, '人物.' + who);
+  const o = base && typeof base === 'object' ? base : {};
+  const s = num(o.羞耻, 0), w = num(o.欲望, 0), d = num(o.沉溺, 0);
+
+  function one(label, val, cls) {
+    const v = Math.max(0, Math.min(100, val));
+    return `<div class="jz-bar"><div class="jz-bar-top"><span class="jz-bar-n">${label}</span><span class="jz-bar-v">${v}</span></div><span class="jz-track"><span class="jz-fill jz-${cls}" style="width:${v}%"></span></span></div>`;
   }
 
-  function ensureVars(msgId, isLast) {
-    let vars = getMsgVars(msgId);
-    if (!vars || !vars.沈若薇 || typeof vars.沈若薇.羞耻 !== 'number') {
-      vars = fallbackInitial();
-      if (isLast) {
-        try {
-          updateVariablesWith(n => _.set(n, 'stat_data', vars), { type: 'message', message_id: msgId });
-        } catch(e) {}
-      }
-    }
-    return vars;
-  }
+  const heart = String(o.心声 == null ? '' : o.心声).trim();
 
-  function renderGauge(label, value, type) {
-    const val = clamp(value, 0, 100, 0);
-    let desc = '';
-    let colorClass = '';
-    if (type === 'shame') {
-      desc = getShameDesc(val);
-      colorClass = 'myz-gauge-shame';
-    } else if (type === 'desire') {
-      desc = getDesireDesc(val);
-      colorClass = 'myz-gauge-desire';
-    } else {
-      desc = getSubmersionDesc(val);
-      colorClass = 'myz-gauge-sub';
-    }
+  return `<div class="jz-card">
+    <div class="jz-card-head">
+      <span class="jz-face">${avatars[who] ? `<img src="${avatars[who]}" alt="">` : `<b>${esc(who.slice(0, 1))}</b>`}</span>
+      <span class="jz-name">${esc(who)}</span>
+    </div>
+    <div class="jz-bars">
+      ${one('羞耻', s, 'shame')}
+      ${one('欲望', w, 'want')}
+      ${one('沉溺', d, 'deep')}
+    </div>
+    ${heart ? `<div class="jz-heart">「${esc(heart)}」</div>` : ''}
+  </div>`;
+}
 
-    return `
-      <div class="myz-g ${colorClass}">
-        <div class="myz-g-header">
-          <span class="myz-g-label">${label}</span>
-          <span class="myz-g-desc">${desc}</span>
-          <span class="myz-g-num">${val}</span>
-        </div>
-        <div class="myz-g-track">
-          <div class="myz-g-bar" style="width:${val}%"></div>
-        </div>
-      </div>
-    `;
-  }
+/* ============ 渲染：全景小地图 ============ */
+function floorHtml(stat, floorKey) {
+  const spaces = _.get(stat, '空间状态', {}) || {};
+  const occ = {};
+  Object.keys(spaces).forEach(function (who) {
+    const info = spaces[who] || {};
+    const r = info.房间 || (DEFAULT_SPACE[who] ? DEFAULT_SPACE[who].房间 : '');
+    if (!r) return;
+    if (!occ[r]) occ[r] = [];
+    occ[r].push({ who: who, act: info.动作 || '' });
+  });
 
-      function renderOtherWomen(data) {
-    const chars = _.get(data, '人物', {}) || {};
-    const entries = Object.entries(chars);
-    if (!entries.length) return '';
+  return mapRooms[floorKey].map(function (r) {
+    const list = occ[r.id] || [];
+    const chips = list.map(function (o) {
+      const isUser = o.who === 'user';
+      const av = avatars[o.who];
+      return `<span class="jz-occ ${isUser ? 'jz-occ-user' : ''}" title="${esc(o.who)}：${esc(o.act)}">
+        ${av ? `<img src="${av}" alt="">` : `<b>${isUser ? '我' : esc(o.who.slice(0, 1))}</b>`}
+      </span>`;
+    }).join('');
 
-    return `
-      <div class="myz-sec">
-        <div class="myz-sec-title">
-          <span>她与身边人 · 关系推移</span>
-        </div>
-        <div class="myz-women-list">
-          ${entries.map(([name, obj]) => {
-            const shame = clamp(obj?.羞耻, 0, 100, 0);
-            const desire = clamp(obj?.欲望, 0, 100, 0);
-            const sub = clamp(obj?.沉溺, 0, 100, 0);
-            const relation = getRelationDesc(name, sub);
-            const isZhou = name === '周岚';
-            const role = isZhou ? '闺蜜 · 34岁' : '邻居 · 32岁';
-            const colorTheme = isZhou ? 'zhou' : 'wen';
+    const acts = list.map(function (o) {
+      return `<span class="jz-act"><i>${esc(o.who === 'user' ? '你' : o.who)}</i>${esc(o.act)}</span>`;
+    }).join('');
 
-            return `
-              <div class="myz-woman-card myz-theme-${colorTheme}">
-                <div class="myz-wm-head">
-                  <span class="myz-wm-name">${esc(name)}</span>
-                  <span class="myz-wm-role">${role}</span>
-                  <span class="myz-wm-state">${esc(relation)}</span>
-                </div>
-                <div class="myz-wm-gauges">
-                  <div class="myz-wm-g">
-                    <span>羞耻 ${shame}</span>
-                    <div class="myz-wm-bar"><div class="fill shame" style="width:${shame}%"></div></div>
-                  </div>
-                  <div class="myz-wm-g">
-                    <span>欲望 ${desire}</span>
-                    <div class="myz-wm-bar"><div class="fill desire" style="width:${desire}%"></div></div>
-                  </div>
-                  <div class="myz-wm-g">
-                    <span>沉溺 ${sub}</span>
-                    <div class="myz-wm-bar"><div class="fill sub" style="width:${sub}%"></div></div>
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }
+    return `<div class="jz-room ${list.length ? 'jz-room-on' : ''}">
+      <div class="jz-room-top"><span class="jz-room-id">${r.name}</span><span class="jz-room-desc">${r.desc}</span></div>
+      <div class="jz-room-occs">${chips || '<span class="jz-empty">—</span>'}</div>
+      ${acts ? `<div class="jz-acts">${acts}</div>` : ''}
+    </div>`;
+  }).join('');
+}
 
-  function renderStageInfo(depth) {
-    const item = STAGE_RULES[_.clamp(depth, 1, 4) - 1];
-    if (!item) return '';
-    return `
-      <div class="myz-sec myz-stage-rule-box">
-        <div class="myz-sec-title"><span>${esc(item.名)}</span></div>
-        <div class="myz-stage-rule-text">${esc(item.概要)}</div>
-      </div>
-    `;
-  }
-
-  function buildHtml(floor, data, isLast) {
-    const day = clamp(_.get(data, '时间.第几天', 1), 1, 999, 1);
-    const period = String(_.get(data, '时间.时段', '傍晚'));
-    const pIcon = getPeriodIcon(period);
-
-    const shame = clamp(_.get(data, '沈若薇.羞耻', 0), 0, 100, 0);
-    const desire = clamp(_.get(data, '沈若薇.欲望', 0), 0, 100, 0);
-    const sub = clamp(_.get(data, '沈若薇.沉溺', 0), 0, 100, 0);
-
-    // 阶段由「沉溺」推出来（40／55／65 三道线，与 getSubmersionDesc 一致）。
-    // 本卡没有独立的阶段变量：原先那套外部数据模型的深度／阶段读取已全部移除。
-    const depth = sub >= 65 ? 4 : sub >= 55 ? 3 : sub >= 40 ? 2 : 1;
-    const stageName = STAGES[depth - 1];
-
-    return `
-      <div class="myz-sb" data-floor="${floor}">
-        <!-- 状态栏顶栏 -->
-        <div class="myz-sb-topbar">
-          <div class="myz-sb-badges">
-            <span class="myz-badge myz-badge-day">第 ${day} 天</span>
-            <span class="myz-badge myz-badge-time">${pIcon} ${esc(period)}</span>
-            <span class="myz-badge myz-badge-stage">${esc(stageName)}</span>
-          </div>
-
-          <div class="myz-stage-stepper">
-            ${[1, 2, 3, 4].map(s => {
-              const active = s <= depth;
-              const current = s === depth;
-              return `<span class="myz-step-dot ${active ? 'active' : ''} ${current ? 'current' : ''}" title="阶段 ${s}">L${s}</span>`;
-            }).join('')}
-          </div>
-
-          <button type="button" class="myz-btn-collapse" title="折叠/展开详细面板">
-            <span class="myz-collapse-label">收起面板</span>
-          </button>
-        </div>
-
-        <!-- 沈若薇核心刻度条 -->
-        <div class="myz-core-gauges">
-          ${renderGauge('羞耻', shame, 'shame')}
-          ${renderGauge('欲望', desire, 'desire')}
-          ${renderGauge('沉溺', sub, 'submersion')}
-        </div>
-
-        <!-- 详细内容区域 -->
-        <div class="myz-detail-body">
-          <div class="myz-col">
-            ${renderOtherWomen(data)}
-          </div>
-
-          <div class="myz-col">
-            ${renderStageInfo(depth)}
-          </div>
-        </div>
-
-        <!-- 行动罗盘底部提示 -->
-        <div class="myz-sb-footer">
-          <span class="myz-compass-icon">🧭 行动罗盘:</span>
-          <div class="myz-hints-wrap">
-            ${ACTION_HINTS.map(h => `<span class="myz-hint-chip">${esc(h)}</span>`).join('')}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function getAssistantFloor() {
-    let id = typeof getLastMessageId === 'function' ? getLastMessageId() : null;
-    if (id == null) return null;
-    for (let i = 0; i < 8 && id >= 0; i++) {
-      const msg = typeof getChatMessages === 'function' ? getChatMessages(id)[0] : null;
-      if (msg && msg.role === 'assistant' && !msg.is_hidden) return msg.message_id;
-      id--;
-    }
-    return null;
-  }
-
-  function renderFloor(floor, data, isLast, force = false) {
-    if (typeof retrieveDisplayedMessage !== 'function') return;
-    const $msg = retrieveDisplayedMessage(floor);
-    if (!$msg || !$msg.length) return;
-
-    const cacheKey = JSON.stringify([data, isLast]);
-    if (!force && renderCache.get(floor) === cacheKey && $msg.find('.myz-sb').length > 0) return;
-
-    $msg.find('.myz-sb').remove();
-    const $sb = $(buildHtml(floor, data, isLast));
-
-    // 折叠展开事件
-    $sb.find('.myz-btn-collapse').on('click', function(e) {
-      e.stopPropagation();
-      const $parent = $(this).closest('.myz-sb');
-      $parent.toggleClass('is-collapsed');
-      const collapsed = $parent.hasClass('is-collapsed');
-      $(this).find('.myz-collapse-label').text(collapsed ? '展开面板' : '收起面板');
+/* ============ 渲染：常识日志 ============ */
+function logsHtml(stat) {
+  const logs = _.get(stat, '常识修改系统.修改日志', {}) || {};
+  let out = '';
+  PERSONS.forEach(function (p) {
+    const list = Array.isArray(logs[p]) ? logs[p] : [];
+    if (!list.length) return;
+    out += `<div class="jz-lgroup"><div class="jz-lwho">${esc(p)}</div>`;
+    list.forEach(function (it) {
+      const on = !!it.启用;
+      out += `<div class="jz-litem ${on ? '' : 'jz-loff'}">
+        <span class="jz-ltxt"><i>#${esc(it.id)}</i>${esc(it.内容)}</span>
+        <span class="jz-lbtns">
+          <button class="jz-b jz-b-on" data-cmd="${esc(on ? `[关闭常识 ${p}: ${it.id}]` : `[开启常识 ${p}: ${it.id}]`)}">${on ? '🟢 运行中' : '⚪ 已停用'}</button>
+          <button class="jz-b jz-b-del" data-cmd="${esc(`[撤回常识 ${p}: ${it.id}]`)}" data-confirm="撤回 ${esc(p)} 的 #${esc(it.id)}？">🗑</button>
+        </span>
+      </div>`;
     });
+    out += `</div>`;
+  });
+  return out;
+}
 
-    $msg.append($sb);
-    renderCache.set(floor, cacheKey);
+/* ============ 渲染整个终端 ============ */
+function render(stat) {
+  const shame = num(_.get(stat, '常识修改系统.羞辱值', 0), 0);
+  const count = num(_.get(stat, '常识修改系统.可用次数', 0), 0);
+  const day = num(_.get(stat, '时间.第几天', 1), 1);
+  const period = _.get(stat, '时间.时段', '傍晚') || '傍晚';
+  const ready = count > 0;
+
+  const logs = logsHtml(stat);
+
+  return `<div class="jz">
+    <div class="jz-head">
+      <span class="jz-brand"><i>⚡</i>江湾壹号 · 认知修改终端</span>
+      <span class="jz-clock">第 ${day} 天 · ${esc(period)}</span>
+    </div>
+
+    <div class="jz-shame ${ready ? 'jz-ready' : ''}">
+      <div class="jz-shame-top">
+        <span class="jz-shame-l">受辱充能</span>
+        <span class="jz-shame-r">${shame} / 100${ready ? `<b class="jz-chip">✨ 可注入 ${count} 次</b>` : ''}</span>
+      </div>
+      <span class="jz-shame-track"><span class="jz-shame-fill" style="width:${shame}%"></span></span>
+    </div>
+
+    <div class="jz-sec-title">居所实况</div>
+    <div class="jz-map">
+      <div class="jz-floor-tag">2F 私密区</div>
+      <div class="jz-grid">${floorHtml(stat, '2F')}</div>
+      <div class="jz-floor-tag">1F 运作区</div>
+      <div class="jz-grid">${floorHtml(stat, '1F')}</div>
+    </div>
+
+    <div class="jz-sec-title">三条刻线</div>
+    <div class="jz-cards">${PERSONS.map(function (p) { return bars(stat, p); }).join('')}</div>
+
+    <div class="jz-sec-title">常识注入</div>
+    <div class="jz-console">
+      <div class="jz-crow">
+        <select class="jz-select" id="jz-target">
+          <option value="沈若薇">沈若薇（保姆母亲）</option>
+          <option value="周岚">周岚（周家千金）</option>
+          <option value="温以宁">温以宁（对门太太）</option>
+        </select>
+        <input class="jz-input" id="jz-text" placeholder="写下你要她相信的那句话……" />
+        <button class="jz-b jz-inject ${ready ? '' : 'jz-off'}" id="jz-go">注入</button>
+      </div>
+      <div class="jz-hint">${ready ? `消耗 1 次机会。一次只能对一个人注入一条。` : `充能未满 —— 还得再挨一些。`}</div>
+    </div>
+
+    ${logs ? `<div class="jz-sec-title">已写入的常识</div><div class="jz-logs">${logs}</div>` : ''}
+  </div>`;
+}
+
+/* ============ 交互 ============ */
+function sendText(txt) {
+  const ta = $('#send_textarea');
+  if (ta.length) {
+    ta.val(txt);
+    try { ta[0].dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+    $('#send_but').trigger('click');
+    return true;
   }
+  return false;
+}
 
-  function refreshAll(force = false) {
-    if (typeof getChatMessages !== 'function') return;
-    let msgs = [];
+$(document).on('click', '#jz-go', function () {
+  const who = $('#jz-target').val();
+  const txt = String($('#jz-text').val() || '').trim();
+  if (!txt) { toastr && toastr.warning ? toastr.warning('先写下你要她相信的那句话') : alert('先写下你要她相信的那句话'); return; }
+  if (sendText(`[常识修改 ${who}: ${txt}]`)) $('#jz-text').val('');
+});
+
+$(document).on('click', '.jz-b[data-cmd]', function () {
+  const cmd = $(this).attr('data-cmd');
+  const cfm = $(this).attr('data-confirm');
+  if (cfm && !confirm(cfm)) return;
+  sendText(cmd);
+});
+
+/* ============ 样式 ============ */
+const JZ_CSS = `
+.jz{box-sizing:border-box;width:100%;margin:14px 0 6px;padding:13px 15px 14px;border-radius:15px;
+  background:linear-gradient(150deg,rgba(24,20,30,.94),rgba(12,10,16,.97));
+  border:1px solid rgba(212,175,120,.28);
+  box-shadow:0 10px 34px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);
+  color:#f0e6ea;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Serif SC",sans-serif;font-size:12px;line-height:1.55;text-align:left}
+.jz *{box-sizing:border-box}
+.jz-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.07)}
+.jz-brand{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px;letter-spacing:.04em;color:#f6e9d8}
+.jz-brand i{font-style:normal;color:#e0b877;text-shadow:0 0 9px rgba(224,184,119,.6)}
+.jz-clock{font-size:11px;padding:2px 9px;border-radius:999px;background:rgba(224,184,119,.12);border:1px solid rgba(224,184,119,.3);color:#e8cf9f}
+
+.jz-shame{margin:11px 0 4px;padding:8px 10px;border-radius:9px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.06)}
+.jz-ready{border-color:rgba(224,184,119,.5);box-shadow:0 0 14px rgba(224,184,119,.16) inset}
+.jz-shame-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;margin-bottom:5px}
+.jz-shame-l{color:#9d94a8;letter-spacing:.06em}
+.jz-shame-r{color:#e0899c;font-weight:700;font-variant-numeric:tabular-nums}
+.jz-chip{margin-left:7px;color:#e8cf9f;text-shadow:0 0 7px rgba(232,207,159,.5)}
+.jz-shame-track{display:block;height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.jz-shame-fill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#a8556b,#e0899c,#e8cf9f);transition:width .45s ease}
+
+.jz-sec-title{margin:12px 0 6px;font-size:10.5px;letter-spacing:.16em;color:#8d8497;font-weight:600}
+
+.jz-map{padding:9px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06)}
+.jz-floor-tag{font-size:10px;color:#c9a86a;font-weight:600;margin:2px 0 5px;letter-spacing:.08em}
+.jz-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.jz-room{padding:6px 6px 5px;border-radius:7px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);min-height:52px}
+.jz-room-on{border-color:rgba(224,184,119,.38);background:rgba(224,184,119,.06)}
+.jz-room-top{display:flex;align-items:baseline;gap:4px;margin-bottom:4px}
+.jz-room-id{font-size:11.5px;font-weight:700;color:#f3ead9}
+.jz-room-desc{font-size:8.5px;color:#6b6577;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jz-room-occs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px}
+.jz-empty{font-size:9px;color:#4d4859}
+.jz-occ{width:22px;height:22px;border-radius:50%;overflow:hidden;border:1.5px solid #d4af78;background:#16121c;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#f0e6ea}
+.jz-occ-user{border-color:#7fb6c9}
+.jz-occ img{width:100%;height:100%;object-fit:cover;display:block}
+.jz-acts{display:flex;flex-direction:column;gap:1px}
+.jz-act{font-size:8.5px;color:#8a8397;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jz-act i{font-style:normal;color:#c9a86a;margin-right:3px}
+
+.jz-cards{display:flex;flex-direction:column;gap:8px}
+.jz-card{padding:8px 10px;border-radius:9px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.055)}
+.jz-card-head{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.jz-face{width:26px;height:26px;border-radius:8px;overflow:hidden;border:1.2px solid rgba(212,175,120,.45);background:#16121c;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 auto}
+.jz-face img{width:100%;height:100%;object-fit:cover;display:block}
+.jz-name{font-size:12.5px;font-weight:700;color:#f6e9d8}
+.jz-bars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.jz-bar{min-width:0}
+.jz-bar-top{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+.jz-bar-n{font-size:9.5px;color:#9d94a8;letter-spacing:.06em}
+.jz-bar-v{font-size:10.5px;font-weight:700;color:#f0e6ea;font-variant-numeric:tabular-nums}
+.jz-track{display:block;height:5px;margin-top:3px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.jz-fill{display:block;height:100%;border-radius:999px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+.jz-fill.jz-shame{background:linear-gradient(90deg,#b85c6e,#e0899c)}
+.jz-fill.jz-want{background:linear-gradient(90deg,#9d6fb0,#d98fb0)}
+.jz-fill.jz-deep{background:linear-gradient(90deg,#6f8fb0,#a9c2d6)}
+.jz-heart{margin-top:6px;padding:4px 9px;border-radius:6px;background:rgba(255,255,255,.035);border-left:2px solid #c9a86a;font-size:11px;font-style:italic;color:#e4d8c8;word-break:break-word}
+
+.jz-console{padding:9px 10px;border-radius:9px;background:rgba(224,184,119,.05);border:1px dashed rgba(224,184,119,.32)}
+.jz-crow{display:flex;gap:6px;flex-wrap:wrap}
+.jz-select,.jz-input{background:#15111c;border:1px solid rgba(255,255,255,.14);color:#f0e6ea;border-radius:6px;padding:5px 8px;font-size:11.5px;outline:none}
+.jz-select{flex:0 0 auto}
+.jz-input{flex:1 1 140px;min-width:120px}
+.jz-select:focus,.jz-input:focus{border-color:rgba(224,184,119,.55)}
+.jz-b{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#f0e6ea;border-radius:6px;padding:4px 9px;font-size:10.5px;cursor:pointer;transition:all .18s ease}
+.jz-b:hover{background:rgba(255,255,255,.14)}
+.jz-inject{background:linear-gradient(135deg,#a8863f,#e0b877);color:#1a1210;font-weight:700;border:none}
+.jz-inject.jz-off{opacity:.45;cursor:not-allowed;filter:grayscale(.7)}
+.jz-hint{margin-top:6px;font-size:10px;color:#8d8497}
+
+.jz-logs{display:flex;flex-direction:column;gap:6px}
+.jz-lgroup{border-radius:8px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.05);padding:6px 8px}
+.jz-lwho{font-size:10.5px;font-weight:700;color:#c9a86a;margin-bottom:4px;letter-spacing:.06em}
+.jz-litem{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;border-top:1px solid rgba(255,255,255,.045)}
+.jz-litem:first-of-type{border-top:none}
+.jz-loff{opacity:.5}
+.jz-loff .jz-ltxt{text-decoration:line-through}
+.jz-ltxt{flex:1;min-width:0;font-size:11px;color:#e8dfe4;word-break:break-word}
+.jz-ltxt i{font-style:normal;color:#c9a86a;margin-right:5px;font-size:10px}
+.jz-lbtns{display:flex;gap:4px;flex:0 0 auto}
+.jz-b-on{font-size:9.5px;padding:3px 7px}
+.jz-b-del{padding:3px 6px;font-size:10px;background:transparent;border-color:rgba(255,255,255,.1)}
+
+@media (max-width:560px){
+  .jz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .jz-bars{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .jz-room-desc{display:none}
+}
+`;
+
+/* ============ 挂载 ============ */
+const JZ_ID = 'jz-terminal-style';
+
+function paint(msgId, force) {
+  const el = retrieveDisplayedMessage(msgId);
+  if (!el || el.length === 0) return;
+  const stat = readStat(msgId);
+  const sig = JSON.stringify([stat['常识修改系统'], stat['空间状态'], stat['时间'], stat[MAIN], stat['人物']]);
+  const key = 'jzSig_' + msgId;
+  if (!force && el.data(key) === sig && el.find('.jz').length > 0) return;
+  el.find('.jz').remove();
+  el.append(render(stat));
+  el.data(key, sig);
+}
+
+function paintRecent(force) {
+  let ids = [];
+  try {
+    ids = getChatMessages('0-{{lastMessageId}}', { role: 'assistant', hide_state: 'unhidden' }).map(function (m) { return m.message_id; });
+  } catch (e) {
+    const last = getLastMessageId();
+    for (let i = Math.max(0, last - 4); i <= last; i++) ids.push(i);
+  }
+  const keep = {};
+  ids.forEach(function (id) { keep[id] = 1; });
+  $('.jz').each(function () {
+    const f = Number($(this).closest('.mes').attr('mesid'));
+    if (Number.isFinite(f) && !keep[f]) $(this).remove();
+  });
+  ids.forEach(function (id) { paint(id, force); });
+}
+
+function paintLast() {
+  const id = getLastMessageId();
+  if (id >= 0) paint(id, true);
+}
+
+$(() => {
+  if (!$('#' + JZ_ID).length) $('head').append($('<style>').attr('id', JZ_ID).text(JZ_CSS));
+
+  paintRecent(true);
+
+  let tick = 0;
+  window.setInterval(function () {
+    tick += 1;
     try {
-      msgs = getChatMessages('0-{{lastMessageId}}', { role: 'assistant', hide_state: 'unhidden' });
-    } catch (e) {
-      return;
-    }
-    if (!msgs || !msgs.length) return;
+      if (tick % 10 === 0) paintRecent(false);
+      else paintLast();
+    } catch (e) { console.error('[状态栏] 刷新失败', e); }
+  }, 2200);
 
-    const validFloors = new Set(msgs.map(m => m.message_id));
-    $('.myz-sb').each(function() {
-      const f = Number($(this).attr('data-floor'));
-      if (Number.isFinite(f) && !validFloors.has(f)) {
-        $(this).remove();
-        renderCache.delete(f);
-      }
-    });
+  const onMsg = function (id) {
+    const f = Number.isFinite(Number(id)) ? Number(id) : getLastMessageId();
+    if (f >= 0) paint(f, true);
+  };
 
-    const lastId = msgs[msgs.length - 1].message_id;
-    msgs.forEach(m => {
-      const isLast = m.message_id === lastId;
-      renderFloor(m.message_id, ensureVars(m.message_id, isLast), isLast, force);
-    });
-  }
+  eventOn(tavern_events.CHARACTER_MESSAGE_RENDERED, onMsg);
+  eventOn(tavern_events.MESSAGE_UPDATED, onMsg);
+  eventOn(tavern_events.MESSAGE_SWIPED, onMsg);
+  eventOn(tavern_events.MESSAGE_EDITED, onMsg);
+  eventOn(tavern_events.MESSAGE_RECEIVED, () => setTimeout(paintLast, 120));
+  eventOn(tavern_events.CHAT_CHANGED, () => { $('.jz').remove(); setTimeout(() => paintRecent(true), 260); });
+  eventOn(tavern_events.MORE_MESSAGES_LOADED, () => setTimeout(() => paintRecent(true), 220));
+  eventOn(tavern_events.MESSAGE_DELETED, () => setTimeout(() => paintRecent(true), 220));
 
-  function refreshLast() {
-    const lastId = getAssistantFloor();
-    if (lastId != null) {
-      renderFloor(lastId, ensureVars(lastId, true), true);
-    }
-  }
+  $(window).on('pagehide', function () {
+    $('.jz').remove();
+    $('#' + JZ_ID).remove();
+  });
 
-  const STYLES = `
-
-    .myz-sb {
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
-      margin: 12px 0 6px;
-      padding: 12px 14px 10px;
-      border-radius: 16px;
-      border: 1px solid rgba(168, 85, 247, 0.22);
-      background:
-        radial-gradient(ellipse 65% 50% at 90% 0%, rgba(168, 85, 247, 0.08), transparent 70%),
-        radial-gradient(ellipse 50% 50% at 10% 100%, rgba(244, 63, 94, 0.07), transparent 70%),
-        linear-gradient(168deg, rgba(20, 16, 26, 0.94) 0%, rgba(13, 10, 18, 0.98) 100%);
-      box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      color: #ede5f2;
-      font-size: 12px;
-      line-height: 1.5;
-      text-align: left;
-      font-family: system-ui, -apple-system, sans-serif;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-    .myz-sb * { box-sizing: border-box; }
-
-    /* 顶栏 */
-    .myz-sb-topbar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .myz-sb-badges {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .myz-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      letter-spacing: 0.03em;
-      white-space: nowrap;
-    }
-    .myz-badge-day {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      font-weight: 700;
-      color: #fff;
-    }
-    .myz-badge-time {
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.28);
-      color: #fcd34d;
-    }
-    .myz-badge-stage {
-      background: rgba(168, 85, 247, 0.18);
-      border: 1px solid rgba(168, 85, 247, 0.38);
-      color: #e9d5ff;
-      font-weight: 600;
-    }
-
-    /* 阶段点点 */
-    .myz-stage-stepper {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-left: auto;
-    }
-    .myz-step-dot {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 22px;
-      height: 20px;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.35);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .myz-step-dot.active {
-      background: rgba(168, 85, 247, 0.25);
-      border-color: rgba(168, 85, 247, 0.45);
-      color: #d8b4fe;
-    }
-    .myz-step-dot.current {
-      background: linear-gradient(135deg, #a855f7, #ec4899);
-      border-color: #f472b6;
-      color: #fff;
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
-    }
-
-    .myz-btn-collapse {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 6px;
-      padding: 2px 8px;
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 10.5px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .myz-btn-collapse:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: #fff;
-    }
-
-    /* 核心刻度条 */
-    .myz-core-gauges {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-    }
-    .myz-g { min-width: 0; }
-    .myz-g-header {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    .myz-g-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      opacity: 0.9;
-    }
-    .myz-g-desc {
-      font-size: 10px;
-      opacity: 0.6;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .myz-g-num {
-      margin-left: auto;
-      font-size: 13px;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-    }
-    .myz-g-track {
-      height: 5px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-    }
-    .myz-g-bar {
-      height: 100%;
-      border-radius: 999px;
-      transition: width 0.4s ease;
-    }
-
-    .myz-gauge-shame .myz-g-label { color: #fb7185; }
-    .myz-gauge-shame .myz-g-num { color: #fda4af; }
-    .myz-gauge-shame .myz-g-bar { background: linear-gradient(90deg, #f43f5e, #fb7185); }
-
-    .myz-gauge-desire .myz-g-label { color: #fbbf24; }
-    .myz-gauge-desire .myz-g-num { color: #fde68a; }
-    .myz-gauge-desire .myz-g-bar { background: linear-gradient(90deg, #f59e0b, #fb923c); }
-
-    .myz-gauge-sub .myz-g-label { color: #c084fc; }
-    .myz-gauge-sub .myz-g-num { color: #e9d5ff; }
-    .myz-gauge-sub .myz-g-bar { background: linear-gradient(90deg, #9333ea, #c084fc); }
-
-    /* 折叠状态 */
-    .myz-sb.is-collapsed .myz-detail-body,
-    .myz-sb.is-collapsed .myz-sb-footer {
-      display: none;
-    }
-
-    /* 详细内容网格 */
-    .myz-detail-body {
-      display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-      gap: 12px 16px;
-      margin-top: 10px;
-    }
-    .myz-col { min-width: 0; }
-
-    .myz-sec + .myz-sec { margin-top: 10px; }
-    .myz-sec-title {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.55);
-      letter-spacing: 0.06em;
-      margin-bottom: 6px;
-    }
-
-    /* 她与身边人 */
-    .myz-women-list { display: grid; gap: 6px; }
-    .myz-woman-card {
-      padding: 6px 9px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .myz-theme-zhou { border-left: 2px solid #82a8d8; }
-    .myz-theme-wen { border-left: 2px solid #6eb79c; }
-    .myz-wm-head {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    .myz-wm-name { font-weight: 700; font-size: 11.5px; color: #fff; }
-    .myz-wm-role { font-size: 9.5px; color: rgba(255, 255, 255, 0.45); }
-    .myz-wm-state {
-      margin-left: auto;
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.65);
-    }
-    .myz-wm-gauges {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-    }
-    .myz-wm-g {
-      font-size: 9.5px;
-      color: rgba(255, 255, 255, 0.6);
-    }
-    .myz-wm-bar {
-      height: 3px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-      margin-top: 2px;
-    }
-    .myz-wm-bar .fill { height: 100%; border-radius: 2px; }
-    .myz-wm-bar .fill.shame { background: #fb7185; }
-    .myz-wm-bar .fill.desire { background: #fbbf24; }
-    .myz-wm-bar .fill.sub { background: #c084fc; }
-
-    /* 阶段法则卡 */
-    .myz-stage-rule-box {
-      padding: 7px 9px;
-      border-radius: 8px;
-      background: rgba(168, 85, 247, 0.06);
-      border: 1px solid rgba(168, 85, 247, 0.16);
-    }
-    .myz-stage-rule-text {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.5;
-    }
-
-    /* 底部罗盘 */
-    .myz-sb-footer {
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .myz-compass-icon {
-      font-size: 10.5px;
-      color: rgba(212, 175, 55, 0.85);
-      font-weight: 600;
-    }
-    .myz-hints-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .myz-hint-chip {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.55);
-      padding: 1px 7px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .myz-hint-chip:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    @media (max-width: 580px) {
-      .myz-detail-body { grid-template-columns: minmax(0, 1fr); }
-      .myz-core-gauges { grid-template-columns: minmax(0, 1fr); gap: 6px; }
-      .myz-sb-topbar { gap: 6px; }
-      .myz-badge { font-size: 10px; padding: 2px 7px; }
-    }
-  `;
-
-  function init() {
-    if (!$(`#${STYLE_ID}`).length) {
-      $('head').append($('<style>').attr('id', STYLE_ID).text(STYLES));
-    }
-    refreshAll(true);
-
-    let counter = 0;
-    const timer = window.setInterval(() => {
-      counter++;
-      try {
-        if (counter % 12 === 0) refreshAll();
-        else refreshLast();
-      } catch(e) {}
-    }, 2000);
-
-    const onEvent = msgId => {
-      if (!Number.isFinite(msgId)) return;
-      const isLast = msgId === getAssistantFloor();
-      renderFloor(msgId, ensureVars(msgId, isLast), isLast, true);
-    };
-
-    if (window.eventOn && window.tavern_events) {
-      eventOn(tavern_events.CHARACTER_MESSAGE_RENDERED, onEvent);
-      eventOn(tavern_events.MESSAGE_UPDATED, onEvent);
-      eventOn(tavern_events.MESSAGE_SWIPED, onEvent);
-      eventOn(tavern_events.MESSAGE_EDITED, onEvent);
-      eventOn(tavern_events.CHAT_CHANGED, () => { renderCache.clear(); refreshAll(true); });
-      eventOn(tavern_events.MORE_MESSAGES_LOADED, () => refreshAll(true));
-      eventOn(tavern_events.MESSAGE_DELETED, () => refreshAll(true));
-      eventOn(tavern_events.MESSAGE_RECEIVED, () => refreshLast());
-    }
-
-    $(window).on('pagehide', () => {
-      window.clearInterval(timer);
-      $('.myz-sb').remove();
-      $(`#${STYLE_ID}`).remove();
-    });
-  }
-
-  if (window.errorCatched) {
-    $(errorCatched(init));
-  } else {
-    $(init);
-  }
-})();
+  console.info('[状态栏] 认知修改终端已挂载');
+});
