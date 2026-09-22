@@ -5,10 +5,13 @@ const PIC_RAW = "https://github.com/Tellccm/picx-images-hosting/raw/master/";
    jsDelivr 给图片发的是 Cache-Control: max-age=604800（7 天），同名覆盖后
    CDN 边缘是新的、但浏览器会直接吃自己缓存里的旧图，只有换 URL 才立刻生效。 */
 const AVATAR_VER = "?v=2";
+/* 状态栏里只出现小圆头像，所以这张表指向「头像」那套文件。
+   矩形立绘（若薇.4clnjnwc7f.webp 等）是前端开局大图专用的，别混用——
+   两套分开以后，换头像不会再动到大图。 */
 const avatars = {
-  "沈若薇": "若薇.4clnjnwc7f.webp",
-  "周岚": "周岚.b9o59san9.webp",
-  "温以宁": "温以宁.3d5k6hthuj.webp",
+  "沈若薇": "若薇.avatar.webp",
+  "周岚": "周岚.avatar.webp",
+  "温以宁": "温以宁.avatar.webp",
   "user": ""
 };
 
