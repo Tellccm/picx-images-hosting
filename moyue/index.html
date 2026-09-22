@@ -469,7 +469,7 @@
 <body>
 <div id="mo">
   <div class="hd">
-    <div class="hd-orn">序幕 · 催眠之启</div>
+    <div class="hd-orn">序幕 · 一声开门</div>
     <div class="hd-t">妈只是在疼你</div>
     <div class="hd-s">「门没锁……要是晚上心慌，就来妈房间坐坐」</div>
   </div>
@@ -485,7 +485,7 @@
       图: 'half-shenruowei.jpg',
       名: '沈若薇',
       身份: '三十四岁 · 人妻母亲 · 亡夫离世六年',
-      说明: '清纯温婉、极度娇嫩的黑长直母亲。容貌清丽如二十五六岁，在外是体面持家的少妇，内里却饱受成熟身体的空虚煎熬与对{{user}}的禁忌依恋。神秘软件「枕语」，让她在极度羞耻与步步逾矩中沉沦。'
+      说明: '清纯温婉、极度娇嫩的黑长直母亲。容貌清丽如二十五六岁，在外是体面持家的少妇，内里却饱受六年独居的空虚煎熬与对{{user}}的禁忌依恋。她把台阶一层层铺好，自己也在极度羞耻与步步逾矩中越陷越深。'
     },
     {
       图: 'half-zhoulan.jpg',
@@ -549,6 +549,39 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  // 这一页是运行时抓来的，酒馆的宏替换发生在消息文本阶段、作用不到它：
+  // 所以自己问一次当前的 {{user}} 称呼，问不到就退回「你」。
+  function 取用户名(){
+    var M = '{' + '{user}}';
+    try{
+      var h = TH();
+      if(h && typeof h.substitudeMacros === 'function'){
+        var s1 = String(h.substitudeMacros(M) || '').trim();
+        if(s1 && s1.indexOf('{') < 0) return s1;
+      }
+    }catch(e){}
+    try{
+      var t = topWin();
+      if(t && typeof t.substituteParams === 'function'){
+        var s2 = String(t.substituteParams(M) || '').trim();
+        if(s2 && s2.indexOf('{') < 0) return s2;
+      }
+    }catch(e){}
+    return '你';
+  }
+  function 修宏(){
+    try{
+      var M = '{' + '{user}}', 名 = 取用户名();
+      if(!名) return;
+      var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null), t;
+      while((t = w.nextNode())){
+        var v = t.nodeValue;
+        if(!v || v.indexOf(M) < 0) continue;
+        t.nodeValue = v.split(M).join(名);
+      }
+    }catch(e){}
+  }
+
   function 画(){
     var slot = document.getElementById('slot');
     if(!slot) return;
@@ -596,12 +629,12 @@
       '<div class="bd">'
       + '<div class="blk"><div class="blk-h"><i></i>你是谁</div>'
       + '<div class="prose-card">你是 <b>{{user}}</b>，初中生。身量纤秀、五官清秀可爱。母亲沈若薇三十四岁，六年前守寡，独自把你抚养长大。'
-      + '她端庄、温顺又极有分寸，把这个家照料得无微不至。可那台发烫的手机与神秘软件「枕语」，正在夜深人静中悄然崩解所有伦常防线……</div></div>'
+      + '她端庄、温顺又极有分寸，把这个家照料得无微不至。可她那件在衣柜深处藏了整整一周的新睡衣，和这一周里年轻娇艳了许多的样子，正在夜深人静中悄然崩解所有伦常防线……</div></div>'
       + '<div class="blk"><div class="blk-h"><i></i>这个家里与身边的人</div><div class="cast">' + 人 + '</div></div>'
-      + '<div class="blk"><div class="blk-h"><i></i>心境法则 · 枕语之密</div>'
+      + '<div class="blk"><div class="blk-h"><i></i>心境法则 · 一层层铺好的台阶</div>'
       + '<div class="rule-card">她记得你所有的琐碎喜好——怕烫、腰不好、不喜辛辣。<b>她比你自己更懂得如何让你心软</b>，'
       + '也清楚该在何时端来一碗热汤、递上一句欲言又止的关切。'
-      + '她从不强加于你，只是用那神秘的「枕语」一层层铺好台阶，诱导着你一步步跨越不可言说的禁忌深渊……</div></div>'
+      + '她从不强加于你：她只是一层层把台阶铺好，铺到你抬脚就走得下去的地方——然后站在旁边，等你自己迈那一步。</div></div>'
       + '</div>'
       + '<div class="pick"><div class="blk-h"><i></i>从哪一声敲门开始</div>'
       + '<div class="row">' + 卡 + '</div></div>'
@@ -611,6 +644,8 @@
     for(var i = 0; i < 钮.length; i++){
       钮[i].addEventListener('click', function(){ 选(Number(this.getAttribute('data-swipe')), this); });
     }
+
+    修宏();
   }
 
   function 选(swipe, 钮){
