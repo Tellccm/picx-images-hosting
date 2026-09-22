@@ -1,10 +1,22 @@
-/* 江湾壹号 · 认知修改终端 —— 状态栏 + 三刻线 + 全景小地图 + 常识控制台 */
+/* 江湾壹号 · 认知修改终端 —— 状态栏 + 双刻线（羞耻/欲望） + 全景小地图 + 常识控制台 */
+const PIC_JSD = "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/";
+const PIC_RAW = "https://github.com/Tellccm/picx-images-hosting/raw/master/";
 const avatars = {
-  "沈若薇": "https://github.com/Tellccm/picx-images-hosting/raw/master/若薇.4clnjnwc7f.webp",
-  "周岚": "https://github.com/Tellccm/picx-images-hosting/raw/master/周岚.b9o59san9.webp",
-  "温以宁": "https://github.com/Tellccm/picx-images-hosting/raw/master/周岚.b9o59san9.webp",
+  "沈若薇": "若薇.4clnjnwc7f.webp",
+  "周岚": "周岚.b9o59san9.webp",
+  "温以宁": "温以宁.3d5k6hthuj.webp",
   "user": ""
 };
+
+// 头像统一走 jsDelivr，失败回落到 GitHub raw；小圆按头部裁切
+function avatarTag(who, cls) {
+  const f = avatars[who];
+  if (!f) return "";
+  const enc = encodeURIComponent(f);
+  return '<img class="' + cls + '" src="' + PIC_JSD + enc + '" data-fb="' + PIC_RAW + enc + '"'
+    + ' style="object-position:50% 12%"'
+    + ' onerror="this.onerror=null;if(this.dataset.fb)this.src=this.dataset.fb;" alt="">';
+}
 
 const PERSONS = ["沈若薇", "周岚", "温以宁"];
 const MAIN = "沈若薇";
@@ -56,11 +68,11 @@ function readStat(msgId) {
   }
 }
 
-/* ============ 渲染：某人的三条刻线 ============ */
+/* ============ 渲染：某人的两条刻线 ============ */
 function bars(stat, who) {
   const base = who === MAIN ? stat[MAIN] : _.get(stat, '人物.' + who);
   const o = base && typeof base === 'object' ? base : {};
-  const s = num(o.羞耻, 0), w = num(o.欲望, 0), d = num(o.沉溺, 0);
+  const s = num(o.羞耻, 0), w = num(o.欲望, 0);
 
   function one(label, val, cls) {
     const v = Math.max(0, Math.min(100, val));
@@ -71,13 +83,12 @@ function bars(stat, who) {
 
   return `<div class="jz-card">
     <div class="jz-card-head">
-      <span class="jz-face">${avatars[who] ? `<img src="${avatars[who]}" alt="">` : `<b>${esc(who.slice(0, 1))}</b>`}</span>
+      <span class="jz-face">${avatars[who] ? avatarTag(who, "") : `<b>${esc(who.slice(0, 1))}</b>`}</span>
       <span class="jz-name">${esc(who)}</span>
     </div>
     <div class="jz-bars">
       ${one('羞耻', s, 'shame')}
       ${one('欲望', w, 'want')}
-      ${one('沉溺', d, 'deep')}
     </div>
     ${heart ? `<div class="jz-heart">「${esc(heart)}」</div>` : ''}
   </div>`;
@@ -101,7 +112,7 @@ function floorHtml(stat, floorKey) {
       const isUser = o.who === 'user';
       const av = avatars[o.who];
       return `<span class="jz-occ ${isUser ? 'jz-occ-user' : ''}" title="${esc(o.who)}：${esc(o.act)}">
-        ${av ? `<img src="${av}" alt="">` : `<b>${isUser ? '我' : esc(o.who.slice(0, 1))}</b>`}
+        ${av ? avatarTag(o.who, "") : `<b>${isUser ? '我' : esc(o.who.slice(0, 1))}</b>`}
       </span>`;
     }).join('');
 
@@ -172,7 +183,7 @@ function render(stat) {
       <div class="jz-grid">${floorHtml(stat, '1F')}</div>
     </div>
 
-    <div class="jz-sec-title">三条刻线</div>
+    <div class="jz-sec-title">两条刻线</div>
     <div class="jz-cards">${PERSONS.map(function (p) { return bars(stat, p); }).join('')}</div>
 
     <div class="jz-sec-title">常识注入</div>
@@ -266,7 +277,7 @@ const JZ_CSS = `
 .jz-face{width:26px;height:26px;border-radius:8px;overflow:hidden;border:1.2px solid rgba(212,175,120,.45);background:#16121c;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:0 0 auto}
 .jz-face img{width:100%;height:100%;object-fit:cover;display:block}
 .jz-name{font-size:12.5px;font-weight:700;color:#f6e9d8}
-.jz-bars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.jz-bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .jz-bar{min-width:0}
 .jz-bar-top{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
 .jz-bar-n{font-size:9.5px;color:#9d94a8;letter-spacing:.06em}
@@ -275,7 +286,6 @@ const JZ_CSS = `
 .jz-fill{display:block;height:100%;border-radius:999px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
 .jz-fill.jz-shame{background:linear-gradient(90deg,#b85c6e,#e0899c)}
 .jz-fill.jz-want{background:linear-gradient(90deg,#9d6fb0,#d98fb0)}
-.jz-fill.jz-deep{background:linear-gradient(90deg,#6f8fb0,#a9c2d6)}
 .jz-heart{margin-top:6px;padding:4px 9px;border-radius:6px;background:rgba(255,255,255,.035);border-left:2px solid #c9a86a;font-size:11px;font-style:italic;color:#e4d8c8;word-break:break-word}
 
 .jz-console{padding:9px 10px;border-radius:9px;background:rgba(224,184,119,.05);border:1px dashed rgba(224,184,119,.32)}
