@@ -550,6 +550,8 @@
   // 人物立绘走仓库根目录的三张图床图（不再依赖 moyue/ 下的旧图）
   var PIC_JSD = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/';
   var PIC_RAW = 'https://github.com/Tellccm/picx-images-hosting/raw/master/';
+  // 换头像时把这个数字 +1：图片被浏览器缓存 7 天（max-age=604800），同名覆盖不会刷新
+  var AVATAR_VER = '?v=2';
 
   var 图源 = {
     '沈若薇': '若薇.4clnjnwc7f.webp',
@@ -561,7 +563,7 @@
   function 立绘(谁, 类名, 替代文字, 位置){
     var f = encodeURIComponent(图源[谁] || '');
     var pos = 位置 ? ' style="object-position:' + 位置 + '"' : '';
-    return '<img class="' + 类名 + '" src="' + PIC_JSD + f + '" data-fb="' + PIC_RAW + f + '"'
+    return '<img class="' + 类名 + '" src="' + PIC_JSD + f + AVATAR_VER + '" data-fb="' + PIC_RAW + f + AVATAR_VER + '"'
       + ' alt="' + esc(替代文字 || 谁) + '"' + pos
       + ' onerror="this.onerror=null;if(this.dataset.fb)this.src=this.dataset.fb;">';
   }
