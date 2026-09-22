@@ -373,6 +373,11 @@
       align-items: center;
       gap: 7px 10px;
     }
+    .reads.stack {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 5px;
+    }
     .chip-time {
       display: inline-flex;
       align-items: center;
@@ -384,11 +389,75 @@
       background: rgba(212, 175, 55, 0.12);
       border: 1px solid rgba(212, 175, 55, 0.28);
     }
+    .chip-shame {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: #ffd9de;
+      background: rgba(201, 74, 83, 0.18);
+      border: 1px solid rgba(201, 74, 83, 0.42);
+    }
+
+    /* 常识修改器机制块 */
+    .sys-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .sys-i {
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.055), rgba(255, 255, 255, 0.012));
+    }
+    .sys-i > b {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--gold-light);
+    }
+    .sys-i > p {
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.85;
+      color: var(--paper-dim);
+    }
+    .sys-i em { font-style: normal; color: #fff; font-weight: 600; }
+    .sys-warn {
+      grid-column: 1 / -1;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(201, 74, 83, 0.34);
+      border-left: 3px solid var(--crimson);
+      background: linear-gradient(135deg, rgba(201, 74, 83, 0.085), rgba(255, 255, 255, 0.012));
+      font-size: 13.5px;
+      line-height: 1.9;
+      color: var(--paper-dim);
+    }
+    .sys-warn b { color: #ffdfe3; font-weight: 600; }
+
+    /* 开局卡上的三条刻线 */
+    .rlabel {
+      width: 100%;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.09);
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      color: var(--paper-muted);
+    }
     .rhead {
       display: flex;
-      gap: 6px;
-      margin-left: auto;
+      gap: 5px;
+      padding-left: calc(30px + 3.6em);
       font-size: 10.5px;
+      letter-spacing: 0.08em;
       color: var(--paper-muted);
     }
     .rhead i { font-style: normal; width: 2.2em; text-align: center; }
@@ -405,7 +474,7 @@
       object-fit: cover;
       border: 1px solid currentColor;
     }
-    .pp .ppn { font-size: 12px; font-weight: 500; line-height: 1; }
+    .pp .ppn { width: 3.6em; font-size: 12px; font-weight: 500; line-height: 1; }
     .pp .ppv {
       display: inline-block;
       width: 2.2em;
@@ -469,9 +538,9 @@
 <body>
 <div id="mo">
   <div class="hd">
-    <div class="hd-orn">序幕 · 一声开门</div>
+    <div class="hd-orn">序幕 · 江湾壹号 3601</div>
     <div class="hd-t">妈只是在疼你</div>
-    <div class="hd-s">「门没锁……要是晚上心慌，就来妈房间坐坐」</div>
+    <div class="hd-s">「她骂你一句，你就离改写她近一点」</div>
   </div>
   <div id="slot"></div>
 </div>
@@ -484,47 +553,47 @@
     {
       图: 'half-shenruowei.jpg',
       名: '沈若薇',
-      身份: '三十四岁 · 人妻母亲 · 亡夫离世六年',
-      说明: '清纯温婉、极度娇嫩的黑长直母亲。容貌清丽如二十五六岁，在外是体面持家的少妇，内里却饱受六年独居的空虚煎熬与对{{user}}的禁忌依恋。她把台阶一层层铺好，自己也在极度羞耻与步步逾矩中越陷越深。'
+      身份: '三十四岁 · 住家保姆 · 你的母亲',
+      说明: '清丽娇嫩如二十五六岁，却把这六年受的所有窝囊气全撒在你身上。在周岚面前，她被泼了茶也要鞠躬道歉、连声说「是我不好」；一转身回到后厨，摔盘、呵斥、剩饭打发，眼神像在看一件用坏了又不舍得扔的旧物。她对外人越卑微，回头对你越凶——这一点她自己心里清楚。'
     },
     {
       图: 'half-zhoulan.jpg',
       名: '周岚',
-      身份: '三十四岁 · 闺蜜 · 美容会所老板',
-      说明: '离异三年，深栗色高马尾，眼神细长微挑。嘴硬心软、独立傲慢，开着只做熟客的高级美容会所。把沈家当成唯一不用端着的避风港；她三年没有过男人，这具矜贵身躯比那张刻薄的嘴脆弱得多。'
+      身份: '三十四岁 · 周家千金 · 这栋房子的主人',
+      说明: '深栗色高马尾，凤眼上挑，十公分细高跟走路没有声音。她不是恨你，她是当你不存在——使唤你的时候眼睛还留在酒杯上。踩头、泼茶、命你跪着擦她的鞋底，只是她一天里最轻的一项消遣。她三年没有过男人，这具看着矜贵的身躯，比她那张刻薄的嘴脆得多。'
     },
     {
       图: 'half-wenyining.jpg',
       名: '温以宁',
-      身份: '三十二岁 · 对门邻居 · 独守空房',
-      说明: '温软如江南水乡，深棕低马尾系着玳瑁发夹，薄得透光的冷白雪肤。丈夫长年在海外工程，整座大房子里只有她一人。习惯了卑微讨好与顺从，一次误跌入少年怀抱，便贪恋上那点久违的男子体温。'
+      身份: '三十二岁 · 对门太太 · 独守空房',
+      说明: '弱不禁风、轻声细语，左眼角一颗浅浅的泪痣。她是三个人里最「软」的一个，也是最坏的一个：真丝睡裙半褪着贴上来蹭，等你绷紧了、起了反应，就掩唇笑你「下人家的小杂种也配」，然后当着你的面摔门。丈夫一年回来两次，剩下三百多天，她有的是时间玩你。'
     }
   ];
 
   var 开局 = [
     {
       swipe: 1, k: '1', 序号: '其一',
-      标题: '守着开门声的那锅汤',
-      一句话: '周五傍晚六点四十，砂锅在灶台上煨着甜玉米排骨汤。她散下一头乌黑长发，手机扣在大理石台面上，光标还闪烁着半截草稿……',
+      标题: '守着剩饭的那间后厨',
+      一句话: '暴雨傍晚六点四十，你淋着雨从后门溜进厨房。她刚伺候完两位主人用膳，把一碟剩菜摔在中岛台上：「吃你的。吃完把两层楼的地全擦一遍。」',
       立绘: 'start-0-shenruowei.jpg',
       半身: 'half-shenruowei.jpg',
-      看: { 时段: '傍晚', 沈: [40, 62, 5], 周: [25, 45, 0], 温: [45, 58, 0] },
+      看: { 时段: '傍晚', 辱: 25, 沈: [55, 45, 5], 周: [40, 38, 0], 温: [35, 52, 0] },
     },
     {
       swipe: 2, k: '2', 序号: '其二',
-      标题: '淋着雨闯进来的那个人',
-      一句话: '暴雨夜九点半，周岚用备用钥匙推门而入，湿透的风衣滑落在沙发。沙发深处，沈若薇丢下的薄粉真丝睡裙与亮着的手机格外刺眼……',
+      标题: '那杯泼在地毯上的茶',
+      一句话: '周末午后，你端着沏好的红茶躬身放下。她抿了一口就扬手连杯带水泼在你的鞋上，再把十公分的细高跟架上了你的膝盖：「跪下，用你的袖子擦干净。」',
       立绘: 'start-1-zhoulan.jpg',
       半身: 'half-zhoulan.jpg',
-      看: { 时段: '夜里', 沈: [33, 52, 3], 周: [20, 50, 0], 温: [45, 58, 0] },
+      看: { 时段: '下午', 辱: 40, 沈: [50, 42, 3], 周: [45, 40, 0], 温: [35, 52, 0] },
     },
     {
       swipe: 3, k: '3', 序号: '其三',
-      标题: '敲错门的那个人',
-      一句话: '周六午后，沈若薇出门买菜。对门的温以宁抱着沉重管钳借生料带，慌乱中在光洁瓷砖上失衡仰倒，结结实实跌进你的怀抱……',
+      标题: '门缝里的那点春光',
+      一句话: '周六下午，她借口暖风机螺丝拧不动把你叫进套房。你踩着梯子仰头，她就贴着你的后背呵气如兰；察觉你绷紧了，又退开两步笑出声：「滚回你的保姆间洗把冷水脸。」',
       立绘: 'start-2-wenyining.jpg',
       半身: 'half-wenyining.jpg',
-      看: { 时段: '下午', 沈: [26, 48, 3], 周: [25, 45, 0], 温: [44, 64, 0] },
+      看: { 时段: '下午', 辱: 45, 沈: [48, 44, 3], 周: [40, 38, 0], 温: [30, 58, 0] },
     }
   ];
 
@@ -595,12 +664,13 @@
         + '</div></div>';
     }).join('');
 
-    function 人段(色, 图, 谁, 羞, 欲){
+    function 人段(色, 图, 谁, 羞, 欲, 溺){
       return '<span class="pp" style="color:' + 色 + '">'
         + '<img src="' + CDN + 图 + '" alt="">'
         + '<span class="ppn">' + esc(谁) + '</span>'
         + '<span class="ppv">' + 羞 + '</span>'
         + '<span class="ppv">' + 欲 + '</span>'
+        + '<span class="ppv">' + 溺 + '</span>'
         + '</span>';
     }
 
@@ -617,10 +687,14 @@
         + '<span class="cap-d">' + esc(o.一句话) + '</span>'
         + '<span class="reads">'
         + '<span class="chip-time">' + esc(看.时段) + '</span>'
-        + '<span class="rhead"><i>羞耻</i><i>欲望</i></span>'
-        + 人段('#e07a82', 'half-shenruowei.jpg', '沈', 看.沈[0], 看.沈[1])
-        + 人段('#82a8d8', 'half-zhoulan.jpg', '周', 看.周[0], 看.周[1])
-        + 人段('#6eb79c', 'half-wenyining.jpg', '温', 看.温[0], 看.温[1])
+        + '<span class="chip-shame">初始羞辱值 ' + 看.辱 + '</span>'
+        + '</span>'
+        + '<span class="rlabel">此局开场 · 羞耻 / 欲望 / 沉溺</span>'
+        + '<span class="reads stack">'
+        + '<span class="rhead"><i>羞</i><i>欲</i><i>溺</i></span>'
+        + 人段('#e07a82', 'half-shenruowei.jpg', '沈若薇', 看.沈[0], 看.沈[1], 看.沈[2])
+        + 人段('#82a8d8', 'half-zhoulan.jpg', '周岚', 看.周[0], 看.周[1], 看.周[2])
+        + 人段('#6eb79c', 'half-wenyining.jpg', '温以宁', 看.温[0], 看.温[1], 看.温[2])
         + '</span>'
         + '</span></button>';
     }).join('');
@@ -628,17 +702,23 @@
     slot.innerHTML =
       '<div class="bd">'
       + '<div class="blk"><div class="blk-h"><i></i>你是谁</div>'
-      + '<div class="prose-card">你是 <b>{{user}}</b>，初中生。身量纤秀、五官清秀可爱。母亲沈若薇三十四岁，六年前守寡，独自把你抚养长大。'
-      + '她端庄、温顺又极有分寸，把这个家照料得无微不至。可她那件在衣柜深处藏了整整一周的新睡衣，和这一周里年轻娇艳了许多的样子，正在夜深人静中悄然崩解所有伦常防线……</div></div>'
-      + '<div class="blk"><div class="blk-h"><i></i>这个家里与身边的人</div><div class="cast">' + 人 + '</div></div>'
-      + '<div class="blk"><div class="blk-h"><i></i>心境法则 · 一层层铺好的台阶</div>'
-      + '<div class="rule-card">她记得你所有的琐碎喜好——怕烫、腰不好、不喜辛辣。<b>她比你自己更懂得如何让你心软</b>，'
-      + '也清楚该在何时端来一碗热汤、递上一句欲言又止的关切。'
-      + '她从不强加于你：她只是一层层把台阶铺好，铺到你抬脚就走得下去的地方——然后站在旁边，等你自己迈那一步。</div></div>'
+      + '<div class="prose-card">你是 <b>{{user}}</b>，初中生。从小学起就跟着母亲沈若薇住进江湾壹号 3601——楼梯下方那个不到 8 平米、终年不见光的保姆杂物间。'
+      + '这栋房子有八间房，没有一间是你的。你在这里学会了不出声。<b>直到某一天你发现：那些挨过的骂、被踩过的头、被撩起来又丢下的每一次，都在你身上攒成了某种可以积起来的东西。</b></div></div>'
+      + '<div class="blk"><div class="blk-h"><i></i>这栋房子里的三个人</div><div class="cast">' + 人 + '</div></div>'
+      + '<div class="blk"><div class="blk-h"><i></i>常识修改器 · 她骂你一句，你就离改写她近一点</div>'
+      + '<div class="sys-card">'
+      + '<div class="sys-i"><b>受辱充能</b><p>母亲摔来的剩饭、周岚踩在你膝上的细高跟、温以宁撩完又摔上的那扇门——每一次都记进 <em>羞辱值 0~100</em>。</p></div>'
+      + '<div class="sys-i"><b>满百解锁</b><p>羞辱值满 100 自动转为 <em>1 次注入机会</em>，可以累加储存。未满时按钮是灰的。</p></div>'
+      + '<div class="sys-i"><b>单体注入</b><p>一次只能选<em>一个人</em>，写下<em>一条</em>常识。写下去的那一刻，那句话对她就是天经地义。</p></div>'
+      + '<div class="sys-i"><b>随时开关</b><p>写进去的每一条都能随时停用、再随时打开。<em>关掉的那一秒，她会当场明白自己刚才在做什么。</em></p></div>'
+      + '<div class="sys-i"><b>口吻不变</b><p>常识只改认知，不改脾气。她<em>照旧骂、照旧不耐烦</em>，只是身体会理所当然地照做——这才是最刺人的地方。</p></div>'
+      + '<div class="sys-i"><b>旁观者自洽</b><p>别人看到会被自动合理化，当成「她家的规矩」。所以你可以<em>当着另一个人的面</em>用她。</p></div>'
+      + '<div class="sys-warn"><b>但有一道铁律：</b>合理化只作用于「别人」，不作用于「自己」。<em>没被写入的人，绝不会跟着做。</em>你让周岚也来试试，她只会用最刻薄的话把你按回地上——想拿下她，得再攒一百分。</div>'
+      + '</div></div>'
       + '</div>'
-      + '<div class="pick"><div class="blk-h"><i></i>从哪一声敲门开始</div>'
+      + '<div class="pick"><div class="blk-h"><i></i>从哪一步开始挨</div>'
       + '<div class="row">' + 卡 + '</div></div>'
-      + '<div class="ft"><span class="ft-n">点击一张卡片，便能从该视角展开故事。</span><span class="bar"><i></i></span></div>';
+      + '<div class="ft"><span class="ft-n">点击一张卡片，那一局就会成为你的第 1 楼。</span><span class="bar"><i></i></span></div>';
 
     var 钮 = slot.querySelectorAll('.cd');
     for(var i = 0; i < 钮.length; i++){
@@ -675,10 +755,31 @@
   }
 
   function 切开局(swipe){
-    var 设 = call('setChatMessages');
-    if(设){
-      try { return Promise.resolve(设([{message_id:0, swipe_id:swipe}], {refresh:'affected'})); }catch(e){}
+    // 首选：TavernHelper 官方写法 setChatMessage(文本, 楼层, {swipe_id, refresh})
+    var 单设 = call('setChatMessage'), 取 = call('getChatMessages');
+    if(单设){
+      try{
+        var 流;
+        if(取){
+          流 = Promise.resolve(取('0', { include_swipes: true })).then(function(ms){
+            var m = ms && ms[0];
+            if(!m || !Array.isArray(m.swipes) || m.swipes[swipe] == null) throw new Error('所选开场不存在');
+            return 单设(String(m.swipes[swipe]), 0, { swipe_id: swipe, refresh: 'display_and_render_current' });
+          });
+        } else {
+          流 = Promise.resolve(单设(null, 0, { swipe_id: swipe, refresh: 'display_and_render_current' }));
+        }
+        return Promise.resolve(流);
+      }catch(e){}
     }
+
+    // 次选：批量接口
+    var 多设 = call('setChatMessages');
+    if(多设){
+      try { return Promise.resolve(多设([{message_id:0, swipe_id:swipe}], {refresh:'affected'})); }catch(e){}
+    }
+
+    // 兜底：直接改聊天数据结构再重载
     try {
       var st = topWin().SillyTavern, chat = st && st.chat;
       if(chat && chat[0]){
@@ -690,6 +791,7 @@
         return Promise.resolve();
       }
     }catch(e){}
+
     return Promise.reject(new Error('当前预览环境'));
   }
 
