@@ -1,0 +1,13 @@
+{
+  "_说明": [
+    "幽灵的眼 · 头像表（卡内脚本「头像·表」会自动读这个文件，改完把脚本里 REMOTE 的 ?v= 数字加一即可刷新缓存）",
+    "键名：角色__表情。角色用 念念 / 沈听雪 / 陈思雨 / 夏浅浅 / 苏芸，你自己用 #",
+    "表情：默认 / 不在 + 可选差分（状态栏按 stage：日常 暧昧 恋人 私密；正文对白按模型写的词：害羞 生气 难过 开心 惊讶 认真）",
+    "取图顺序：角色__表情 → 角色__默认 → 角色__日常 → 角色__ → 名字首字。所以最少每组两张：默认 + 不在",
+    "值写数组，[] 里多张就按楼层轮换（同一楼不重样）",
+    "图片放仓库 youlingdeyan/头像/ 目录，链接形如 https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/头像/念念_默认_01.png"
+  ],
+  "_例子_念念__默认": [
+    "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/头像/念念_默认_01.png"
+  ]
+}
