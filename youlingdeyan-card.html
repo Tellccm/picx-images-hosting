@@ -1,139 +1,143 @@
 <!DOCTYPE html>
-<!-- Cardwright 开局介绍页 · 幽灵的眼 · 自持（无外部依赖） -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
-    --bg: #fff7f9;
-    --panel: #ffffff;
-    --panel-2: #ffeef3;
-    --line: #f3d3dd;
-    --line-strong: #e9b3c4;
-    --text: #3f2a33;
-    --text-2: #7b5b68;
-    --text-3: #a3838f;
-    --accent: #e2517f;
-    --accent-2: #5f9e7c;
-    --radius: 14px;
-    --radius-sm: 8px;
-    --shadow: 0 6px 18px rgba(226, 81, 127, .10);
-    --sans: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    --az-ink: #eaf6ff;
+    --az-ink-2: #b9d9f2;
+    --az-ink-3: #8fb6d6;
+    --az-line: rgba(125, 211, 252, .30);
+    --az-line-2: rgba(125, 211, 252, .55);
+    --az-accent: #67e8f9;
+    --az-accent-2: #7dd3fc;
+    --az-card: rgba(9, 34, 57, .55);
+    --az-card-2: rgba(13, 46, 74, .72);
+    --az-radius: 16px;
+    --az-radius-sm: 10px;
+    --az-sans: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
   }
   *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.75 var(--sans); overflow-wrap: anywhere; }
-  .gw { max-width: 640px; margin: 0 auto; padding: 16px 14px 22px; }
-  .gw-title { margin: 0; font-size: 22px; letter-spacing: .06em; text-align: center; }
-  .gw-sub { margin: 6px 0 0; text-align: center; font-size: 12px; letter-spacing: .18em; color: var(--text-3); }
-  .gw-lead { margin: 16px 0 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
-  .gw-lead p { margin: 0 0 10px; }
-  .gw-lead p:last-child { margin-bottom: 0; }
-  .gw-lead b { color: var(--accent); }
-  .gw-h { margin: 20px 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .1em; color: var(--text-3); }
-  .gw-cast { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-  .gw-cast li { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--panel); }
-  .gw-face { flex: none; display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--panel-2); color: var(--accent); font-weight: 600; font-size: 14px; }
-  .gw-cast b { font-weight: 600; }
-  .gw-cast span { color: var(--text-2); font-size: 13px; }
-  .gw-cast i { font-style: normal; color: var(--text-3); font-size: 12px; margin-left: 6px; }
-  .gw-hint { margin: 14px 0 0; padding: 10px 12px; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); background: var(--panel); font-size: 13px; color: var(--text-2); }
-  .gw-opens { display: grid; gap: 10px; }
-  .gw-open { display: grid; gap: 3px; width: 100%; padding: 12px 14px; text-align: left; font: inherit; color: var(--text); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); cursor: pointer; transition: transform 140ms, box-shadow 160ms, border-color 140ms; }
-  .gw-open b { font-size: 15px; letter-spacing: .04em; }
-  .gw-open small { color: var(--text-2); }
-  .gw-open em { font-style: normal; font-size: 12px; color: var(--text-3); letter-spacing: .04em; }
-  .gw-open:hover { transform: translateY(-2px); border-color: var(--line-strong); box-shadow: var(--shadow); }
-  .gw-open:active { transform: scale(.99); }
-  .gw-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .gw-note { margin: 14px 0 0; font-size: 12px; color: var(--text-3); text-align: center; }
-  .gw-err { margin: 10px 0 0; padding: 10px 12px; border: 1px solid #d64550; border-left-width: 4px; border-radius: var(--radius-sm); background: var(--panel); color: var(--text); font-size: 13px; display: none; }
-  @media (max-width: 420px) {
-    .gw-title { font-size: 20px; }
-    .gw { padding: 12px 10px 18px; }
+  html, body { margin: 0; }
+  html, body { min-height: 100%; color: var(--az-ink); font: 15px/1.8 var(--az-sans); overflow-wrap: anywhere; }
+  /* 动态蔚蓝：底色 + 两团缓慢漂移的光斑 + 一层微波 */
+  body {
+    background-color: #0d2b44;
+    background-image:
+      radial-gradient(1100px 520px at 12% 8%, rgba(103, 232, 249, .30), transparent 62%),
+      radial-gradient(900px 480px at 88% 12%, rgba(56, 189, 248, .26), transparent 60%),
+      radial-gradient(800px 520px at 50% 100%, rgba(45, 212, 191, .20), transparent 65%),
+      linear-gradient(168deg, #0b2740 0%, #14486e 46%, #1d79ad 100%);
+    background-attachment: fixed;
   }
-  @media (prefers-reduced-motion: reduce) {
-    .gw-open { transition: none; }
-    .gw-open:hover, .gw-open:active { transform: none; }
+  body::before {
+    content: ""; position: fixed; inset: -20% -10%; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(closest-side, rgba(125, 211, 252, .22), transparent 70%) 20% 30% / 62% 62% no-repeat,
+      radial-gradient(closest-side, rgba(103, 232, 249, .16), transparent 70%) 78% 62% / 55% 55% no-repeat;
+    filter: blur(6px);
+    animation: az-drift 26s ease-in-out infinite alternate;
   }
+  @keyframes az-drift {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(-3%, 2.5%, 0) scale(1.06); }
+  }
+  .az { position: relative; z-index: 1; max-width: 660px; margin: 0 auto; padding: 18px 14px 24px; }
+  .az-title { margin: 0; font-size: 24px; letter-spacing: .1em; text-align: center; text-shadow: 0 2px 14px rgba(3, 22, 38, .6); }
+  .az-sub { margin: 6px 0 0; text-align: center; font-size: 12px; letter-spacing: .2em; color: var(--az-ink-3); }
+  .az-lead { margin: 16px 0 0; padding: 15px 16px; border: 1px solid var(--az-line); border-radius: var(--az-radius); background: var(--az-card); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(3, 20, 36, .35); }
+  .az-lead p { margin: 0 0 10px; }
+  .az-lead p:last-child { margin-bottom: 0; }
+  .az-lead b { color: var(--az-accent); }
+  .az-h { margin: 20px 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .12em; color: var(--az-ink-3); }
+  .az-cast { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .az-cast li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--az-line); border-radius: var(--az-radius-sm); background: var(--az-card); }
+  .az-face { flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--az-accent-2), var(--az-accent)); color: #06212f; font-weight: 700; font-size: 14px; }
+  .az-cast b { font-weight: 600; }
+  .az-cast span { color: var(--az-ink-2); font-size: 13px; }
+  .az-cast i { font-style: normal; color: var(--az-ink-3); font-size: 12px; margin-left: 6px; }
+  .az-hint { margin: 14px 0 0; padding: 10px 12px; border: 1px dashed var(--az-line-2); border-radius: var(--az-radius-sm); background: var(--az-card-2); font-size: 13px; color: var(--az-ink-2); }
+  .az-opens { display: grid; gap: 10px; }
+  .az-open { position: relative; display: grid; gap: 3px; width: 100%; padding: 13px 15px; text-align: left; font: inherit; color: var(--az-ink); border: 1px solid var(--az-line); border-radius: var(--az-radius); background: var(--az-card); cursor: pointer; overflow: hidden; transition: transform 150ms, box-shadow 180ms, border-color 150ms, background 150ms; }
+  .az-open::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(180deg, var(--az-accent), var(--az-accent-2)); opacity: .85; }
+  .az-open b { font-size: 15px; letter-spacing: .04em; }
+  .az-open small { color: var(--az-ink-2); }
+  .az-open em { font-style: normal; font-size: 12px; color: var(--az-ink-3); letter-spacing: .04em; }
+  .az-open:hover { transform: translateY(-2px); border-color: var(--az-line-2); background: var(--az-card-2); box-shadow: 0 12px 26px rgba(3, 20, 36, .45); }
+  .az-open:active { transform: scale(.995); }
+  .az-open:focus-visible { outline: 2px solid var(--az-accent); outline-offset: 2px; }
+  .az-note { margin: 14px 0 0; font-size: 12px; color: var(--az-ink-3); text-align: center; }
+  .az-err { margin: 10px 0 0; padding: 10px 12px; border: 1px solid #ff9eaf; border-left-width: 4px; border-radius: var(--az-radius-sm); background: var(--az-card-2); font-size: 13px; display: none; }
+  @media (max-width: 420px) { .az-title { font-size: 21px; } .az { padding: 14px 11px 20px; } }
+  @media (prefers-reduced-motion: reduce) { body::before { animation: none; } .az-open { transition: none; } .az-open:hover, .az-open:active { transform: none; } }
 </style>
 </head>
 <body>
-<main class="gw">
-  <h1 class="gw-title">幽灵的眼</h1>
-  <p class="gw-sub">现代都市校园 · 隐线奇幻日常</p>
+<main class="az">
+  <h1 class="az-title">幽灵的眼</h1>
+  <p class="az-sub">现代都市校园 · 隐线奇幻日常</p>
 
-  <section class="gw-lead">
+  <section class="az-lead">
     <p>高中二年级的秋天。单亲家庭，年轻温婉的母亲，几个各有性子的同班同学，还有写不完的卷子——日子平淡温热，和谁都差不多。</p>
     <p>只是你身边多了一个<b>别人看不见</b>的少女，念念。她会因为你先醒过来而高兴，会在你拿不定主意的时候替你分析，也会在你犹豫该不该靠近谁的时候，悄悄推你一把。你问她到底从哪儿来，她总是笑着说，自己是「拯救世界的超级英雄」。</p>
     <p>她的话里有几分是真的，走到后面的你大概会慢慢明白。现在先决定：今天从哪一刻开始。</p>
   </section>
 
-  <h2 class="gw-h">出场人物</h2>
-  <ul class="gw-cast">
-    <li><span class="gw-face">念</span><div><b>念念</b><i>只出现在你眼里的少女</i><br><span>别人看不见她，只有你看得见、听得见、碰得到。温柔、黏人，还爱替你出主意。</span></div></li>
-    <li><span class="gw-face">雪</span><div><b>沈听雪</b><i>高二二班班长</i><br><span>负责严谨、外冷内热，习惯拿作业和班级事务当借口靠近你。</span></div></li>
-    <li><span class="gw-face">雨</span><div><b>陈思雨</b><i>体育委员</i><br><span>阳光开朗、肢体接触毫无拘束，把你当聊得来的铁哥们，也不介意被你当成别的。</span></div></li>
-    <li><span class="gw-face">浅</span><div><b>夏浅浅</b><i>同桌大小姐</i><br><span>嘴硬心软，小毒舌掩不住对你的依赖，你的一举一动她都在看。</span></div></li>
-    <li><span class="gw-face">芸</span><div><b>苏芸</b><i>母亲</i><br><span>温婉贤淑，把这个家打理得干净温暖，像姐姐一样待你。</span></div></li>
+  <h2 class="az-h">出场人物</h2>
+  <ul class="az-cast">
+    <li><span class="az-face">念</span><div><b>念念</b><i>只出现在你眼里的少女</i><br><span>别人看不见她，只有你看得见、听得见、碰得到。温柔、黏人，还爱替你出主意。</span></div></li>
+    <li><span class="az-face">雪</span><div><b>沈听雪</b><i>高二二班班长</i><br><span>负责严谨、外冷内热，习惯拿作业和班级事务当借口靠近你。</span></div></li>
+    <li><span class="az-face">雨</span><div><b>陈思雨</b><i>体育委员</i><br><span>阳光开朗、肢体接触毫无拘束，把你当聊得来的铁哥们，也不介意被你当成别的。</span></div></li>
+    <li><span class="az-face">浅</span><div><b>夏浅浅</b><i>同桌大小姐</i><br><span>嘴硬心软，小毒舌掩不住对你的依赖，你的一举一动她都在看。</span></div></li>
+    <li><span class="az-face">芸</span><div><b>苏芸</b><i>母亲</i><br><span>温婉贤淑，把这个家打理得干净温暖，像姐姐一样待你。</span></div></li>
   </ul>
 
-  <p class="gw-hint">你想叫什么名字、长什么样子，不在这张卡里问——到酒馆的「玩家角色（Persona）」里改就行（头像、名字、设定都在那儿）。这里只决定：故事从哪一刻开始。</p>
-  <h2 class="gw-h">从哪里开始</h2>
-  <div class="gw-opens">
-    <button type="button" class="gw-open" data-open="1">
+  <p class="az-hint">你想叫什么名字、长什么样子，不在这张卡里问——到酒馆的「玩家角色（Persona）」里改就行（头像、名字、设定都在那儿）。这里只决定：故事从哪一刻开始。</p>
+
+  <h2 class="az-h">从哪里开始</h2>
+  <div class="az-opens">
+    <button type="button" class="az-open" data-open="1">
       <b>一 · 晨曦初醒</b>
       <em>清晨 07:15 · 主角卧室 · 念念在</em>
       <small>初秋的清晨，她坐在床沿，指尖虚搭在被子边上，等你醒过来。</small>
     </button>
-    <button type="button" class="gw-open" data-open="2">
+    <button type="button" class="az-open" data-open="2">
       <b>二 · 深夜伏案</b>
       <em>深夜 23:25 · 主角卧室 · 念念在</em>
       <small>台灯亮着，数学卷子还没写完，她贴在你椅背旁念叨你早点睡。</small>
     </button>
-    <button type="button" class="gw-open" data-open="3">
+    <button type="button" class="az-open" data-open="3">
       <b>三 · 暮色河畔</b>
       <em>傍晚 17:50 · 旧日河畔芦苇滩 · 念念在</em>
       <small>放学后绕到那条旧河滩，她站在暮色里，等你走近。</small>
     </button>
   </div>
 
-  <p class="gw-note">不想挑也可以直接打一句开始。选完想回来重挑，按消息右下角把这一楼往回滑一页就行。</p>
-  <p class="gw-err" id="gw-err"></p>
+  <p class="az-note">不想挑也可以直接打一句开始。选完想回来重挑，按消息右下角把这一楼往回滑一页就行。</p>
+  <p class="az-err" id="az-err"></p>
 </main>
 
 <script>
 (function () {
   'use strict';
-  var err = document.getElementById('gw-err');
-
-  function fail(message) {
-    err.textContent = message;
-    err.style.display = 'block';
-  }
-
-  /* 这一楼的楼层号：从包含自己的 iframe 往上找 .mes。找不到就退回 0（开局页永远在第一楼）。 */
+  var err = document.getElementById('az-err');
+  function fail(message) { err.textContent = message; err.style.display = 'block'; }
   function floor() {
     try {
       var frame = window.frameElement;
       var mes = frame && frame.closest ? frame.closest('.mes') : null;
       var id = mes ? Number(mes.getAttribute('mesid')) : NaN;
       return Number.isFinite(id) ? id : 0;
-    } catch (error) {
-      return 0;
-    }
+    } catch (error) { return 0; }
   }
-
   function context() {
     try {
       var parentWindow = window.parent;
       var api = parentWindow && parentWindow.SillyTavern;
       return api && typeof api.getContext === 'function' ? api.getContext() : null;
-    } catch (error) {
-      return null;
-    }
+    } catch (error) { return null; }
   }
-
   function jump(target) {
     var ctx = context();
     if (!ctx || !ctx.swipe || typeof ctx.swipe.to !== 'function') {
@@ -151,7 +155,6 @@
       fail('切换开场白失败：' + (error && error.message ? error.message : error) + '。请手动滑到第 ' + (target + 1) + ' 页。');
     }
   }
-
   document.addEventListener('click', function (event) {
     var button = event.target && event.target.closest ? event.target.closest('[data-open]') : null;
     if (!button) return;
