@@ -72,6 +72,14 @@
   .az-err { margin: 10px 0 0; padding: 10px 12px; border: 1px solid #ff9eaf; border-left-width: 4px; border-radius: var(--az-radius-sm); background: var(--az-card-2); font-size: 13px; display: none; }
   @media (max-width: 420px) { .az-title { font-size: 21px; } .az { padding: 14px 11px 20px; } }
   @media (prefers-reduced-motion: reduce) { body::before { animation: none; } .az-open { transition: none; } .az-open:hover, .az-open:active { transform: none; } }
+  /* 立绘位与人物头像（方角正方形；图加载失败自动退回首字） */
+  .az-hero { display: flex; gap: 14px; align-items: center; justify-content: center; margin: 16px 0 0; }
+  .az-hero-img { width: 132px; height: 132px; border-radius: 18px; object-fit: cover; display: block; border: 1px solid var(--az-line-2); box-shadow: 0 12px 30px rgba(3, 20, 36, .45); background: var(--az-card-2); }
+  .az-hero-side { display: grid; gap: 6px; }
+  .az-hero-tip { font-size: 12px; color: var(--az-ink-3); letter-spacing: .04em; }
+  .az-face { position: relative; }
+  .az-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+  .az-cast li:nth-child(1) .az-face { box-shadow: 0 0 0 1px rgba(103, 232, 249, .55); }
 </style>
 </head>
 <body>
@@ -87,11 +95,11 @@
 
   <h2 class="az-h">出场人物</h2>
   <ul class="az-cast">
-    <li><span class="az-face">念</span><div><b>念念</b><i>只出现在你眼里的少女</i><br><span>别人看不见她，只有你看得见、听得见、碰得到。温柔、黏人，还爱替你出主意。</span></div></li>
-    <li><span class="az-face">雪</span><div><b>沈听雪</b><i>高二二班班长</i><br><span>负责严谨、外冷内热，习惯拿作业和班级事务当借口靠近你。</span></div></li>
-    <li><span class="az-face">雨</span><div><b>陈思雨</b><i>体育委员</i><br><span>阳光开朗、肢体接触毫无拘束，把你当聊得来的铁哥们，也不介意被你当成别的。</span></div></li>
-    <li><span class="az-face">浅</span><div><b>夏浅浅</b><i>同桌大小姐</i><br><span>嘴硬心软，小毒舌掩不住对你的依赖，你的一举一动她都在看。</span></div></li>
-    <li><span class="az-face">芸</span><div><b>苏芸</b><i>母亲</i><br><span>温婉贤淑，把这个家打理得干净温暖，像姐姐一样待你。</span></div></li>
+    <li><span class="az-face">念<img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/avatar/niannian_weixiao_01.webp" alt="念念" onerror="this.style.display='none'"></span><div><b>念念</b><i>只出现在你眼里的少女</i><br><span>别人看不见她，只有你看得见、听得见、碰得到。温柔、黏人，还爱替你出主意。</span></div></li>
+    <li><span class="az-face">雪<img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/avatar/tingxue_weixiao_01.webp" alt="沈听雪" onerror="this.style.display='none'"></span><div><b>沈听雪</b><i>高二二班班长</i><br><span>负责严谨、外冷内热，习惯拿作业和班级事务当借口靠近你。</span></div></li>
+    <li><span class="az-face">雨<img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/avatar/siyu_weixiao_01.webp" alt="陈思雨" onerror="this.style.display='none'"></span><div><b>陈思雨</b><i>体育委员</i><br><span>阳光开朗、肢体接触毫无拘束，把你当聊得来的铁哥们，也不介意被你当成别的。</span></div></li>
+    <li><span class="az-face">浅<img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/avatar/qianqian_weixiao_01.webp" alt="夏浅浅" onerror="this.style.display='none'"></span><div><b>夏浅浅</b><i>同桌大小姐</i><br><span>嘴硬心软，小毒舌掩不住对你的依赖，你的一举一动她都在看。</span></div></li>
+    <li><span class="az-face">芸<img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/avatar/suyun_weixiao_01.webp" alt="苏芸" onerror="this.style.display='none'"></span><div><b>苏芸</b><i>母亲</i><br><span>温婉贤淑，把这个家打理得干净温暖，像姐姐一样待你。</span></div></li>
   </ul>
 
   <p class="az-hint">你想叫什么名字、长什么样子，不在这张卡里问——到酒馆的「玩家角色（Persona）」里改就行（头像、名字、设定都在那儿）。这里只决定：故事从哪一刻开始。</p>
