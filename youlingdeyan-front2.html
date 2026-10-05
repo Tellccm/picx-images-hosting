@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<!-- 幽灵的眼 · 开局前端 v6：场景 CG 主视觉（念念换新脸，其余四张沿用） + 人物卡 + 三档开场白跳转（无姓名/外貌输入，指路 Persona；不涉及隐线真相） -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --az-ink: #eaf7ff;
+    --az-ink-2: rgba(214, 240, 255, .82);
+    --az-ink-3: rgba(190, 226, 246, .58);
+    --az-line: rgba(95, 242, 255, .24);
+    --az-line-2: rgba(95, 242, 255, .48);
+    --az-accent: #38bdf8;
+    --az-accent-2: #7ff7ff;
+    --az-card: rgba(8, 30, 48, .62);
+    --az-card-2: rgba(10, 38, 60, .78);
+    --az-radius: 16px;
+    --az-sans: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background-color: #061e30; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    color: var(--az-ink); font: 15px/1.8 var(--az-sans); overflow-wrap: anywhere;
+    background-color: #08243a;
+    background-image:
+      radial-gradient(1100px 520px at 12% 6%, rgba(127, 247, 255, .22), transparent 62%),
+      radial-gradient(900px 480px at 88% 12%, rgba(56, 189, 248, .20), transparent 60%),
+      linear-gradient(168deg, #0a2a42 0%, #0b3450 46%, #0e4b70 100%);
+  }
+  /* 动态：两团缓慢漂移的荧光光斑 */
+  body::before {
+    content: ""; position: fixed; inset: -20% -10%; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(closest-side, rgba(127, 247, 255, .20), transparent 70%) 20% 26% / 62% 62% no-repeat,
+      radial-gradient(closest-side, rgba(56, 189, 248, .16), transparent 70%) 80% 68% / 55% 55% no-repeat;
+    filter: blur(10px);
+    animation: az-drift 28s ease-in-out infinite alternate;
+  }
+  @keyframes az-drift {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(-4%, 3%, 0) scale(1.08); }
+  }
+  .wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 0 26px; }
+
+  /* ── 主视觉：念念的河畔 CG ── */
+  .hero { position: relative; margin: 0; }
+  .hero img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+  .hero::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(6, 30, 48, .55) 0%, rgba(6, 30, 48, .10) 38%, rgba(8, 36, 58, .92) 100%);
+  }
+  .hero-text { position: absolute; left: 0; right: 0; bottom: 14px; z-index: 2; text-align: center; padding: 0 16px; }
+  .hero-title { margin: 0; font-size: 30px; letter-spacing: .18em; color: #f4feff; text-shadow: 0 2px 18px rgba(3, 20, 36, .85), 0 0 26px rgba(95, 242, 255, .35); }
+  .hero-sub { margin: 6px 0 0; font-size: 12px; letter-spacing: .22em; color: var(--az-ink-2); }
+
+  .inner { padding: 0 14px; }
+  .lead { margin: 16px 0 0; padding: 14px 16px; border: 1px solid var(--az-line); border-radius: var(--az-radius); background: var(--az-card); }
+  .lead p { margin: 0 0 9px; }
+  .lead p:last-child { margin-bottom: 0; }
+  .lead b { color: var(--az-accent-2); }
+
+  h2.h { margin: 20px 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .14em; color: var(--az-ink-3); }
+
+  /* ── 人物卡：CG 当卡面 ── */
+  .cast { display: grid; gap: 10px; }
+  @media (min-width: 560px) { .cast { grid-template-columns: 1fr 1fr; } .cast li:first-child { grid-column: 1 / -1; } }
+  .cast ul { display: contents; margin: 0; padding: 0; list-style: none; }
+  .cast-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 560px) { .cast-list { grid-template-columns: 1fr 1fr; } .cast-list > li:first-child { grid-column: 1 / -1; } }
+  .person { position: relative; overflow: hidden; border: 1px solid var(--az-line); border-radius: 14px; background: var(--az-card-2); }
+  .person img { display: block; width: 100%; height: 150px; object-fit: cover; object-position: 50% 32%; }
+  .person:first-child img { height: 190px; object-position: 50% 38%; }
+  .person::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6, 30, 48, 0) 32%, rgba(6, 30, 48, .88) 100%); }
+  .person-body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 9px 11px 10px; }
+  .person-name { display: flex; align-items: baseline; gap: 7px; }
+  .person-name b { font-size: 15px; letter-spacing: .06em; color: #f6feff; text-shadow: 0 1px 8px rgba(3, 20, 36, .9); }
+  .person-name i { font-style: normal; font-size: 11px; color: var(--az-accent-2); padding: 0 6px; border: 1px solid var(--az-line); border-radius: 999px; }
+  .person-line { margin: 3px 0 0; font-size: 12px; color: var(--az-ink-2); }
+
+  /* ── 开场白按钮 ── */
+  .opens { display: grid; gap: 10px; }
+  .open {
+    position: relative; display: grid; gap: 3px; width: 100%; padding: 13px 15px; text-align: left;
+    font: inherit; color: var(--az-ink); border: 1px solid var(--az-line); border-radius: var(--az-radius);
+    background: var(--az-card); cursor: pointer; overflow: hidden;
+    transition: transform 150ms, box-shadow 180ms, border-color 150ms, background 150ms;
+  }
+  .open::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(180deg, var(--az-accent-2), var(--az-accent)); opacity: .9; }
+  .open b { font-size: 15px; letter-spacing: .04em; }
+  .open em { font-style: normal; font-size: 12px; color: var(--az-ink-3); letter-spacing: .04em; }
+  .open small { color: var(--az-ink-2); }
+  .open:hover { transform: translateY(-2px); border-color: var(--az-line-2); background: var(--az-card-2); box-shadow: 0 12px 26px rgba(3, 20, 36, .45), 0 0 16px rgba(95, 242, 255, .18); }
+  .open:active { transform: scale(.995); }
+  .open:focus-visible { outline: 2px solid var(--az-accent-2); outline-offset: 2px; }
+
+  .hint { margin: 14px 0 0; padding: 10px 12px; border: 1px dashed var(--az-line-2); border-radius: 12px; background: var(--az-card-2); font-size: 13px; color: var(--az-ink-2); }
+  .note { margin: 14px 0 0; font-size: 12px; color: var(--az-ink-3); text-align: center; }
+  .err { margin: 10px 0 0; padding: 10px 12px; border: 1px solid #ff9eaf; border-left-width: 4px; border-radius: 12px; background: var(--az-card-2); font-size: 13px; display: none; }
+
+  @media (max-width: 420px) {
+    .hero-title { font-size: 24px; }
+    .person img { height: 132px; }
+    .person:first-child img { height: 168px; }
+  }
+  @media (prefers-reduced-motion: reduce) { body::before { animation: none; } .open { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-new/niannian_river.webp" alt="念念">
+    <div class="hero-text">
+      <h1 class="hero-title">幽灵的眼</h1>
+      <p class="hero-sub">现代都市校园 · 隐线奇幻日常</p>
+    </div>
+  </section>
+
+  <div class="inner">
+    <section class="lead">
+      <p>高中二年级的秋天。单亲家庭，年轻温婉的母亲，几个各有性子的同班同学，还有写不完的卷子——日子平淡温热，和谁都差不多。</p>
+      <p>只是你身边多了一个<b>别人看不见</b>的少女，念念。她会因为你先醒过来而高兴，会在你拿不定主意的时候替你分析，也会在你犹豫该不该靠近谁的时候，悄悄推你一把。你问她到底从哪儿来，她总是笑着说，自己是「拯救世界的超级英雄」。</p>
+      <p>她的话里有几分是真的，走到后面的你大概会慢慢明白。现在先决定：今天从哪一刻开始。</p>
+    </section>
+
+    <h2 class="h">出场人物</h2>
+    <ul class="cast-list">
+      <li class="person">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-new/niannian_river.webp" alt="念念">
+        <div class="person-body">
+          <div class="person-name"><b>念念</b><i>只在你眼里</i></div>
+          <p class="person-line">别人看不见她，只有你看得见、听得见、碰得到。温柔、黏人，还爱替你出主意。</p>
+        </div>
+      </li>
+      <li class="person">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/tingxue_classroom.webp" alt="沈听雪">
+        <div class="person-body">
+          <div class="person-name"><b>沈听雪</b><i>高二二班班长</i></div>
+          <p class="person-line">负责严谨、外冷内热，习惯拿作业和班级事务当借口靠近你。</p>
+        </div>
+      </li>
+      <li class="person">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/siyu_track.webp" alt="陈思雨">
+        <div class="person-body">
+          <div class="person-name"><b>陈思雨</b><i>体育委员</i></div>
+          <p class="person-line">阳光开朗、肢体接触毫无拘束，把你当聊得来的铁哥们，也不介意被你当成别的。</p>
+        </div>
+      </li>
+      <li class="person">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/qianqian_desk.webp" alt="夏浅浅">
+        <div class="person-body">
+          <div class="person-name"><b>夏浅浅</b><i>同桌大小姐</i></div>
+          <p class="person-line">嘴硬心软，小毒舌掩不住对你的依赖，你的一举一动她都在看。</p>
+        </div>
+      </li>
+      <li class="person">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/suyun_entrance.webp" alt="苏芸">
+        <div class="person-body">
+          <div class="person-name"><b>苏芸</b><i>母亲</i></div>
+          <p class="person-line">温婉贤淑，把这个家打理得干净温暖，像姐姐一样待你。</p>
+        </div>
+      </li>
+    </ul>
+
+    <p class="hint">你想叫什么名字、长什么样子，不在这张卡里问——到酒馆的「玩家角色（Persona）」里改就行（头像、名字、设定都在那儿）。这里只决定：故事从哪一刻开始。</p>
+
+    <h2 class="h">从哪里开始</h2>
+    <div class="opens">
+      <button type="button" class="open" data-open="1">
+        <b>一 · 晨曦初醒</b>
+        <em>清晨 07:15 · 主角卧室 · 念念在</em>
+        <small>初秋的清晨，她坐在床沿，指尖虚搭在被子边上，等你醒过来。</small>
+      </button>
+      <button type="button" class="open" data-open="2">
+        <b>二 · 深夜伏案</b>
+        <em>深夜 23:25 · 主角卧室 · 念念在</em>
+        <small>台灯亮着，数学卷子还没写完，她贴在你椅背旁念叨你早点睡。</small>
+      </button>
+      <button type="button" class="open" data-open="3">
+        <b>三 · 暮色河畔</b>
+        <em>傍晚 17:50 · 旧日河畔芦苇滩 · 念念在</em>
+        <small>放学后绕到那条旧河滩，她站在暮色里，等你走近。</small>
+      </button>
+    </div>
+
+    <p class="note">不想挑也可以直接打一句开始。选完想回来重挑，按消息右下角把这一楼往回滑一页就行。</p>
+    <p class="err" id="az-err"></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var err = document.getElementById('az-err');
+  function fail(message) { err.textContent = message; err.style.display = 'block'; }
+  function floor() {
+    try {
+      var frame = window.frameElement;
+      var mes = frame && frame.closest ? frame.closest('.mes') : null;
+      var id = mes ? Number(mes.getAttribute('mesid')) : NaN;
+      return Number.isFinite(id) ? id : 0;
+    } catch (error) { return 0; }
+  }
+  function context() {
+    try {
+      var parentWindow = window.parent;
+      var api = parentWindow && parentWindow.SillyTavern;
+      return api && typeof api.getContext === 'function' ? api.getContext() : null;
+    } catch (error) { return null; }
+  }
+  function jump(target) {
+    var ctx = context();
+    if (!ctx || !ctx.swipe || typeof ctx.swipe.to !== 'function') {
+      fail('没能把这一楼切过去。请按消息右下角的箭头手动滑到第 ' + (target + 1) + ' 页（本楼共 4 页）。');
+      return;
+    }
+    var mesid = floor();
+    var current = Number(ctx.chat && ctx.chat[mesid] ? ctx.chat[mesid].swipe_id : 0) || 0;
+    var direction = target >= current ? 'right' : 'left';
+    try {
+      Promise.resolve(ctx.swipe.to(null, direction, { forceMesId: mesid, forceSwipeId: target })).catch(function (error) {
+        fail('切换开场白失败：' + (error && error.message ? error.message : error) + '。请手动滑到第 ' + (target + 1) + ' 页。');
+      });
+    } catch (error) {
+      fail('切换开场白失败：' + (error && error.message ? error.message : error) + '。请手动滑到第 ' + (target + 1) + ' 页。');
+    }
+  }
+  document.addEventListener('click', function (event) {
+    var button = event.target && event.target.closest ? event.target.closest('[data-open]') : null;
+    if (!button) return;
+    jump(Number(button.getAttribute('data-open')));
+  });
+})();
+</script>
+</body>
+</html>
+
