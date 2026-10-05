@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<!-- 幽灵的眼 · 开局前端 v4：锁脸版 CG 主视觉 + 人物卡 + 三档开场白跳转（无姓名/外貌输入，指路 Persona；不涉及隐线真相） -->
+﻿<!DOCTYPE html>
+<!-- 幽灵的眼 · 开局前端 v7：场景 CG 主视觉（念念=圆脸版，其余四张沿用） + 人物卡 + 三档开场白跳转（无姓名/外貌输入，指路 Persona；不涉及隐线真相） -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -46,7 +46,7 @@
 
   /* ── 主视觉：念念的河畔 CG ── */
   .hero { position: relative; margin: 0; }
-  .hero img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 26%; }
+  .hero img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
   .hero::after {
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(180deg, rgba(6, 30, 48, .55) 0%, rgba(6, 30, 48, .10) 38%, rgba(8, 36, 58, .92) 100%);
@@ -70,8 +70,8 @@
   .cast-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
   @media (min-width: 560px) { .cast-list { grid-template-columns: 1fr 1fr; } .cast-list > li:first-child { grid-column: 1 / -1; } }
   .person { position: relative; overflow: hidden; border: 1px solid var(--az-line); border-radius: 14px; background: var(--az-card-2); }
-  .person img { display: block; width: 100%; height: 150px; object-fit: cover; object-position: 50% 26%; }
-  .person:first-child img { height: 190px; object-position: 50% 30%; }
+  .person img { display: block; width: 100%; height: 150px; object-fit: cover; object-position: 50% 32%; }
+  .person:first-child img { height: 190px; object-position: 50% 38%; }
   .person::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6, 30, 48, 0) 32%, rgba(6, 30, 48, .88) 100%); }
   .person-body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 9px 11px 10px; }
   .person-name { display: flex; align-items: baseline; gap: 7px; }
@@ -111,7 +111,7 @@
 <div class="wrap">
 
   <section class="hero">
-    <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-face/niannian_river.webp" alt="念念">
+    <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-new2/niannian_river.webp" alt="念念">
     <div class="hero-text">
       <h1 class="hero-title">幽灵的眼</h1>
       <p class="hero-sub">现代都市校园 · 隐线奇幻日常</p>
@@ -128,35 +128,35 @@
     <h2 class="h">出场人物</h2>
     <ul class="cast-list">
       <li class="person">
-        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-face/niannian_river.webp" alt="念念">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-new2/niannian_river.webp" alt="念念">
         <div class="person-body">
           <div class="person-name"><b>念念</b><i>只在你眼里</i></div>
           <p class="person-line">别人看不见她，只有你看得见、听得见、碰得到。温柔、黏人，还爱替你出主意。</p>
         </div>
       </li>
       <li class="person">
-        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-face/tingxue_classroom.webp" alt="沈听雪">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/tingxue_classroom.webp" alt="沈听雪">
         <div class="person-body">
           <div class="person-name"><b>沈听雪</b><i>高二二班班长</i></div>
           <p class="person-line">负责严谨、外冷内热，习惯拿作业和班级事务当借口靠近你。</p>
         </div>
       </li>
       <li class="person">
-        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-face/siyu_track.webp" alt="陈思雨">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/siyu_track.webp" alt="陈思雨">
         <div class="person-body">
           <div class="person-name"><b>陈思雨</b><i>体育委员</i></div>
           <p class="person-line">阳光开朗、肢体接触毫无拘束，把你当聊得来的铁哥们，也不介意被你当成别的。</p>
         </div>
       </li>
       <li class="person">
-        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-face/qianqian_desk.webp" alt="夏浅浅">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/qianqian_desk.webp" alt="夏浅浅">
         <div class="person-body">
           <div class="person-name"><b>夏浅浅</b><i>同桌大小姐</i></div>
           <p class="person-line">嘴硬心软，小毒舌掩不住对你的依赖，你的一举一动她都在看。</p>
         </div>
       </li>
       <li class="person">
-        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg-face/suyun_entrance.webp" alt="苏芸">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/youlingdeyan/cg/suyun_entrance.webp" alt="苏芸">
         <div class="person-body">
           <div class="person-name"><b>苏芸</b><i>母亲</i></div>
           <p class="person-line">温婉贤淑，把这个家打理得干净温暖，像姐姐一样待你。</p>
@@ -236,3 +236,4 @@
 </script>
 </body>
 </html>
+
