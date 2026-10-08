@@ -1,0 +1,74 @@
+{
+ "generatedAt": "2026-10-08T17:24:17.496Z",
+ "entries": [
+  {
+   "key": "mvu",
+   "url": "https://testingcf.jsdelivr.net/gh/NLKASHEI/MVU-offline@v1.0.1/mvu_bundle_full.js",
+   "note": "MVU 变量引擎（离线整包）",
+   "local": "lib/npm/gh_NLKASHEI_MVU-offline_at_v1.0.1_mvu_bundle_full.js"
+  },
+  {
+   "key": "zod",
+   "url": "https://testingcf.jsdelivr.net/gh/StageDog/tavern_resource/dist/util/mvu_zod.js",
+   "note": "MVU + Zod schema 注册工具",
+   "local": "lib/npm/gh_StageDog_tavern_resource_dist_util_mvu_zod.js"
+  }
+ ],
+ "files": [
+  {
+   "url": "https://testingcf.jsdelivr.net/gh/NLKASHEI/MVU-offline@v1.0.1/mvu_bundle_full.js",
+   "file": "lib/npm/gh_NLKASHEI_MVU-offline_at_v1.0.1_mvu_bundle_full.js",
+   "chars": 2598218,
+   "sha256": "dcdbd5b0b837439d",
+   "refs": []
+  },
+  {
+   "url": "https://testingcf.jsdelivr.net/gh/StageDog/tavern_resource/dist/util/mvu_zod.js",
+   "file": "lib/npm/gh_StageDog_tavern_resource_dist_util_mvu_zod.js",
+   "chars": 4317,
+   "sha256": "642085d27e50815c",
+   "refs": [
+    "https://testingcf.jsdelivr.net/npm/compare-versions@6.1.1/+esm",
+    "https://testingcf.jsdelivr.net/npm/json5@2.2.3/+esm",
+    "https://testingcf.jsdelivr.net/npm/jsonrepair@3.15.0/+esm",
+    "https://testingcf.jsdelivr.net/npm/zod/v4/core/+esm",
+    "https://testingcf.jsdelivr.net/npm/klona@2.0.6/+esm"
+   ]
+  },
+  {
+   "url": "https://testingcf.jsdelivr.net/npm/compare-versions@6.1.1/+esm",
+   "file": "lib/npm/npm_compare-versions_at_6.1.1__esm.js",
+   "chars": 2470,
+   "sha256": "72aca95e36fb7015",
+   "refs": []
+  },
+  {
+   "url": "https://testingcf.jsdelivr.net/npm/json5@2.2.3/+esm",
+   "file": "lib/npm/npm_json5_at_2.2.3__esm.js",
+   "chars": 27420,
+   "sha256": "39805a3d9701b8ed",
+   "refs": []
+  },
+  {
+   "url": "https://testingcf.jsdelivr.net/npm/jsonrepair@3.15.0/+esm",
+   "file": "lib/npm/npm_jsonrepair_at_3.15.0__esm.js",
+   "chars": 8324,
+   "sha256": "d74e6d2d78d2b12a",
+   "refs": []
+  },
+  {
+   "url": "https://testingcf.jsdelivr.net/npm/zod/v4/core/+esm",
+   "file": "lib/npm/npm_zod_v4_core__esm.js",
+   "chars": 409468,
+   "sha256": "1bd3b454a789837c",
+   "refs": []
+  },
+  {
+   "url": "https://testingcf.jsdelivr.net/npm/klona@2.0.6/+esm",
+   "file": "lib/npm/npm_klona_at_2.0.6__esm.js",
+   "chars": 1246,
+   "sha256": "e6bb95d703905b5d",
+   "refs": []
+  }
+ ]
+}
