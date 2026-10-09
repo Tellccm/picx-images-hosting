@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>念念不忘 · 界面</title>
+<style>
+/* ============================================================================
+   念念不忘 · 界面（托管在 CDN 上，由卡内正则 jQuery.load 进来）
+   ----------------------------------------------------------------------------
+   为什么放在这里：jQuery.load() 取回的 HTML 里的 <script> 会**在页面上下文执行**，
+   于是可以直接读 MVU 变量，不必再依赖酒馆助手的隐藏 iframe（那套踩过太多坑：
+   每个脚本一个 iframe、游离状态执行、跨窗口传值、样式不更新…）。
+   改这个文件只要重推 CDN，卡片本身不用重新导入。
+   ========================================================================== */
+
+/* ---------- 正文：行 / 头像 chip / 卡内插图 ---------- */
+.nn-doc{max-width:1180px;margin:8px auto 0;font-size:15px;line-height:1.95;color:#e8eef6;text-align:left}
+.nn-doc .nn-line{margin:0 0 10px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+.nn-doc .nn-line.narr{color:rgba(224,234,245,.9)}
+.nn-doc .nn-say{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.nn-doc .nn-say .nn-quote{flex:1 1 60%;min-width:0;color:#eef5fb;line-height:1.62;padding-top:17px}
+/* 她的头像：圆角方形。**用 CSS 类取图**，正则只负责给类名（16 个情绪各一条规则）。 */
+.nn-doc .nn-chip{flex:none;width:66px;height:66px;border-radius:16px;overflow:hidden;
+  border:1.5px solid rgba(255,201,140,.5);background:rgba(10,20,30,.6) center/cover no-repeat;
+  box-shadow:0 3px 12px rgba(0,0,0,.45)}
+.nn-doc .nn-chip.t-anchor{display:flex;align-items:center;justify-content:center;
+  background:rgba(118,158,200,.16);border-color:rgba(255,201,140,.45);
+  font-size:26px;font-weight:700;color:#ffd9a8}
+/* {{user}}：小圆圈，圈里一个「你」 */
+.nn-doc .nn-chip-me{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;background:rgba(118,158,200,.16);border:1.5px solid rgba(159,216,255,.45);
+  color:#bfe0ff;font-size:15px;font-weight:700;box-shadow:none}
+.nn-doc .nn-who{flex:none;color:#ffcf9a;font-weight:700;font-size:16px;line-height:66px;letter-spacing:.06em}
+.nn-doc .nn-cg{margin:12px 0;display:flex;justify-content:center}
+.nn-doc .nn-cg img{max-width:100%;height:auto;display:block;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+/* 模型的主题块（后记 / 选项）收成折叠块 */
+.nn-doc .nn-meta{margin:10px 0 2px;border:1px solid rgba(127,227,255,.16);border-radius:10px;
+  background:rgba(255,255,255,.03);font-size:12.5px;color:rgba(200,218,236,.85)}
+.nn-doc .nn-meta>summary{cursor:pointer;padding:7px 11px;letter-spacing:.08em;list-style:none;user-select:none}
+.nn-doc .nn-meta>summary::-webkit-details-marker{display:none}
+.nn-doc .nn-meta>summary:before{content:'▸ ';opacity:.7}
+.nn-doc .nn-meta[open]>summary:before{content:'▾ '}
+.nn-doc .nn-meta .nn-meta-in{padding:2px 12px 10px;white-space:pre-wrap;line-height:1.75;
+  border-top:1px solid rgba(127,227,255,.12)}
+
+/* ---------- 悬浮窗：状态栏 + 背景 + 立绘 ---------- */
+.nn-fw{position:fixed;right:18px;bottom:18px;width:clamp(268px,30vw,430px);z-index:2147483000;
+  border-radius:14px;border:1px solid rgba(127,227,255,.22);overflow:hidden;
+  background:linear-gradient(180deg,rgba(12,18,28,.94),rgba(8,12,20,.96));
+  box-shadow:0 20px 54px rgba(0,0,0,.52);backdrop-filter:blur(8px);
+  font:12.5px/1.7 system-ui,"Microsoft YaHei",sans-serif;color:#dfeaf5}
+/* 整个聊天只显示**最后一条消息**里的那个悬浮窗（正则产在每个消息里，CSS 负责只留一个） */
+.mes:not(:last-child) .nn-fw{display:none !important}
+.nn-fw.collapsed .nn-fw-body,.nn-fw.collapsed .nn-hud{display:none}
+.nn-fw .nn-fw-body{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#070b12}
+.nn-fw .nn-bg,.nn-fw .nn-bg2{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .6s ease}
+.nn-fw .nn-bg2{opacity:0}
+.nn-fw .nn-vig{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 40%,transparent 42%,rgba(0,0,0,.45))}
+.nn-fw .nn-sprite{position:absolute;right:5%;bottom:9%;height:88%;width:auto;
+  filter:drop-shadow(0 18px 34px rgba(0,0,0,.55))}
+.nn-fw .nn-sprite.is-away{opacity:0}
+.nn-fw .nn-insert{position:absolute;inset:0;display:grid;place-items:center;background:rgba(4,11,19,.76);
+  opacity:0;visibility:hidden;transition:opacity .3s ease}
+.nn-fw .nn-insert.show{opacity:1;visibility:visible}
+.nn-fw .nn-insert img{height:46%;max-height:330px;filter:drop-shadow(0 14px 30px rgba(0,0,0,.6))}
+.nn-fw .nn-insert .cap{position:absolute;bottom:12px;padding:4px 16px;border-radius:999px;
+  background:rgba(6,14,22,.8);font-size:12px;color:#e6f0fa}
+
+/* 状态栏两行 */
+.nn-bar{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:8px 13px;
+  border-bottom:1px solid rgba(127,227,255,.14);cursor:grab;user-select:none}
+.nn-bar:active{cursor:grabbing}
+.nn-bar .row{display:flex;align-items:center;gap:8px;min-height:15px}
+.nn-bar .who{flex:none;color:#ffd9a8;font-weight:700;letter-spacing:.2em}
+.nn-bar .stage{flex:none;display:flex;gap:5px;align-items:center}
+.nn-bar .stage i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.16)}
+.nn-bar .stage i.on{background:#ff9ec4;box-shadow:0 0 9px rgba(255,158,196,.55)}
+.nn-bar .stage-txt{flex:none;color:rgba(255,206,162,.95);font-size:11.5px}
+.nn-bar .outfit{flex:none;color:#ffd9a8;font-size:11.5px}
+.nn-bar .lbl{flex:none;color:rgba(178,201,222,.66);font-size:11px;letter-spacing:.06em}
+.nn-bar .lutxt{flex:none;color:rgba(232,242,250,.9);font-variant-numeric:tabular-nums}
+.nn-bar .sep{flex:none;width:1px;height:15px;background:rgba(255,255,255,.12)}
+.nn-bar .clock{flex:none;font-variant-numeric:tabular-nums;color:rgba(232,242,250,.95)}
+.nn-bar .where{flex:none;color:rgba(188,208,228,.72)}
+.nn-bar .grow{flex:1;min-width:6px}
+.nn-bar .meter{flex:none;display:flex;align-items:center;gap:6px}
+.nn-bar .meter .track{width:80px;height:5px;border-radius:999px;background:rgba(255,255,255,.13);overflow:hidden}
+.nn-bar .meter .track i{display:block;height:100%;background:linear-gradient(90deg,#ff9ec4,#ffcf9a);
+  transition:width .45s cubic-bezier(.22,.9,.28,1)}
+.nn-bar .cp{flex:none;color:#ffb0c8}
+.nn-bar .nn-fw-btn{flex:none;display:flex;align-items:center;justify-content:center;width:24px;height:22px;
+  margin-left:2px;border-radius:6px;cursor:pointer;color:rgba(200,222,240,.78);font-size:12px;line-height:1}
+.nn-bar .nn-fw-btn:hover{background:rgba(255,255,255,.08);color:#e8f2fa}
+
+/* 详细面板 */
+.nn-hud{max-height:0;overflow:hidden;opacity:0;font-size:11.5px;line-height:1.72;
+  transition:max-height .32s ease,opacity .25s ease}
+.nn-hud.open{max-height:520px;opacity:1}
+.nn-hud .in{padding:8px 12px 10px}
+.nn-hud .r{display:flex;justify-content:space-between;gap:10px}
+.nn-hud .r span:first-child{color:rgba(178,201,222,.8)}
+.nn-hud .r span:last-child{color:#fff;font-weight:600}
+.nn-hud .foot{margin-top:6px;padding-top:7px;border-top:1px solid rgba(127,227,255,.12);
+  color:rgba(178,201,222,.7)}
+@media (max-width:760px){.nn-fw{right:8px;bottom:8px;width:min(300px,66vw)}
+  .nn-bar{gap:7px;padding:7px 9px;font-size:11px}.nn-bar .meter .track{width:52px}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================================
+     界面本体。正则把 <StatusPlaceHolderImpl/> 换成「这段加载器」，
+     由它把本文件取回来执行 —— 所以卡片里不需要带这一大坨。
+     ========================================================================== -->
+<div class="nn-fw" id="nn-fw">
+  <div class="nn-bar" id="nn-bar"></div>
+  <div class="nn-fw-body nn-frame float-mode">
+    <div class="nn-bg"></div>
+    <div class="nn-bg2"></div>
+    <div class="nn-vig"></div>
+    <img class="nn-sprite" alt="">
+    <div class="nn-insert"><img alt=""><span class="cap"></span></div>
+  </div>
+  <div class="nn-hud" id="nn-hud"></div>
+</div>
+
+<script>
+/* 在**页面上下文**执行（jQuery.load 的脚本会跑），所以直接读 MVU 变量，
+   不再需要跨 iframe。整套逻辑只做一件事：把变量刷成界面上的类名与文字。 */
+(function () {
+  'use strict';
+  var PIN = window.NN_UI_PIN || '31d54a7a';
+  var BASE = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@' + PIN + '/niannian/';
+  var OUT = { '睡衣': 'pajama', '日常': 'daily' };
+
+  function ctx() { try { return SillyTavern.getContext(); } catch (e) { return null; } }
+
+  /* MVU 的变量存在消息上：{stat_data:{chars:{niannian:{…}},env:{…}}} */
+  function readState() {
+    var c = ctx();
+    if (!c) return null;
+    var id = (c.chat || []).length - 1;
+    for (var i = id; i >= 0; i--) {
+      var m = (c.chat || [])[i];
+      var v = m && m.variables;
+      var sd = null;
+      if (Array.isArray(v)) { for (var j = v.length - 1; j >= 0 && !sd; j--) sd = v[j] && v[j].stat_data; }
+      else if (v && v.stat_data) sd = v.stat_data;
+      if (sd && sd.chars) return sd;
+    }
+    return null;
+  }
+
+  function stageIdx(s) {
+    s = String(s || '');
+    if (s.indexOf('四') >= 0 || s.indexOf('相依') >= 0) return 4;
+    if (s.indexOf('三') >= 0 || s.indexOf('情浓') >= 0) return 3;
+    if (s.indexOf('二') >= 0 || s.indexOf('默契') >= 0) return 2;
+    return 1;
+  }
+  function period(t) {
+    var m = /(\d{1,2})\s*[:：]\s*(\d{1,2})/.exec(String(t || ''));
+    var h = m ? +m[1] : 0;
+    if (h < 5) return '深夜'; if (h < 8) return '清晨'; if (h < 11) return '上午';
+    if (h < 13) return '午间'; if (h < 17) return '下午'; if (h < 19) return '傍晚';
+    if (h < 23) return '入夜'; return '深夜';
+  }
+  function hhmm(t) { var m = /(\d{1,2})\s*[:：]\s*(\d{1,2})/.exec(String(t || '')); return m ? (+m[1]) + ':' + ('0' + m[2]).slice(-2) : '--:--'; }
+
+  var FW = document.getElementById('nn-fw');
+  var BAR = document.getElementById('nn-bar');
+  var HUD = document.getElementById('nn-hud');
+  var SPR = FW.querySelector('.nn-sprite');
+  var B1 = FW.querySelector('.nn-bg'), B2 = FW.querySelector('.nn-bg2');
+  var INS = FW.querySelector('.nn-insert');
+  var outfitCn = { pajama: '睡衫', daily: '日常白裙', lingerie: '白蕾丝内衣', towel: '浴巾', casual: '便服开衫', sweater: '麻花毛衣', uniform: '水手服', wet: '湿身', halfnude: '半裸', nude: '全裸' };
+
+  function render(sd) {
+    var n = (sd && sd.chars && sd.chars.niannian) || {};
+    var env = (sd && sd.env) || {};
+    var st = n.stage || '亲密一（初醒）', lust = +n.lust || 0, cp = n.creampie || 0;
+    var sIdx = stageIdx(st), dots = '';
+    for (var i = 1; i <= 4; i++) dots += '<i' + (i <= sIdx ? ' class="on"' : '') + '></i>';
+    BAR.innerHTML =
+      '<span class="row"><span class="who">念 念</span>' +
+      '<span class="stage">' + dots + '</span>' +
+      '<span class="stage-txt">' + st + '</span><span class="grow"></span>' +
+      '<span class="cp">♥ × ' + cp + '</span>' +
+      '<span class="nn-fw-btn" id="nn-det" title="详细数据">▤</span>' +
+      '<span class="nn-fw-btn" id="nn-pic" title="收起画面">⌄</span></span>' +
+      '<span class="row"><span class="lbl">衣裙</span><span class="outfit">' + (outfitCn[n.outfit] || n.outfit || '—') + '</span>' +
+      '<span class="sep"></span><span class="clock">' + hhmm(env.time) + '</span>' +
+      '<span class="where">' + (env.location || '主卧') + '</span><span class="grow"></span>' +
+      '<span class="lbl">欲望</span><span class="meter"><span class="track"><i style="width:' + Math.max(0, Math.min(100, lust)) + '%"></i></span></span>' +
+      '<span class="lutxt">' + lust + '</span></span>';
+    HUD.innerHTML = '<div class="in">' +
+      '<div class="r"><span>地点</span><span>' + (env.location || '主卧') + '</span></div>' +
+      '<div class="r"><span>时段</span><span>' + period(env.time) + '</span></div>' +
+      '<div class="r"><span>亲密阶段</span><span>' + st + '</span></div>' +
+      '<div class="r"><span>衣裙</span><span>' + (outfitCn[n.outfit] || n.outfit || '—') + '</span></div>' +
+      '<div class="r"><span>她</span><span>' + (n.present === false ? '外出' : '在家') + '</span></div>' +
+      '<div class="r"><span>欲望值</span><span>' + lust + '</span></div>' +
+      '<div class="r"><span>内射次数</span><span>' + cp + '</span></div>' +
+      '<div class="foot">' + period(env.time) + ' · ' + (env.weekday || '') + '</div></div>';
+
+    /* 立绘：outfit + mood 拼文件名（与资源表的命名一致），取不到退该套 calm、再退 daily_calm */
+    var of = n.outfit || 'pajama', mood = n.mood || 'calm';
+    var num = { pajama: '07', daily: '01', lingerie: '03', wet: '04', halfnude: '05', uniform: '06', casual: '08', sweater: '09', towel: '10', nude: '02' }[of] || '01';
+    SPR.classList.toggle('is-away', n.present === false);
+    SPR.onerror = function () { SPR.onerror = null; SPR.src = BASE + 'sprite/01_daily_calm.webp'; };
+    SPR.src = BASE + 'sprite/' + num + '_' + of + '_' + mood + '.webp';
+
+    /* 背景：地点|时段（时段由 time 推），取不到退该地点通配、再退全局 */
+    var loc = env.location || '主卧', p = period(env.time);
+    var bg = BASE + 'youlingdeyan/bg/' + ({ '主卧': 'bedroom', '客厅': 'living', '厨房': 'kitchen', '餐桌': 'dining', '卫生间': 'bathroom', '阳台': 'balcony', '玄关': 'entry' }[loc] || 'bedroom') + '_' + ({ '清晨': 'dawn', '上午': 'day', '午间': 'day', '下午': 'day', '傍晚': 'dusk', '入夜': 'night', '深夜': 'deep' }[p] || 'day') + '.webp';
+    B2.style.backgroundImage = B1.style.backgroundImage;
+    B2.style.opacity = B1.style.backgroundImage ? '1' : '0';
+    var probe = new Image();
+    probe.onload = function () { B1.style.backgroundImage = 'url("' + bg + '")'; B2.style.opacity = '0'; };
+    probe.src = bg;
+
+    /* 过场（Q版）：insert 非空时盖一张、2.6 秒后收掉 */
+    if (n.insert) {
+      INS.querySelector('img').src = BASE + 'qshot/niannian_q_' + n.insert + '_01.webp';
+      INS.querySelector('.cap').textContent = hhmm(env.time) + ' · ' + loc;
+      INS.classList.add('show');
+      clearTimeout(INS.__t); INS.__t = setTimeout(function () { INS.classList.remove('show'); }, 2600);
+    }
+
+    /* 两个按钮 + 拖拽（绑定一次） */
+    if (!FW.__wired) {
+      FW.__wired = 1;
+      FW.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t && t.id === 'nn-pic') { FW.classList.toggle('collapsed'); t.textContent = FW.classList.contains('collapsed') ? '▸' : '⌄'; }
+        else if (t && t.id === 'nn-det') { HUD.classList.toggle('open'); }
+      });
+      /* 拖拽：按下时**不**捕获指针（否则按钮 click 会被吞掉），拖过阈值再捕获 */
+      var sx = 0, sy = 0, ox = 0, oy = 0, drag = false, moved = false;
+      BAR.addEventListener('pointerdown', function (e) {
+        if (e.target && e.target.id && e.target.id.indexOf('nn-') === 0) return;
+        drag = true; moved = false; sx = e.clientX; sy = e.clientY;
+        var r = FW.getBoundingClientRect(); ox = r.left; oy = r.top;
+      });
+      BAR.addEventListener('pointermove', function (e) {
+        if (!drag) return;
+        var dx = e.clientX - sx, dy = e.clientY - sy;
+        if (!moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+        if (!moved) { moved = true; try { BAR.setPointerCapture(e.pointerId); } catch (err) {} }
+        FW.style.left = Math.max(0, Math.min(innerWidth - 80, ox + dx)) + 'px';
+        FW.style.top = Math.max(0, Math.min(innerHeight - 40, oy + dy)) + 'px';
+        FW.style.right = 'auto'; FW.style.bottom = 'auto';
+      });
+      BAR.addEventListener('pointerup', function () { drag = false; });
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem('nn-fw-pos') || 'null'); } catch (e) {}
+      if (saved && saved.left) { FW.style.left = saved.left; FW.style.top = saved.top; FW.style.right = 'auto'; FW.style.bottom = 'auto'; }
+    }
+  }
+
+  function tick() { var sd = readState(); if (sd) render(sd); }
+  tick();
+  setInterval(tick, 1500);
+  try { SillyTavern.getContext().eventSource.on(SillyTavern.getContext().event_types.MESSAGE_RENDERED, tick); } catch (e) {}
+})();
+</script>
+</body>
+</html>
