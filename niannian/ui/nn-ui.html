@@ -16,32 +16,48 @@
 
 /* ---------- 正文：行 / 头像 chip / 卡内插图 ---------- */
 .nn-doc{max-width:1180px;margin:8px auto 0;font-size:15px;line-height:1.95;color:#e8eef6;text-align:left}
-.nn-doc .nn-line{margin:0 0 10px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
-.nn-doc .nn-line.narr{color:rgba(224,234,245,.9)}
-.nn-doc .nn-say{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
-.nn-doc .nn-say .nn-quote{flex:1 1 60%;min-width:0;color:#eef5fb;line-height:1.62;padding-top:17px}
+.nn-line{margin:0 0 10px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+.nn-line.narr{color:rgba(224,234,245,.9)}
+.nn-say{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.nn-say .nn-quote{flex:1 1 60%;min-width:0;color:#eef5fb;line-height:1.62;padding-top:17px}
 /* 她的头像：圆角方形。**用 CSS 类取图**，正则只负责给类名（16 个情绪各一条规则）。 */
-.nn-doc .nn-chip{flex:none;width:66px;height:66px;border-radius:16px;overflow:hidden;
+.nn-chip{flex:none;width:66px;height:66px;border-radius:16px;overflow:hidden;
   border:1.5px solid rgba(255,201,140,.5);background:rgba(10,20,30,.6) center/cover no-repeat;
   box-shadow:0 3px 12px rgba(0,0,0,.45)}
-.nn-doc .nn-chip.t-anchor{display:flex;align-items:center;justify-content:center;
+.nn-chip.t-anchor{display:flex;align-items:center;justify-content:center;
   background:rgba(118,158,200,.16);border-color:rgba(255,201,140,.45);
   font-size:26px;font-weight:700;color:#ffd9a8}
 /* {{user}}：小圆圈，圈里一个「你」 */
-.nn-doc .nn-chip-me{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+.nn-chip-me{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;background:rgba(118,158,200,.16);border:1.5px solid rgba(159,216,255,.45);
   color:#bfe0ff;font-size:15px;font-weight:700;box-shadow:none}
-.nn-doc .nn-who{flex:none;color:#ffcf9a;font-weight:700;font-size:16px;line-height:66px;letter-spacing:.06em}
-.nn-doc .nn-cg{margin:12px 0;display:flex;justify-content:center}
-.nn-doc .nn-cg img{max-width:100%;height:auto;display:block;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.nn-who{flex:none;color:#ffcf9a;font-weight:700;font-size:16px;line-height:66px;letter-spacing:.06em}
+.nn-cg{margin:12px 0;display:flex;justify-content:center}
+.nn-cg img{max-width:100%;height:auto;display:block;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.nn-chip.t-不在{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_不在_01.webp)}
+.nn-chip.t-哭泣{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_哭泣_02.webp)}
+.nn-chip.t-害羞{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_害羞_01.webp)}
+.nn-chip.t-开心{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_开心_01.webp)}
+.nn-chip.t-微笑{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_微笑_01.webp)}
+.nn-chip.t-惊讶{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_惊讶_01.webp)}
+.nn-chip.t-日常{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_日常_01.webp)}
+.nn-chip.t-暧昧{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_暧昧_01.webp)}
+.nn-chip.t-温柔{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_温柔_01.webp)}
+.nn-chip.t-生气{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_生气_01.webp)}
+.nn-chip.t-疲惫{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_疲惫_01.webp)}
+.nn-chip.t-私密{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_私密_01.webp)}
+.nn-chip.t-认真{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_认真_01.webp)}
+.nn-chip.t-难过{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_难过_01.webp)}
+.nn-chip.t-默认{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_默认_01.webp)}
+.nn-chip.t-默认{background-image:url(https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@f8a784fa/niannian/avatar/念念_日常_01.webp)}
 /* 模型的主题块（后记 / 选项）收成折叠块 */
-.nn-doc .nn-meta{margin:10px 0 2px;border:1px solid rgba(127,227,255,.16);border-radius:10px;
+.nn-meta{margin:10px 0 2px;border:1px solid rgba(127,227,255,.16);border-radius:10px;
   background:rgba(255,255,255,.03);font-size:12.5px;color:rgba(200,218,236,.85)}
-.nn-doc .nn-meta>summary{cursor:pointer;padding:7px 11px;letter-spacing:.08em;list-style:none;user-select:none}
-.nn-doc .nn-meta>summary::-webkit-details-marker{display:none}
-.nn-doc .nn-meta>summary:before{content:'▸ ';opacity:.7}
-.nn-doc .nn-meta[open]>summary:before{content:'▾ '}
-.nn-doc .nn-meta .nn-meta-in{padding:2px 12px 10px;white-space:pre-wrap;line-height:1.75;
+.nn-meta>summary{cursor:pointer;padding:7px 11px;letter-spacing:.08em;list-style:none;user-select:none}
+.nn-meta>summary::-webkit-details-marker{display:none}
+.nn-meta>summary:before{content:'▸ ';opacity:.7}
+.nn-meta[open]>summary:before{content:'▾ '}
+.nn-meta .nn-meta-in{padding:2px 12px 10px;white-space:pre-wrap;line-height:1.75;
   border-top:1px solid rgba(127,227,255,.12)}
 
 /* ---------- 悬浮窗：状态栏 + 背景 + 立绘 ---------- */
@@ -131,7 +147,7 @@
    不再需要跨 iframe。整套逻辑只做一件事：把变量刷成界面上的类名与文字。 */
 (function () {
   'use strict';
-  var PIN = window.NN_UI_PIN || '31d54a7a';
+  var PIN = window.NN_UI_PIN || 'f8a784fa';
   var BASE = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@' + PIN + '/niannian/';
   var OUT = { '睡衣': 'pajama', '日常': 'daily' };
 
