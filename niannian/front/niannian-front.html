@@ -124,12 +124,12 @@
 <!-- ── 桥：点击开局 → 切 swipe（必须放在 body 内，见文件顶部说明）── -->
 <script>(function (global) {
   'use strict';
-  /* ── 开局页自报家门（2026-10-12 修 · 体检 P0-2）──
-     卡内正则把 first_mes 的占位符换成「卡页 + 兜底正文」。
-     这里在**卡页自己**里把兜底收掉：用 replaceWith 换掉 host，而不是只隐藏 ——
-     否则兜底那 2.5KB 正文会一直留在 .mes_text 里（不显示，但留在 DOM 与 prompt 里）。
-     用 data 属性而不是 class 找 host：页面自己的 CSS 里有 .wrap / .glass 等一堆类名，
-     加一个类名有被样式意外命中的风险；data-* 不会。 */
+  /* ── 把自己从"兜底容器"里换出来（2026-10-12 定案）──
+     卡内正则把 first_mes 的占位符换成「```html + $('body').load(卡页)」，
+     这段 HTML 由**酒馆助手**抽出来塞进 <iframe srcdoc> 当完整文档执行。
+     页面自己负责把自己的 .nn-front 换成 `<div data-nn-fallback>` 那个占位（如果它存在）——
+     它现在是**纯占位、没有内容**，没有任何"失败时展示"的文案（作者定调：不做兜底）。
+     ⚠ 所以 dropFallback 现在只是"把宿主占位替换掉"，找不到就什么都不做。 */
   function dropFallback() {
     try {
       var host = global.document.querySelector('[data-nn-fallback]');
@@ -137,7 +137,7 @@
       var view = global.document.querySelector('.nn-front');
       if (!view) return;
       if (host.parentNode) host.parentNode.replaceChild(view, host);
-    } catch (e) { /* 拿不到就让兜底留着，不抛 */ }
+    } catch (e) { /* 拿不到就算了，页面本身照常显示 */ }
   }
   dropFallback();
   if (global.document.readyState === 'loading') {
@@ -179,7 +179,6 @@
 
 <div class="nn-front">
   <div class="wrap" id="nn-front-root">
-    <div class="fallback-note" id="nnFallbackNote"></div>
 
     <div class="hero">
       <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_04_sofa.webp" alt="念念">
