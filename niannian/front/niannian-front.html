@@ -124,6 +124,31 @@
 <!-- ── 桥：点击开局 → 切 swipe（必须放在 body 内，见文件顶部说明）── -->
 <script>(function (global) {
   'use strict';
+  /* ── 开局页自报家门（2026-10-12 修 · 体检 P0-2）──
+     卡内正则把 first_mes 的占位符换成「卡页 + 兜底正文」。
+     这里在**卡页自己**里把兜底收掉：用 replaceWith 换掉 host，而不是只隐藏 ——
+     否则兜底那 2.5KB 正文会一直留在 .mes_text 里（不显示，但留在 DOM 与 prompt 里）。
+     用 data 属性而不是 class 找 host：页面自己的 CSS 里有 .wrap / .glass 等一堆类名，
+     加一个类名有被样式意外命中的风险；data-* 不会。 */
+  function dropFallback() {
+    try {
+      var host = global.document.querySelector('[data-nn-fallback]');
+      if (!host) return;
+      var view = global.document.querySelector('.nn-front');
+      if (!view) return;
+      if (host.parentNode) host.parentNode.replaceChild(view, host);
+    } catch (e) { /* 拿不到就让兜底留着，不抛 */ }
+  }
+  dropFallback();
+  if (global.document.readyState === 'loading') {
+    global.document.addEventListener('DOMContentLoaded', dropFallback);
+  }
+  var waited = 0;
+  var tick = global.setInterval(function () {
+    waited += 200; dropFallback();
+    if (waited > 4000) global.clearInterval(tick);
+  }, 200);
+
   function scope(name) {
     const candidates = [global];
     try { if (global.parent && global.parent !== global) candidates.push(global.parent); } catch (_) {}
@@ -153,7 +178,8 @@
 </script>
 
 <div class="nn-front">
-  <div class="wrap">
+  <div class="wrap" id="nn-front-root">
+    <div class="fallback-note" id="nnFallbackNote"></div>
 
     <div class="hero">
       <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_04_sofa.webp" alt="念念">
