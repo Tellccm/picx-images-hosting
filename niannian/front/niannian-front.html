@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>念念不忘 · 开局</title>
+</head>
+<body>
+<!-- ⚠ 这个文件被酒馆用 $('body').load() 注入，只取 <body> 里的内容 -->
+<!-- 所以样式、桥、脚本**全部放在 body 内**：head 里的东西不保证被注入（参考卡放 head 能用，但这里不赌） -->
+<style>
+:root{
+  --bg:#070d16; --bg2:#0c1522; --panel:rgba(14,24,38,.72);
+  --line:rgba(127,216,240,.20); --line2:rgba(240,200,144,.24);
+  --ink:#e9e3d9; --dim:#9fb2c2; --faint:#6b8195;
+  --gold:#f0c890; --gold2:#ffd9a0; --cyan:#7fd8f0; --rose:#e8a0a8;
+  --serif:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  --sans:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+.nn-front{
+  background:
+    radial-gradient(1100px 520px at 78% -10%, rgba(240,200,144,.13), transparent 62%),
+    radial-gradient(900px 480px at -10% 30%, rgba(127,216,240,.10), transparent 58%),
+    radial-gradient(700px 420px at 50% 108%, rgba(232,160,168,.09), transparent 62%),
+    linear-gradient(168deg,#070d16 0%,#0b1420 52%,#0a1119 100%);
+  color:var(--ink); font-family:var(--sans); line-height:1.85;
+  padding:26px 0 40px; border-radius:16px; overflow:hidden; position:relative;
+  border:1px solid rgba(127,216,240,.12);
+  box-shadow:0 18px 50px rgba(0,0,0,.5);
+}
+/* 雨痕：斜向细线，两层不同相位，慢慢往下淌 */
+.nn-front::before,.nn-front::after{
+  content:""; position:absolute; inset:-30% -10%; pointer-events:none; opacity:.5;
+  background-image:repeating-linear-gradient(104deg,transparent 0 6px,rgba(180,215,240,.055) 6px 7px,transparent 7px 16px);
+  animation:nnRain 22s linear infinite;
+}
+.nn-front::after{opacity:.3;animation-duration:31s;animation-direction:reverse}
+@keyframes nnRain{from{transform:translateY(-6%)}to{transform:translateY(6%)}}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  backdrop-filter:blur(10px) saturate(1.1);-webkit-backdrop-filter:blur(10px) saturate(1.1);
+  box-shadow:0 10px 30px rgba(0,0,0,.38)}
+
+/* ── hero ── */
+.hero{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line2)}
+.hero img{width:100%;aspect-ratio:3/2;object-fit:cover;display:block;filter:saturate(.92) contrast(1.02)}
+.hero .veil{position:absolute;inset:0;background:
+  linear-gradient(to top,rgba(6,11,19,.94) 6%,rgba(6,11,19,.55) 42%,rgba(6,11,19,.05) 76%),
+  linear-gradient(112deg,rgba(6,11,19,.55),transparent 55%)}
+.hero .tit{position:absolute;left:22px;right:22px;bottom:18px}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:34px;letter-spacing:.24em;text-indent:.24em;
+  color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.7)}
+.hero .en{font-size:10.5px;letter-spacing:.42em;color:var(--gold);opacity:.9;margin-top:4px}
+.hero .sub{font-family:var(--serif);font-size:13.5px;color:#dfe6ee;margin-top:8px;letter-spacing:.04em;opacity:.95}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{font-size:10.5px;letter-spacing:.14em;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--line);color:var(--cyan);background:rgba(127,216,240,.07)}
+.tag.r18{border-color:rgba(232,160,168,.5);color:var(--rose);background:rgba(232,160,168,.08)}
+
+/* ── 分区标题 ── */
+.sec{margin:26px 0 10px;display:flex;align-items:center;gap:10px}
+.sec .t{font-size:12px;letter-spacing:.3em;color:var(--gold);font-family:var(--serif)}
+.sec .l{flex:1;height:1px;background:linear-gradient(90deg,rgba(240,200,144,.42),transparent)}
+.sec small{font-size:10.5px;color:var(--faint);letter-spacing:.1em}
+
+/* ── 人物 ── */
+.who{display:grid;grid-template-columns:132px 1fr;gap:16px;padding:16px}
+.port{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(180deg,#0b1522,#0a121c);cursor:pointer}
+.port img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.port .hint{position:absolute;left:0;right:0;bottom:0;font-size:9.5px;text-align:center;padding:3px;
+  color:var(--dim);background:rgba(6,11,19,.72);letter-spacing:.1em}
+.who .nm{font-family:var(--serif);font-size:22px;letter-spacing:.1em}
+.who .meta{font-size:11.5px;color:var(--faint);letter-spacing:.08em;margin-top:2px}
+.who .lines{margin-top:9px;display:flex;flex-direction:column;gap:5px}
+.who .lines span{font-size:12.5px;color:#d8e2ea}
+.who .lines span::before{content:"「";color:var(--gold);opacity:.7}
+.who .lines span::after{content:"」";color:var(--gold);opacity:.7}
+.who .note{font-size:11px;color:var(--dim);margin-top:9px;border-top:1px solid var(--line);padding-top:8px}
+
+/* ── 画廊 ── */
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gal figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);position:relative;background:#0a111b}
+.gal figure.big{grid-column:1 / -1}
+.gal img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover}
+.gal figcaption{position:absolute;left:0;right:0;bottom:0;padding:16px 12px 7px;font-size:11px;color:#dbe4ec;
+  background:linear-gradient(transparent,rgba(6,11,19,.86));letter-spacing:.06em}
+.gal figcaption b{color:var(--gold2);font-weight:500;font-family:var(--serif);letter-spacing:.1em}
+
+/* ── 开局 ── */
+.open{display:flex;flex-direction:column;gap:10px}
+.card{padding:0;overflow:hidden}
+.card .strip{position:relative}
+.card .strip img{width:100%;display:block;aspect-ratio:21/9;object-fit:cover;opacity:.9}
+.card .strip .no{position:absolute;left:12px;top:10px;font-size:10px;letter-spacing:.24em;
+  color:var(--bg);background:var(--gold);padding:2px 8px;border-radius:4px;font-weight:600}
+.card .body{padding:13px 15px 15px}
+.card h3{font-family:var(--serif);font-size:17px;font-weight:400;letter-spacing:.08em;display:flex;
+  align-items:baseline;gap:9px;flex-wrap:wrap}
+.card h3 em{font-style:normal;font-size:10.5px;color:var(--faint);letter-spacing:.12em}
+.card p{font-size:12.5px;color:#cfd9e2;margin-top:7px}
+.card .go{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.card button{font-family:var(--sans);font-size:12.5px;letter-spacing:.14em;cursor:pointer;
+  padding:8px 20px;border-radius:999px;border:1px solid rgba(240,200,144,.5);
+  background:linear-gradient(120deg,rgba(240,200,144,.20),rgba(232,160,168,.14));color:var(--gold2);
+  transition:transform .18s ease,background .18s ease,opacity .18s}
+.card button:hover{transform:translateY(-1px);background:linear-gradient(120deg,rgba(240,200,144,.34),rgba(232,160,168,.24))}
+.card button:disabled{opacity:.45;cursor:default;transform:none}
+.card .loc{font-size:10.5px;color:var(--faint);letter-spacing:.1em}
+
+.status{display:none;margin-top:12px;padding:10px 14px;border-radius:12px;font-size:12px;
+  border:1px solid var(--line);background:rgba(127,216,240,.06);color:var(--dim)}
+.hint{margin-top:14px;font-size:10.5px;color:var(--faint);line-height:1.9;letter-spacing:.04em}
+.hint b{color:var(--dim);font-weight:500}
+@media (max-width:560px){
+  .who{grid-template-columns:104px 1fr;gap:12px;padding:13px}
+  .hero h1{font-size:27px}
+  .gal{grid-template-columns:1fr}
+  .gal figure.big{grid-column:auto}
+}
+</style>
+
+<!-- ── 桥：点击开局 → 切 swipe（必须放在 body 内，见文件顶部说明）── -->
+<script>(function (global) {
+  'use strict';
+  function scope(name) {
+    const candidates = [global];
+    try { if (global.parent && global.parent !== global) candidates.push(global.parent); } catch (_) {}
+    try { if (global.top && !candidates.includes(global.top)) candidates.push(global.top); } catch (_) {}
+    for (const c of candidates) { try { if (c && c[name] !== undefined) return c[name]; } catch (_) {} }
+    return undefined;
+  }
+  function helperCall(name) {
+    const h = scope('TavernHelper');
+    if (h && typeof h[name] === 'function') return h[name].bind(h);
+    const d = scope(name);
+    return typeof d === 'function' ? d : null;
+  }
+  async function selectGreeting(swipeId) {
+    const index = Number(swipeId);
+    if (!Number.isInteger(index) || index < 1) throw new Error('开局编号无效');
+    const getMessages = helperCall('getChatMessages');
+    const setMessage = helperCall('setChatMessage');
+    if (!getMessages || !setMessage) throw new Error('当前环境不支持开局切换（请在酒馆聊天里点）');
+    const messages = await getMessages('0', { include_swipes: true });
+    const first = messages && messages[0];
+    if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) throw new Error('所选开局不存在（卡里的 alternate greetings 没带全？）');
+    return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
+  }
+  global.NiannianFrontBridgeV1 = Object.freeze({ version: 1, selectGreeting });
+})(globalThis);
+</script>
+
+<div class="nn-front">
+  <div class="wrap">
+
+    <div class="hero">
+      <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_04_sofa.webp" alt="念念">
+      <div class="veil"></div>
+      <div class="tit">
+        <h1>念念不忘</h1>
+        <div class="en">SHE NEVER FORGETS</div>
+        <div class="sub">高烧退去，你的记忆一片空白——守在你床边照顾你的，是那个从小被你带大的妹妹。</div>
+        <div class="tagrow">
+          <span class="tag r18">18+</span>
+          <span class="tag">中文</span>
+          <span class="tag">悬疑 · 日常</span>
+          <span class="tag">立绘状态栏</span>
+          <span class="tag">变量养成</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec"><span class="t">她</span><span class="l"></span><small>点立绘可切换衣着</small></div>
+    <div class="who glass">
+      <div class="port" id="nnPort" role="button" tabindex="0" aria-label="切换立绘">
+        <img id="nnPortImg" src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/sprite/01_daily_calm.webp" alt="苏念念">
+        <span class="hint" id="nnPortHint">日常白裙</span>
+      </div>
+      <div>
+        <div class="nm">苏念念</div>
+        <div class="meta">18 岁 · 妹妹 · 与你同住的老公房</div>
+        <div class="lines">
+          <span>哥哥……不要看别人……看念念……</span>
+          <span>做完了就不准离开念念了哦……</span>
+          <span>念念才没有舒服到哭……哥哥是大笨蛋……</span>
+        </div>
+        <div class="note">阴郁、寡言、怕光。除了你，她对什么都不感兴趣；只要你停下来，她就会缠上来。</div>
+      </div>
+    </div>
+
+    <div class="sec"><span class="t">她的光</span><span class="l"></span><small>屋里屋外，她只在你在的地方活过来</small></div>
+    <div class="gal">
+      <figure class="big">
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_01_blocks.webp" alt="客厅">
+        <figcaption><b>客厅 · 地毯上</b>　她把积木码得整整齐齐，等你回头看她一眼。</figcaption>
+      </figure>
+      <figure>
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_02_laundry.webp" alt="阳台">
+        <figcaption><b>阳台 · 晾衣</b>　晨光、绿植、她抱着洗衣篮。</figcaption>
+      </figure>
+      <figure>
+        <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_03_sunflower.webp" alt="向日葵田">
+        <figcaption><b>某年夏天 · 向日葵田</b>　她笑得毫无阴翳的那一天。</figcaption>
+      </figure>
+    </div>
+
+    <div class="sec"><span class="t">选择开局</span><span class="l"></span><small>点一下直接进入对应开场白</small></div>
+    <div class="open">
+      <div class="card glass">
+        <div class="strip">
+          <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_01_blocks.webp" alt="晚饭·桌布底下">
+          <span class="no">OPENING 01</span>
+        </div>
+        <div class="body">
+          <h3>晚饭 · 桌布底下 <em>18:40　餐桌角</em></h3>
+          <p>医生说，这一场高热也许会让你忘掉一些人。她把这句话嚼了一整夜，最后决定试一次——用一顿最寻常的晚饭，和垂到地砖的红白格桌布底下那点不该有的小动作。</p>
+          <div class="go">
+            <button class="enter" type="button" data-swipe="1">进入此开局</button>
+            <span class="loc">排骨玉米汤 · 一碗白米饭 · 她不见了</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="strip">
+          <img src="https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/front/front_02_laundry.webp" alt="清晨·灶台前">
+          <span class="no">OPENING 02</span>
+        </div>
+        <div class="body">
+          <h3>清晨 · 灶台前 <em>07:20　厨房</em></h3>
+          <p>晨光落在泛着油烟痕的毛玻璃上，她站在灶台前哼着不成调的小曲——上身只套着一件属于你的宽大白 T，围裙底下什么都没穿，昨夜留下的东西正顺着腿内侧慢慢往下滑。</p>
+          <div class="go">
+            <button class="enter" type="button" data-swipe="2">进入此开局</button>
+            <span class="loc">两颗荷包蛋 · 番茄汤还在焖 · 她没回头</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status" id="nnStatus">…</div>
+    <div class="hint">
+      <b>开局说明</b>：点「进入此开局」会把第一条消息切换成对应开场白，状态栏变量同时初始化。<br>
+      <b>环境</b>：需要「酒馆助手 · JS-Slash-Runner」（在浏览器直接打开本页时点击无效，属正常）。<br>
+      <b>内容</b>：18+ 中文卡，含兄妹禁忌与亲密描写，请自行确认适合自己。
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var CDN = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/niannian/';
+  /* 立绘轮换：只放体面的一套当作封面（日常白裙 ↔ 浴巾），点一下换一张 */
+  var LOOKS = [
+    { rel: 'sprite/01_daily_calm.webp', label: '日常白裙' },
+    { rel: 'sprite/10_towel_calm.webp', label: '刚洗完澡' },
+    { rel: 'sprite/09_sweater_calm.webp', label: '旧毛衣＋连裤袜' },
+    { rel: 'sprite/07_pajama_calm.webp', label: '宽大旧睡衫' }
+  ];
+  var port = document.getElementById('nnPort');
+  var img = document.getElementById('nnPortImg');
+  var hint = document.getElementById('nnPortHint');
+  var at = 0;
+  function paint() {
+    var L = LOOKS[at % LOOKS.length];
+    img.src = CDN + L.rel;
+    hint.textContent = L.label;
+  }
+  paint();
+  function next() { at++; paint(); }
+  port.addEventListener('click', next);
+  port.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); } });
+
+  var status = document.getElementById('nnStatus');
+  function say(txt, err) {
+    if (!status) return;
+    status.style.display = 'block';
+    status.textContent = txt;
+    status.style.color = err ? '#e8a0a8' : '#9fb2c2';
+  }
+  var btns = document.querySelectorAll('.enter');
+  Array.prototype.forEach.call(btns, function (btn) {
+    btn.addEventListener('click', async function () {
+      var id = Number(btn.dataset.swipe);
+      Array.prototype.forEach.call(btns, function (x) { x.disabled = true; });
+      var title = ((btn.closest('.card').querySelector('h3') || {}).textContent || ('开局 ' + id));
+      say('正在进入「' + title.split(' ')[0] + '」……');
+      try {
+        var bridge = globalThis.NiannianFrontBridgeV1 || {};
+        if (typeof bridge.selectGreeting !== 'function') throw new Error('开局桥接尚未就绪');
+        await bridge.selectGreeting(id);
+        say('✅ 已切到该开局，状态栏正在同步……');
+      } catch (err) {
+        say('⚠️ ' + (err && err.message ? err.message : '切换失败'), true);
+      } finally {
+        Array.prototype.forEach.call(btns, function (x) { x.disabled = false; });
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
