@@ -166,12 +166,15 @@
     const index = Number(swipeId);
     if (!Number.isInteger(index) || index < 1) throw new Error('开局编号无效');
     const getMessages = helperCall('getChatMessages');
-    const setMessage = helperCall('setChatMessage');
-    if (!getMessages || !setMessage) throw new Error('当前环境不支持开局切换（请在酒馆聊天里点）');
+    const setMany = helperCall('setChatMessages');
+    const setOne = helperCall('setChatMessage');
+    if (!getMessages || (!setMany && !setOne)) throw new Error('当前环境不支持开局切换（请在酒馆聊天里点）');
     const messages = await getMessages('0', { include_swipes: true });
     const first = messages && messages[0];
     if (!first || !Array.isArray(first.swipes) || first.swipes[index] == null) throw new Error('所选开局不存在（卡里的 alternate greetings 没带全？）');
-    return setMessage(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'display_and_render_current' });
+    /* 酒馆助手现行 API 是 setChatMessages（复数），refresh 只接受 none/affected/all */
+    if (setMany) return setMany([{ message_id: 0, swipe_id: index }], { refresh: 'affected' });
+    return setOne(String(first.swipes[index]), 0, { swipe_id: index, refresh: 'affected' });
   }
   global.NiannianFrontBridgeV1 = Object.freeze({ version: 1, selectGreeting });
 })(globalThis);
@@ -228,22 +231,22 @@
     <div class="open">
       <div class="card glass">
         <div class="body">
-          <h3>晚饭 · 桌布底下 <em>OPENING 01　18:40　餐桌角</em></h3>
-          <p>医生说，这一场高热也许会让你忘掉一些人。她把这句话嚼了一整夜，最后决定试一次——用一顿最寻常的晚饭，和垂到地砖的红白格桌布底下那点不该有的小动作。</p>
+          <h3>清晨 · 被窝深处 <em>OPENING 01　07:20　主卧</em></h3>
+          <p>遮光窗帘把晨光严严实实挡在外面。你还没醒，被窝深处就有一处极轻、极缓的动作——她趁你睡着，把那点不该有的心思含在嘴里。你伸手掀开被角，她对上了你的视线，却没有吐出来，反而含得更深了。</p>
           <div class="go">
             <button class="enter" type="button" data-swipe="1">进入此开局</button>
-            <span class="loc">排骨玉米汤 · 一碗白米饭 · 她不见了</span>
+            <span class="loc">晨勃 · 掀开的被角 · 她不肯松口</span>
           </div>
         </div>
       </div>
 
       <div class="card glass">
         <div class="body">
-          <h3>清晨 · 灶台前 <em>OPENING 02　07:20　厨房</em></h3>
-          <p>晨光落在泛着油烟痕的毛玻璃上，她站在灶台前哼着不成调的小曲——上身只套着一件属于你的宽大白 T，围裙底下什么都没穿，昨夜留下的东西正顺着腿内侧慢慢往下滑。</p>
+          <h3>傍晚 · 玄关 <em>OPENING 02　18:10　玄关</em></h3>
+          <p>防盗门在身后合上，屋里没开大灯。她从拐角的阴影里滑出来，光着脚，身上只套着你换下来的那件大号纯白 T 恤。等你换完鞋、把钥匙搁在柜上，她攥着衣摆的手猛地往上一提——把整个人摊开在你面前。</p>
           <div class="go">
             <button class="enter" type="button" data-swipe="2">进入此开局</button>
-            <span class="loc">两颗荷包蛋 · 番茄汤还在焖 · 她没回头</span>
+            <span class="loc">烧好的水 · 摆整齐的拖鞋 · 她没有后退半步</span>
           </div>
         </div>
       </div>
@@ -251,7 +254,7 @@
       <div class="card glass">
         <div class="body">
           <h3>清晨 · 被窝里 <em>OPENING 03　06:40　主卧</em></h3>
-          <p>阳光从窗帘缝里斜切进来。她整个人缩在你身侧，只套着一件属于你的洗软的白 T；你刚把手抬起来，她的睫毛就抖了两下——然后赖着不肯起，跟你讨十分钟。</p>
+          <p>清晨的阳光透过浅米色的棉麻窗帘缝隙，斜斜地切进略显逼仄的卧室。她整个人像只毫无防备的猫儿缩在你身侧，只套着一件洗得发软的白 T，被子被踢到膝盖以下，睫毛在眼睑下方投下一小片静止的阴影。</p>
           <div class="go">
             <button class="enter" type="button" data-swipe="3">进入此开局</button>
             <span class="loc">早点摊的油条香 · 她枕麻了你的手臂 · 她不想起</span>
