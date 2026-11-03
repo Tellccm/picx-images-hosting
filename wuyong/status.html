@@ -629,6 +629,35 @@ const NS = 'cmns-hud';
     return card;
   }
 
+  function silentInject(who, text) {
+    var T = window.TavernHelper || (parent && parent.TavernHelper) || null;
+    if (!T || typeof T.getVariables !== 'function' || typeof T.replaceVariables !== 'function') return { ok: false, msg: '拿不到变量接口，请检查酒馆助手' };
+    var cv = null;
+    try { cv = T.getVariables({ type: 'chat' }); } catch (e) { return { ok: false, msg: '读聊天变量失败' }; }
+    if (!cv || typeof cv !== 'object') cv = {};
+    var sys = cv[SYS] = cv[SYS] || {};
+    var left = Number(sys['可用次数'] != null ? sys['可用次数'] : sys['充能池']) || 0;
+    if (left <= 0) return { ok: false, msg: '充能不足：攒够 100 羞辱值才换 1 次注入' };
+    var logs = sys['修改日志'] = sys['修改日志'] || {};
+    var arr = logs[who] = Array.isArray(logs[who]) ? logs[who] : [];
+    var maxId = 0;
+    arr.forEach(function (it) { var n = Number(it && it.id); if (Number.isFinite(n) && n > maxId) maxId = n; });
+    arr.push({ id: maxId + 1, '内容': text, '启用': true, '状态': '生效中', '失效原因': '', '已锁定受辱': true });
+    var nl = left - 1;
+    sys['充能池'] = nl; sys['可用次数'] = nl;
+    try { T.replaceVariables(cv, { type: 'chat' }); } catch (e) { return { ok: false, msg: '写聊天变量失败' }; }
+    var mid = getMid();
+    if (mid != null) {
+      try {
+        var mv = T.getVariables({ type: 'message', message_id: mid });
+        if (mv && mv.stat_data) { mv.stat_data[SYS] = sys; T.replaceVariables(mv, { type: 'message', message_id: mid }); }
+      } catch (e) {}
+    }
+    __lastSig = '';
+    render();
+    return { ok: true, msg: '已静默注入，无需发送指令' };
+  }
+
   function injectBar() {
     const bar = el('div', 'inject-bar');
     const sel = el('select', 'inject-who');
@@ -643,11 +672,11 @@ const NS = 'cmns-hud';
       const text = String(inp.value || '').trim();
       if (!text) { msg.className = 'inject-msg warn'; msg.textContent = '先写一句要她相信的话。'; return; }
       if (text.length > 80) { msg.className = 'inject-msg warn'; msg.textContent = '太长了，别超过 80 字。'; return; }
-      const r = sendToTavern(cmdInject(who, text));
-      if (!r.ok) { msg.className = 'inject-msg warn'; msg.textContent = '发送失败：' + r.reason; return; }
+      const r = silentInject(who, text);
+      if (!r.ok) { msg.className = 'inject-msg warn'; msg.textContent = r.msg; return; }
       inp.value = '';
       msg.className = 'inject-msg ok';
-      msg.textContent = '已送出，等这一轮结算。';
+      msg.textContent = r.msg;
     });
     bar.appendChild(sel); bar.appendChild(inp); bar.appendChild(btn); bar.appendChild(msg);
     return bar;
