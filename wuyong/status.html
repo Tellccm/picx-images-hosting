@@ -1,0 +1,104 @@
+<style>
+.cmns-stat{margin:14px 0 4px;padding:14px 16px;border-radius:10px;border:1px solid #4a3a2c;background:linear-gradient(165deg,#1a1413,#0c0908);color:#efe6d6;font-family:"Noto Serif SC","Songti SC",Georgia,serif;font-size:13px;line-height:1.5;box-shadow:0 14px 36px -28px #000,inset 0 0 60px rgba(0,0,0,.55);box-sizing:border-box}
+.cmns-stat *{box-sizing:border-box}
+.cmns-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid #33281f}
+.cmns-title{font-size:14px;letter-spacing:.22em;font-weight:600;background:linear-gradient(180deg,#f7ead2,#c9a25c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cmns-m{font-size:10.5px;color:#b8a88f;letter-spacing:.08em}
+.cmns-m b{color:#f3e7d5;font-weight:600;font-variant-numeric:tabular-nums}
+.cmns-cast{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
+@media(max-width:760px){.cmns-cast{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.cmns-cast{grid-template-columns:1fr}}
+.cmns-card{display:flex;gap:10px;padding:10px;border:1px solid #33281f;border-radius:8px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.012));min-width:0}
+.cmns-ava{width:52px;height:52px;border-radius:6px;object-fit:cover;flex:0 0 auto;border:1px solid #4a3a2c;background:#0a0807}
+.cmns-body{min-width:0;flex:1 1 auto}
+.cmns-name{font-size:13px;color:#f7eddc;letter-spacing:.12em}
+.cmns-role{font-size:9px;color:#c9a25c;letter-spacing:.1em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmns-axes{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:9.5px;color:#b8a88f}
+.cmns-axes b{color:#e8d3a2;font-weight:600;font-variant-numeric:tabular-nums}
+.cmns-voice{display:block;margin-top:6px;font-size:10px;line-height:1.6;color:#9b8a72;font-style:italic;min-height:1em}
+.cmns-voice:not(:empty)::before{content:"「"}
+.cmns-voice:not(:empty)::after{content:"」"}
+</style>
+<div class="cmns-stat" id="cmns-stat">
+  <div class="cmns-head">
+    <span class="cmns-title">索兰斯 · 常识面板</span>
+    <span class="cmns-m">羞辱 <b id="cmns-shame">0</b></span>
+    <span class="cmns-m">充能 <b id="cmns-pool">0</b></span>
+    <span class="cmns-m">今日 <b id="cmns-today">0</b>/<b id="cmns-todaymax">300</b></span>
+  </div>
+  <div class="cmns-cast" id="cmns-cast"></div>
+</div>
+<script>
+(function () {
+  var CAST = [
+    ['雷恩', 'rain', '异界 · 混沌破格者'],
+    ['艾尔诺娅', 'elnoa', '异界 · 森罗圣女'],
+    ['卢西恩六世', 'lucienne', '王廷 · 神权女王'],
+    ['希薇尔', 'sylvie', '王廷 · 神殿侍女']
+  ];
+  var BASE = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/wuyong/';
+  var root = document.getElementById('cmns-stat');
+  if (!root) return;
+  var TH = (window.parent && window.parent.TavernHelper) || window.TavernHelper || null;
+
+  function getMid() {
+    try { if (typeof getCurrentMessageId === 'function') return getCurrentMessageId(); } catch (e) {}
+    try { if (window.frameElement) { var m = window.frameElement.closest('.mes'); if (m) return Number(m.getAttribute('mesid')); } } catch (e) {}
+    return null;
+  }
+  function pick(o, path) {
+    var p = String(path).split('/'), cur = o;
+    for (var i = 0; i < p.length; i++) { if (!p[i]) continue; if (cur == null) return null; cur = cur[p[i]]; }
+    return cur;
+  }
+  function setText(id, v) { var el = document.getElementById(id); if (el && v != null && String(v) !== '') el.textContent = String(v); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  var castEl = document.getElementById('cmns-cast');
+  CAST.forEach(function (c) {
+    var d = document.createElement('div');
+    d.className = 'cmns-card';
+    d.setAttribute('data-who', c[0]);
+    d.innerHTML =
+      '<img class="cmns-ava" src="' + BASE + c[1] + '.avatar.webp" alt="' + esc(c[0]) + '">' +
+      '<div class="cmns-body"><div class="cmns-name">' + esc(c[0]) + '</div>' +
+      '<div class="cmns-role">' + esc(c[2]) + '</div>' +
+      '<div class="cmns-axes"><span>好感 <b data-k="' + c[1] + '-g">0</b></span>' +
+      '<span>羞耻 <b data-k="' + c[1] + '-s">0</b></span>' +
+      '<span>欲望 <b data-k="' + c[1] + '-d">0</b></span></div>' +
+      '<span class="cmns-voice" data-k="' + c[1] + '-v"></span></div>';
+    castEl.appendChild(d);
+  });
+
+  function render() {
+    if (!TH) return;
+    var mid = getMid();
+    if (mid == null) return;
+    var st = null;
+    try { var v = TH.getVariables({ type: 'message', message_id: mid }); st = v && v.stat_data; } catch (e) {}
+    if (!st) return;
+    setText('cmns-shame', pick(st, '/常识修改系统/羞辱值'));
+    setText('cmns-pool', pick(st, '/常识修改系统/充能池'));
+    setText('cmns-today', pick(st, '/常识修改系统/本日获取'));
+    setText('cmns-todaymax', pick(st, '/常识修改系统/本日上限'));
+    CAST.forEach(function (c) {
+      var g = document.querySelector('[data-k="' + c[1] + '-g"]');
+      var s = document.querySelector('[data-k="' + c[1] + '-s"]');
+      var d = document.querySelector('[data-k="' + c[1] + '-d"]');
+      var vv = document.querySelector('[data-k="' + c[1] + '-v"]');
+      var who = pick(st, '/人物/' + c[0]);
+      if (g && who) g.textContent = who['好感度'] == null ? '0' : who['好感度'];
+      if (s && who) s.textContent = who['羞耻'] == null ? '0' : who['羞耻'];
+      if (d && who) d.textContent = who['欲望'] == null ? '0' : who['欲望'];
+      if (vv) vv.textContent = (who && who['心声']) ? String(who['心声']) : '';
+    });
+  }
+
+  render();
+  setTimeout(render, 500);
+  setTimeout(render, 1500);
+  try { TH.eventOn('mag_variable_update_ended', function () { setTimeout(render, 120); }); } catch (e) {}
+  try { TH.eventOn('mag_variable_initialized', function () { setTimeout(render, 120); }); } catch (e) {}
+  setInterval(render, 3000);
+})();
+</script>
