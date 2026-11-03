@@ -1,213 +1,777 @@
 <style>
-.cmns-stat{margin:14px 0 4px;padding:14px 16px;border-radius:10px;border:1px solid #4a3a2c;background:linear-gradient(165deg,#1a1413,#0c0908);color:#efe6d6;font-family:"Noto Serif SC","Songti SC",Georgia,serif;font-size:13px;line-height:1.5;box-shadow:0 14px 36px -28px #000,inset 0 0 60px rgba(0,0,0,.55);box-sizing:border-box}
-.cmns-stat *{box-sizing:border-box}
-.cmns-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid #33281f;cursor:pointer}
-.cmns-title{font-size:14px;letter-spacing:.2em;font-weight:600;background:linear-gradient(180deg,#f7ead2,#c9a25c);-webkit-background-clip:text;background-clip:text;color:transparent}
-.cmns-m{font-size:10.5px;color:#b8a88f;letter-spacing:.06em}
-.cmns-m b{color:#f3e7d5;font-weight:600;font-variant-numeric:tabular-nums}
-.cmns-toggle{margin-left:auto;font-size:10px;color:#b8a88f;border-bottom:1px dotted #4a3a2c}
-.cmns-body[hidden]{display:none}
-.cmns-cast{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
-@media(max-width:760px){.cmns-cast{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:430px){.cmns-cast{grid-template-columns:1fr}}
-.cmns-card{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid #33281f;border-radius:8px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.012));min-width:0}
-.cmns-top{display:flex;gap:10px;min-width:0}
-.cmns-ava{width:52px;height:52px;border-radius:6px;object-fit:cover;flex:0 0 auto;border:1px solid #4a3a2c;background:#0a0807}
-.cmns-info{min-width:0;flex:1 1 auto}
-.cmns-name{font-size:13px;color:#f7eddc;letter-spacing:.1em}
-.cmns-role{font-size:9px;color:#c9a25c;letter-spacing:.08em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cmns-axes{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:9.5px;color:#b8a88f}
-.cmns-axes b{color:#e8d3a2;font-weight:600;font-variant-numeric:tabular-nums}
-.cmns-voice{display:block;font-size:10px;line-height:1.6;color:#9b8a72;font-style:italic;min-height:1em}
-.cmns-voice:not(:empty)::before{content:"「"}.cmns-voice:not(:empty)::after{content:"」"}
-.cmns-ledger{display:flex;flex-direction:column;gap:4px;border-top:1px dashed #33281f;padding-top:6px;font-size:9.5px}
-.cmns-rule{display:flex;align-items:center;gap:6px;color:#c9bba4}
-.cmns-rule[data-off="1"]{opacity:.55;text-decoration:line-through}
-.cmns-rule .no{color:#7d7364;flex:0 0 auto}
-.cmns-rule .txt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cmns-rule button{font:inherit;font-size:9px;color:#e8d3a2;background:transparent;border:1px solid #4a3a2c;border-radius:3px;padding:1px 5px;cursor:pointer}
-.cmns-rule button:hover{border-color:#c9a25c}
-.cmns-empty{color:#7d7364;font-size:9.5px}
-.cmns-inject{display:flex;gap:5px}
-.cmns-inject input{flex:1 1 auto;min-width:0;font:inherit;font-size:9.5px;color:#efe6d6;background:#0c0908;border:1px solid #4a3a2c;border-radius:4px;padding:4px 6px}
-.cmns-inject input::placeholder{color:#655c4f}
-.cmns-inject button{font:inherit;font-size:9.5px;color:#1a1210;background:linear-gradient(180deg,#f0dcaa,#c9a25c);border:0;border-radius:4px;padding:4px 9px;cursor:pointer;flex:0 0 auto}
-.cmns-inject button:disabled{opacity:.5;cursor:default}
-.cmns-hint{font-size:9px;color:#9b8a72;min-height:1em}
-.cmns-hint.warn{color:#d4735e}.cmns-hint.ok{color:#8fae7a}
-.cmns-foot{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid #33281f;font-size:9.5px;color:#b8a88f}
-.cmns-foot b{color:#e8d3a2}
+.cmns-hud{
+  --ink:#efe6d6; --ink-2:#b8a88f; --ink-3:#84765f;
+  --gold:#c9a25c; --gold-2:#e8d3a2; --wine:#a33a48; --steel:#6f93b0; --plum:#9b76b0;
+  --panel:#14100f; --panel-2:#1c1614; --line:#33281f; --line-2:#4a3a2c;
+  margin:16px 0 6px; position:relative; overflow:hidden; border-radius:10px;
+  background:linear-gradient(165deg,#1a1413 0%,#120e0d 55%,#0c0908 100%);
+  border:1px solid var(--line-2); color:var(--ink);
+  font-family:"Noto Serif SC","Songti SC",Georgia,serif;
+  font-size:13px; line-height:1.55; box-sizing:border-box;
+  box-shadow:0 18px 46px -30px #000, inset 0 0 70px rgba(0,0,0,.55);
+}
+.cmns-hud::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:
+    radial-gradient(60% 30% at 50% 0%, rgba(201,162,92,.14), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 3px);
+}
+.cmns-hud *{box-sizing:border-box}
+.cmns-hud .hud-head{
+  position:relative; z-index:2; display:flex; align-items:center; gap:14px;
+  flex-wrap:wrap; padding:15px 18px; cursor:pointer; min-width:0;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(201,162,92,.10), rgba(0,0,0,0));
+}
+.cmns-hud .hud-title{display:flex; align-items:baseline; gap:8px; flex:0 0 auto}
+.cmns-hud .hud-title .cn{
+  font-size:15px; letter-spacing:.24em; font-weight:600;
+  background:linear-gradient(180deg,#f7ead2,#c9a25c);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.cmns-hud .hud-title .en{
+  font-family:"Spectral",Georgia,serif; font-size:8.5px; letter-spacing:.26em;
+  color:var(--ink-3); text-transform:uppercase;
+}
+.cmns-hud .hud-metrics{display:flex; align-items:center; gap:20px; flex:1 1 250px; min-width:0; flex-wrap:wrap}
+.cmns-hud .metric{display:flex; align-items:center; gap:8px; min-width:0}
+.cmns-hud .metric-label{font-size:10.5px; color:var(--ink-2); letter-spacing:.1em; white-space:nowrap; cursor:help}
+.cmns-hud .bar{
+  position:relative; width:100px; height:5px; border-radius:3px; overflow:hidden; flex:0 0 auto;
+  background:rgba(255,255,255,.07); box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.cmns-hud .bar>i{
+  position:absolute; inset:0 auto 0 0; border-radius:3px;
+  background:linear-gradient(90deg,var(--wine),#d4735e);
+  box-shadow:0 0 10px rgba(200,80,60,.5);
+  transition:width .4s cubic-bezier(.4,0,.2,1);
+}
+.cmns-hud .metric-num{
+  font-family:"Spectral",Georgia,serif; font-variant-numeric:tabular-nums;
+  font-size:13px; color:#f3e7d5; min-width:24px; text-align:right;
+}
+.cmns-hud .pips{display:flex; gap:5px; align-items:center}
+.cmns-hud .pip{
+  width:7px; height:7px; border-radius:50%; border:1px solid var(--gold);
+  background:transparent; opacity:.4;
+}
+.cmns-hud .pip.on{
+  background:radial-gradient(circle at 35% 30%,#f3e0b2,var(--gold)); opacity:1;
+  box-shadow:0 0 8px rgba(201,162,92,.75);
+}
+.cmns-hud .hud-toggle{
+  margin-left:auto; flex:0 0 auto; font-size:10px; letter-spacing:.14em; color:var(--ink-2);
+  border-bottom:1px dotted var(--line-2); padding-bottom:1px;
+}
+.cmns-hud .hud-body{position:relative; z-index:2; padding:18px 18px 18px; display:grid; gap:18px}
+.cmns-hud .hud-body[hidden]{display:none}
+.cmns-hud .cast{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; align-items:stretch}
+@media (max-width:760px){ .cmns-hud .cast{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:430px){ .cmns-hud .cast{grid-template-columns:minmax(0,1fr)} }
+.cmns-hud .card{
+  display:flex; flex-direction:column; text-align:center; padding:16px 13px 14px;
+  min-width:0; height:100%; cursor:pointer; position:relative; overflow:hidden;
+  border:1px solid var(--line); border-radius:8px;
+  background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+  transition:border-color .22s ease, box-shadow .22s ease, transform .22s ease;
+}
+.cmns-hud .card::after{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:2px; opacity:0;
+  background:linear-gradient(180deg,var(--gold), transparent);
+  transition:opacity .22s ease;
+}
+.cmns-hud .card:hover{border-color:var(--line-2); transform:translateY(-1px); box-shadow:0 10px 26px -18px #000}
+.cmns-hud .card:hover::after{opacity:.8}
+.cmns-hud .card:focus-visible{outline:1.5px solid var(--steel); outline-offset:2px}
+.cmns-hud 
+.cmns-hud .card.open::after{opacity:1}
+.cmns-hud .ava{
+  width:78px; height:78px; border-radius:7px; margin:0 auto 11px; object-fit:cover; display:block;
+  border:1px solid rgba(201,162,92,.4);
+  box-shadow:0 0 0 1px rgba(0,0,0,.6), 0 4px 14px -8px #000;
+  background:#0d0a09;
+  transition:border-color .22s ease, filter .22s ease;
+}
+.cmns-hud .card:hover .ava{border-color:rgba(201,162,92,.75); filter:brightness(1.05)}
+.cmns-hud .who{min-width:0; display:flex; flex-direction:column; flex:1 1 auto}
+.cmns-hud .name{
+  font-size:14.5px; font-weight:600; color:#f4e9d7; letter-spacing:.12em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  padding-bottom:7px; margin-bottom:5px; border-bottom:1px solid var(--line);
+}
+.cmns-hud .role{
+  font-size:9.5px; letter-spacing:.14em; color:var(--gold); opacity:.82; margin:0 0 12px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cmns-hud .axes{display:grid; gap:7px; text-align:left; margin-bottom:12px}
+.cmns-hud .axis{display:flex; align-items:center; gap:6px; min-width:0}
+.cmns-hud .axis-k{font-size:9.5px; color:var(--ink-3); width:24px; flex:0 0 auto; letter-spacing:.06em}
+.cmns-hud .axis .bar{width:auto; flex:1 1 auto; height:4px; background:rgba(255,255,255,.07)}
+.cmns-hud .axis-v{
+  font-family:"Spectral",Georgia,serif; font-size:10.5px; color:var(--ink-2);
+  font-variant-numeric:tabular-nums; width:20px; text-align:right; flex:0 0 auto;
+}
+.cmns-hud .axis[data-k="好感"] .bar>i{background:linear-gradient(90deg,#4d6c86,var(--steel)); box-shadow:0 0 9px rgba(110,150,180,.45)}
+.cmns-hud .axis[data-k="羞耻"] .bar>i{background:linear-gradient(90deg,#8c2a36,#c9555c); box-shadow:0 0 9px rgba(190,70,70,.45)}
+.cmns-hud .axis[data-k="欲望"] .bar>i{background:linear-gradient(90deg,#6b4a80,var(--plum)); box-shadow:0 0 9px rgba(150,110,180,.45)}
+.cmns-hud .voice{
+  margin-top:auto; padding:10px 12px 10px 14px; position:relative;
+  border-left:2px solid rgba(201,162,92,.35); border-radius:0 4px 4px 0;
+  background:rgba(255,255,255,.028);
+  font-size:11.5px; line-height:1.75; color:#cfc0aa; font-style:italic;
+  max-height:5.9em; overflow:hidden;
+  min-width:0; overflow-wrap:anywhere;
+}
+.cmns-hud .voice:empty{display:none}
+
+.cmns-hud .inject{display:block;margin-top:2px;border-top:1px dashed var(--line);padding-top:6px}
+
+.cmns-hud .inject-meta{font-size:9.5px; color:var(--ink-3); letter-spacing:.06em; margin-bottom:6px}
+.cmns-hud .inject-meta b{font-family:"Spectral",Georgia,serif; color:var(--gold); font-weight:600; font-variant-numeric:tabular-nums; margin:0 2px}
+.cmns-hud .inject-row{display:flex; gap:7px; min-width:0}
+.cmns-hud .inject-in{
+  flex:1 1 auto; min-width:0; font:inherit; font-size:11.5px; color:var(--ink);
+  padding:6px 9px; border-radius:5px; background:rgba(0,0,0,.28);
+  border:1px solid var(--line-2); transition:border-color .18s ease, box-shadow .18s ease;
+}
+.cmns-hud .inject-in::placeholder{color:#6d6252; font-style:italic}
+.cmns-hud .inject-in:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,92,.13)}
+.cmns-hud .inject-btn{
+  flex:0 0 auto; font:inherit; font-size:11px; letter-spacing:.14em; padding:6px 14px;
+  border-radius:5px; cursor:pointer; color:#1a1210; border:1px solid #e8d3a2;
+  background:linear-gradient(180deg,#f0dcaa,#c9a25c);
+  transition:filter .18s ease, transform .08s ease;
+}
+.cmns-hud .inject-btn:hover{filter:brightness(1.08)}
+.cmns-hud .inject-btn:active{transform:translateY(1px)}
+.cmns-hud .inject-btn:disabled{opacity:.45; cursor:not-allowed; filter:none}
+.cmns-hud .inject-hint{min-height:12px; margin-top:5px; font-size:9.5px; color:var(--ink-3); font-style:italic; overflow-wrap:anywhere}
+.cmns-hud .inject-hint:empty{min-height:0}
+.cmns-hud .inject-hint.warn{color:#c9555c; font-style:normal}
+.cmns-hud .inject-hint.ok{color:#7fa268; font-style:normal}
+
+.cmns-hud .ledger{margin-top:8px; display:grid; gap:3px}
+.cmns-hud .ledger-empty{font-size:9.5px; color:var(--ink-3); font-style:italic}
+.cmns-hud .rule{
+  display:grid; grid-template-columns:16px minmax(0,1fr) auto auto; gap:6px; align-items:center;
+  font-size:9.5px; padding:4px 6px; border-radius:4px; background:rgba(255,255,255,.035);
+}
+.cmns-hud .rule .no{font-family:"Spectral",Georgia,serif; color:var(--ink-3); text-align:right}
+.cmns-hud .rule .txt{color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
+.cmns-hud .rule[data-off="1"] .txt{text-decoration:line-through; opacity:.5}
+.cmns-hud .rule button{
+  font:inherit; font-size:9px; padding:1px 6px; border-radius:3px; cursor:pointer;
+  border:1px solid var(--line-2); background:transparent; color:var(--ink-2); line-height:1.5;
+}
+.cmns-hud .rule button:hover{border-color:var(--gold); color:var(--gold-2)}
+.cmns-hud .rule button:disabled{opacity:.35; cursor:not-allowed}
+
+.cmns-hud .hud-foot{
+  position:relative; z-index:2; display:flex; gap:16px; flex-wrap:wrap; align-items:center;
+  padding:11px 18px; border-top:1px solid var(--line);
+  background:rgba(0,0,0,.22); font-size:10px; color:var(--ink-2); letter-spacing:.05em;
+}
+.cmns-hud .hud-foot b{font-family:"Spectral",Georgia,serif; font-weight:600; color:#e8d9c2; font-variant-numeric:tabular-nums; margin-left:3px}
+.cmns-hud .hud-empty{padding:14px 16px; font-size:11px; color:var(--ink-3); font-style:italic}
+@media (max-width:430px){
+  .cmns-hud .bar{width:70px}
+  .cmns-hud .cast{grid-template-columns:1fr}
+  .cmns-hud .hud-title .en{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .cmns-hud *{transition:none!important} }
+`;
+
+  /* ── 工具 ─────────────────────────────────────────────────────── */
+  
+.inject-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02)}
+.inject-bar .inject-who{font:inherit;font-size:11px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);border-radius:5px;padding:5px 7px}
+.inject-bar .inject-text{flex:1 1 220px;min-width:0;font:inherit;font-size:11.5px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);border-radius:5px;padding:5px 8px}
+.inject-bar .inject-text::placeholder{color:var(--ink-3)}
+.inject-bar .inject-go{font:inherit;font-size:11px;letter-spacing:.1em;color:#1a1210;background:linear-gradient(180deg,#f0dcaa,#c9a25c);border:0;border-radius:5px;padding:6px 14px;cursor:pointer}
+.inject-bar .inject-go:hover{filter:brightness(1.06)}
+.inject-msg{flex:1 1 100%;font-size:10px;color:var(--ink-2);min-height:1em}
+.inject-msg.ok{color:#8fae6a}.inject-msg.warn{color:#d4735e}
 </style>
-<div class="cmns-stat" id="cmns-stat">
-  <div class="cmns-head" id="cmns-head">
-    <span class="cmns-title">索兰斯 · 常识面板</span>
-    <span class="cmns-m">羞辱 <b data-k="shame">0</b></span>
-    <span class="cmns-m">充能 <b data-k="pool">0</b></span>
-    <span class="cmns-m">今日 <b data-k="today">0</b>/<b data-k="todaymax">300</b></span>
-    <span class="cmns-toggle" id="cmns-toggle">收起</span>
-  </div>
-  <div class="cmns-body" id="cmns-body">
-    <div class="cmns-cast" id="cmns-cast"></div>
-    <div class="cmns-foot">
-      <span>本轮注入 <b id="cmns-used">0</b>/<b id="cmns-cap">1</b></span>
-      <span>可用次数 <b id="cmns-left">0</b></span>
-      <span id="cmns-status">—</span>
-    </div>
-  </div>
-</div>
 <script>
-(function () {
-  var CAST = [
-    ['雷恩', 'rain', '异界 · 混沌破格者'],
-    ['艾尔诺娅', 'elnoa', '异界 · 森罗圣女'],
-    ['卢西恩六世', 'lucienne', '王廷 · 神权女王'],
-    ['希薇尔', 'sylvie', '王廷 · 神殿侍女']
-  ];
-  var BASE = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/wuyong/';
-  var root = document.getElementById('cmns-stat');
-  if (!root) return;
-  var head = document.getElementById('cmns-head');
-  var body = document.getElementById('cmns-body');
-  var toggleEl = document.getElementById('cmns-toggle');
-  var castEl = document.getElementById('cmns-cast');
-  var statusEl = document.getElementById('cmns-status');
-  var drafts = {};
+(function(){
+const NS = 'cmns-hud';
+  const MOUNT_ID = NS + '-mount';
+  if (window.__CMNS_HUD_ACTIVE__) return;
+  window.__CMNS_HUD_ACTIVE__ = true;
 
-  function P() { try { return window.parent; } catch (e) { return window; } }
-  function PD() { try { var p = P(); if (p.document && p.document.getElementById('chat')) return p.document; } catch (e) {} return document; }
-  function TH() { try { var p = P(); return (p.TavernHelper) || window.TavernHelper || null; } catch (e) { return null; } }
-  function getMid() {
-    try { if (typeof getCurrentMessageId === 'function') return getCurrentMessageId(); } catch (e) {}
-    try { var f = window.frameElement; if (f) { var m = f.closest('.mes'); if (m) return Number(m.getAttribute('mesid')); } } catch (e) {}
-    return null;
-  }
-  function readStat(id) {
-    var t = TH();
-    if (t && typeof t.getVariables === 'function') { try { var v = t.getVariables({ type: 'message', message_id: id }); if (v && v.stat_data) return v.stat_data; } catch (e) {} }
-    try { var p = P(); var M = p.Mvu; if (M && typeof M.getMvuData === 'function') { var d = M.getMvuData({ type: 'message', message_id: id }); if (d && d.stat_data) return d.stat_data; } } catch (e) {}
-    try { var c = P().SillyTavern.getContext(); var m = c.chat[id]; var vv = m && m.variables && m.variables[m.swipe_id || 0]; if (vv && vv.stat_data) return vv.stat_data; } catch (e) {}
-    return null;
-  }
-  function pick(o, path) { var p = String(path).split('/'), c = o; for (var i = 0; i < p.length; i++) { if (!p[i]) continue; if (c == null) return null; c = c[p[i]]; } return c; }
-  function setK(k, v) { var e = root.querySelector('[data-k="' + k + '"]'); if (e && v != null && String(v) !== '') e.textContent = String(v); }
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-
-  CAST.forEach(function (c) {
-    var d = document.createElement('div');
-    d.className = 'cmns-card';
-    d.setAttribute('data-who', c[0]);
-    d.innerHTML =
-      '<div class="cmns-top"><img class="cmns-ava" src="' + BASE + c[1] + '.avatar.webp" alt="' + esc(c[0]) + '">' +
-      '<div class="cmns-info"><div class="cmns-name">' + esc(c[0]) + '</div><div class="cmns-role">' + esc(c[2]) + '</div>' +
-      '<div class="cmns-axes"><span>好感 <b data-k="' + c[1] + '-g">0</b></span><span>羞耻 <b data-k="' + c[1] + '-s">0</b></span><span>欲望 <b data-k="' + c[1] + '-d">0</b></span></div></div></div>' +
-      '<span class="cmns-voice" data-k="' + c[1] + '-v"></span>' +
-      '<div class="cmns-ledger" data-ledger="' + esc(c[0]) + '"></div>' +
-      '<div class="cmns-inject"><input data-in="' + esc(c[0]) + '" maxlength="80" placeholder="让她相信的一句话…"><button data-go="' + esc(c[0]) + '">注入</button></div>' +
-      '<div class="cmns-hint" data-hint="' + esc(c[0]) + '"></div>';
-    castEl.appendChild(d);
-  });
-
-  function cmd(t) { return t; }
-  function send(text) {
-    try {
-      var doc = PD();
-      var ta = doc.querySelector('#send_textarea');
-      var btn = doc.querySelector('#send_but');
-      if (!ta || !btn) return { ok: false, msg: '找不到聊天输入框，请手动发送：' + text };
-      var cur = String(ta.value || '').trim();
-      var merged = cur ? (cur + '\n' + text) : text;
-      var proto = doc.defaultView.HTMLTextAreaElement && doc.defaultView.HTMLTextAreaElement.prototype;
-      var setter = proto && Object.getOwnPropertyDescriptor(proto, 'value').set;
-      if (setter) setter.call(ta, merged); else ta.value = merged;
-      ta.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true }));
-      btn.click();
-      return { ok: true, kept: !!cur };
-    } catch (e) { return { ok: false, msg: '发送失败：' + e.message }; }
-  }
-  function hint(who, msg, cls) { var e = root.querySelector('[data-hint="' + who + '"]'); if (e) { e.className = 'cmns-hint ' + (cls || ''); e.textContent = msg || ''; } }
-
-  function renderLedger(who, sys) {
-    var box = root.querySelector('[data-ledger="' + who + '"]');
-    if (!box) return;
-    var log = (sys && sys['修改日志'] && Array.isArray(sys['修改日志'][who])) ? sys['修改日志'][who] : [];
-    var live = log.filter(function (r) { return r && r['状态'] !== '已撤回'; });
-    box.innerHTML = '';
-    if (!live.length) { box.innerHTML = '<span class="cmns-empty">还没有常识灌进她脑子里。</span>'; return; }
-    live.slice(-6).forEach(function (r) {
-      var off = (r['启用'] === false || r['状态'] === '已关闭');
-      var row = document.createElement('div');
-      row.className = 'cmns-rule';
-      row.setAttribute('data-off', off ? '1' : '0');
-      row.innerHTML = '<span class="no">#' + esc(r['id']) + '</span><span class="txt" title="' + esc(r['内容']) + '">' + esc(r['内容']) + '</span>' +
-        '<button data-act="toggle">' + (off ? '开' : '关') + '</button><button data-act="revoke">撤</button>';
-      row.querySelector('[data-act="toggle"]').onclick = function () {
-        hint(who, '已请求' + (off ? '开启' : '关闭') + '…', 'ok');
-        send('[关闭常识 ' + who + ': ' + r['id'] + ']'.replace('关闭', off ? '开启' : '关闭'));
-      };
-      row.querySelector('[data-act="revoke"]').onclick = function () {
-        hint(who, '已请求撤回…', 'ok');
-        send('[撤回常识 ' + who + ': ' + r['id'] + ']');
-      };
-      box.appendChild(row);
-    });
-  }
-
-  function render() {
-    var mid = getMid(); if (mid == null) return;
-    var st = readStat(mid); if (!st) { statusEl.textContent = '这一层还没有变量'; return; }
-    var sys = st['常识修改系统'] || {};
-    setK('shame', sys['羞辱值']); setK('pool', sys['充能池']);
-    setK('today', sys['本日获取']); setK('todaymax', sys['本日上限']);
-    var used = root.querySelector('#cmns-used'), cap = root.querySelector('#cmns-cap'), left = root.querySelector('#cmns-left');
-    if (used) used.textContent = sys['本轮已注入'] == null ? '0' : sys['本轮已注入'];
-    if (cap) cap.textContent = sys['单轮注入上限'] == null ? '1' : sys['单轮注入上限'];
-    if (left) left.textContent = sys['可用次数'] == null ? (sys['充能池'] == null ? '0' : sys['充能池']) : sys['可用次数'];
-    var people = st['人物'] || {};
-    CAST.forEach(function (c) {
-      var who = people[c[0]] || {};
-      setK(c[1] + '-g', who['好感度']); setK(c[1] + '-s', who['羞耻']); setK(c[1] + '-d', who['欲望']);
-      var vv = root.querySelector('[data-k="' + c[1] + '-v"]');
-      if (vv) vv.textContent = who['心声'] ? String(who['心声']) : '';
-      renderLedger(c[0], sys);
-    });
-    statusEl.textContent = '变量已连接';
-  }
-
-  // 折叠状态
-  var open = true;
-  try { open = localStorage.getItem('cmns-stat-open') !== '0'; } catch (e) {}
-  body.hidden = !open; toggleEl.textContent = open ? '收起' : '展开';
-  head.onclick = function () {
-    open = !open; body.hidden = !open; toggleEl.textContent = open ? '收起' : '展开';
-    try { localStorage.setItem('cmns-stat-open', open ? '1' : '0'); } catch (e) {}
+  const CFG = window.__CMNS || {};
+  const SYS = CFG.systemKey || '常识修改系统';
+  const PERSONS = (Array.isArray(CFG.persons) && CFG.persons.length)
+    ? CFG.persons.slice() : ['雷恩', '艾尔诺娅', '卢西恩六世', '希薇尔'];
+  const POOL_MAX = Math.max(1, Number(CFG.poolMax) || 3);
+  const TITLE = CFG.panelTitle || '索兰斯 · 常识面板';
+  const AVATAR = {"雷恩": "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/wuyong/rain.avatar.webp", "艾尔诺娅": "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/wuyong/elnoa.avatar.webp", "卢西恩六世": "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/wuyong/lucienne.avatar.webp", "希薇尔": "https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/wuyong/sylvie.avatar.webp"};
+  const ROLE = {
+    '雷恩': '异界 · 混沌破格者',
+    '艾尔诺娅': '异界 · 森罗圣女',
+    '卢西恩六世': '王廷 · 神权女王',
+    '希薇尔': '王廷 · 神殿侍女',
   };
+  const AVATAR_ALT = {"雷恩": "https://raw.githubusercontent.com/Tellccm/picx-images-hosting/master/wuyong/rain.avatar.webp", "艾尔诺娅": "https://raw.githubusercontent.com/Tellccm/picx-images-hosting/master/wuyong/elnoa.avatar.webp", "卢西恩六世": "https://raw.githubusercontent.com/Tellccm/picx-images-hosting/master/wuyong/lucienne.avatar.webp", "希薇尔": "https://raw.githubusercontent.com/Tellccm/picx-images-hosting/master/wuyong/sylvie.avatar.webp"};
+  const drafts = Object.create(null);   // 角色 → 输入框草稿
+  let lastSignature = null;
+  let mountedMesId = null;
 
-  // 注入
-  root.addEventListener('click', function (ev) {
-    var who = ev.target.getAttribute && ev.target.getAttribute('data-go');
-    if (!who) return;
-    var inp = root.querySelector('[data-in="' + who + '"]');
-    var text = inp ? String(inp.value || '').trim() : '';
-    if (!text) { hint(who, '先写一句要她相信的话。', 'warn'); return; }
-    if (text.length > 80) { hint(who, '太长了，别超过 80 字。', 'warn'); return; }
-    var mid = getMid(); var st = mid == null ? null : readStat(mid); var sys = st && st['常识修改系统'] || {};
-    var usable = sys['可用次数'] == null ? (sys['充能池'] || 0) : sys['可用次数'];
-    var used = sys['本轮已注入'] || 0, cap = Math.max(1, sys['单轮注入上限'] || 1);
-    if ((sys['羞辱值'] || 0) < 100 && usable <= 0) { hint(who, '充能不足：攒够 100 羞辱值才换 1 次注入。', 'warn'); return; }
-    if (used >= cap) { hint(who, '本轮已注入 ' + used + ' 条（上限 ' + cap + '）。', 'warn'); return; }
-    var r = send('[常识修改 ' + who + ': ' + text + ']');
-    if (!r.ok) { hint(who, r.msg, 'warn'); return; }
-    inp.value = ''; drafts[who] = '';
-    hint(who, '已送出，等这一轮结算。', 'ok');
-  });
-  root.addEventListener('input', function (ev) {
-    var who = ev.target.getAttribute && ev.target.getAttribute('data-in');
-    if (who) drafts[who] = ev.target.value;
-  });
+  /* ── 样式 ─────────────────────────────────────────────────────── */
+  const CSS = `
+.${NS}{
+  --ink:#efe6d6; --ink-2:#b8a88f; --ink-3:#84765f;
+  --gold:#c9a25c; --gold-2:#e8d3a2; --wine:#a33a48; --steel:#6f93b0; --plum:#9b76b0;
+  --panel:#14100f; --panel-2:#1c1614; --line:#33281f; --line-2:#4a3a2c;
+  margin:16px 0 6px; position:relative; overflow:hidden; border-radius:10px;
+  background:linear-gradient(165deg,#1a1413 0%,#120e0d 55%,#0c0908 100%);
+  border:1px solid var(--line-2); color:var(--ink);
+  font-family:"Noto Serif SC","Songti SC",Georgia,serif;
+  font-size:13px; line-height:1.55; box-sizing:border-box;
+  box-shadow:0 18px 46px -30px #000, inset 0 0 70px rgba(0,0,0,.55);
+}
+.${NS}::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:
+    radial-gradient(60% 30% at 50% 0%, rgba(201,162,92,.14), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 3px);
+}
+.${NS} *{box-sizing:border-box}
+.${NS} .hud-head{
+  position:relative; z-index:2; display:flex; align-items:center; gap:14px;
+  flex-wrap:wrap; padding:15px 18px; cursor:pointer; min-width:0;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(201,162,92,.10), rgba(0,0,0,0));
+}
+.${NS} .hud-title{display:flex; align-items:baseline; gap:8px; flex:0 0 auto}
+.${NS} .hud-title .cn{
+  font-size:15px; letter-spacing:.24em; font-weight:600;
+  background:linear-gradient(180deg,#f7ead2,#c9a25c);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.${NS} .hud-title .en{
+  font-family:"Spectral",Georgia,serif; font-size:8.5px; letter-spacing:.26em;
+  color:var(--ink-3); text-transform:uppercase;
+}
+.${NS} .hud-metrics{display:flex; align-items:center; gap:20px; flex:1 1 250px; min-width:0; flex-wrap:wrap}
+.${NS} .metric{display:flex; align-items:center; gap:8px; min-width:0}
+.${NS} .metric-label{font-size:10.5px; color:var(--ink-2); letter-spacing:.1em; white-space:nowrap; cursor:help}
+.${NS} .bar{
+  position:relative; width:100px; height:5px; border-radius:3px; overflow:hidden; flex:0 0 auto;
+  background:rgba(255,255,255,.07); box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.${NS} .bar>i{
+  position:absolute; inset:0 auto 0 0; border-radius:3px;
+  background:linear-gradient(90deg,var(--wine),#d4735e);
+  box-shadow:0 0 10px rgba(200,80,60,.5);
+  transition:width .4s cubic-bezier(.4,0,.2,1);
+}
+.${NS} .metric-num{
+  font-family:"Spectral",Georgia,serif; font-variant-numeric:tabular-nums;
+  font-size:13px; color:#f3e7d5; min-width:24px; text-align:right;
+}
+.${NS} .pips{display:flex; gap:5px; align-items:center}
+.${NS} .pip{
+  width:7px; height:7px; border-radius:50%; border:1px solid var(--gold);
+  background:transparent; opacity:.4;
+}
+.${NS} .pip.on{
+  background:radial-gradient(circle at 35% 30%,#f3e0b2,var(--gold)); opacity:1;
+  box-shadow:0 0 8px rgba(201,162,92,.75);
+}
+.${NS} .hud-toggle{
+  margin-left:auto; flex:0 0 auto; font-size:10px; letter-spacing:.14em; color:var(--ink-2);
+  border-bottom:1px dotted var(--line-2); padding-bottom:1px;
+}
+.${NS} .hud-body{position:relative; z-index:2; padding:18px 18px 18px; display:grid; gap:18px}
+.${NS} .hud-body[hidden]{display:none}
+.${NS} .cast{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; align-items:stretch}
+@media (max-width:760px){ .${NS} .cast{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:430px){ .${NS} .cast{grid-template-columns:minmax(0,1fr)} }
+.${NS} .card{
+  display:flex; flex-direction:column; text-align:center; padding:16px 13px 14px;
+  min-width:0; height:100%; cursor:pointer; position:relative; overflow:hidden;
+  border:1px solid var(--line); border-radius:8px;
+  background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+  transition:border-color .22s ease, box-shadow .22s ease, transform .22s ease;
+}
+.${NS} .card::after{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:2px; opacity:0;
+  background:linear-gradient(180deg,var(--gold), transparent);
+  transition:opacity .22s ease;
+}
+.${NS} .card:hover{border-color:var(--line-2); transform:translateY(-1px); box-shadow:0 10px 26px -18px #000}
+.${NS} .card:hover::after{opacity:.8}
+.${NS} .card:focus-visible{outline:1.5px solid var(--steel); outline-offset:2px}
+.${NS} 
+.${NS} .card.open::after{opacity:1}
+.${NS} .ava{
+  width:78px; height:78px; border-radius:7px; margin:0 auto 11px; object-fit:cover; display:block;
+  border:1px solid rgba(201,162,92,.4);
+  box-shadow:0 0 0 1px rgba(0,0,0,.6), 0 4px 14px -8px #000;
+  background:#0d0a09;
+  transition:border-color .22s ease, filter .22s ease;
+}
+.${NS} .card:hover .ava{border-color:rgba(201,162,92,.75); filter:brightness(1.05)}
+.${NS} .who{min-width:0; display:flex; flex-direction:column; flex:1 1 auto}
+.${NS} .name{
+  font-size:14.5px; font-weight:600; color:#f4e9d7; letter-spacing:.12em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  padding-bottom:7px; margin-bottom:5px; border-bottom:1px solid var(--line);
+}
+.${NS} .role{
+  font-size:9.5px; letter-spacing:.14em; color:var(--gold); opacity:.82; margin:0 0 12px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.${NS} .axes{display:grid; gap:7px; text-align:left; margin-bottom:12px}
+.${NS} .axis{display:flex; align-items:center; gap:6px; min-width:0}
+.${NS} .axis-k{font-size:9.5px; color:var(--ink-3); width:24px; flex:0 0 auto; letter-spacing:.06em}
+.${NS} .axis .bar{width:auto; flex:1 1 auto; height:4px; background:rgba(255,255,255,.07)}
+.${NS} .axis-v{
+  font-family:"Spectral",Georgia,serif; font-size:10.5px; color:var(--ink-2);
+  font-variant-numeric:tabular-nums; width:20px; text-align:right; flex:0 0 auto;
+}
+.${NS} .axis[data-k="好感"] .bar>i{background:linear-gradient(90deg,#4d6c86,var(--steel)); box-shadow:0 0 9px rgba(110,150,180,.45)}
+.${NS} .axis[data-k="羞耻"] .bar>i{background:linear-gradient(90deg,#8c2a36,#c9555c); box-shadow:0 0 9px rgba(190,70,70,.45)}
+.${NS} .axis[data-k="欲望"] .bar>i{background:linear-gradient(90deg,#6b4a80,var(--plum)); box-shadow:0 0 9px rgba(150,110,180,.45)}
+.${NS} .voice{
+  margin-top:auto; padding:10px 12px 10px 14px; position:relative;
+  border-left:2px solid rgba(201,162,92,.35); border-radius:0 4px 4px 0;
+  background:rgba(255,255,255,.028);
+  font-size:11.5px; line-height:1.75; color:#cfc0aa; font-style:italic;
+  max-height:5.9em; overflow:hidden;
+  min-width:0; overflow-wrap:anywhere;
+}
+.${NS} .voice:empty{display:none}
 
-  render();
-  setTimeout(render, 600); setTimeout(render, 1800);
-  try { var t = TH(); if (t && t.eventOn) { t.eventOn('mag_variable_update_ended', function () { setTimeout(render, 120); }); t.eventOn('mag_variable_initialized', function () { setTimeout(render, 120); }); } } catch (e) {}
-  setInterval(render, 3000);
+.${NS} .inject{display:block; margin-top:8px; padding-top:6px; border-top:1px dashed var(--line)}
+.${NS} 
+.${NS} .inject-meta{font-size:9.5px; color:var(--ink-3); letter-spacing:.06em; margin-bottom:6px}
+.${NS} .inject-meta b{font-family:"Spectral",Georgia,serif; color:var(--gold); font-weight:600; font-variant-numeric:tabular-nums; margin:0 2px}
+.${NS} .inject-row{display:flex; gap:7px; min-width:0}
+.${NS} .inject-in{
+  flex:1 1 auto; min-width:0; font:inherit; font-size:11.5px; color:var(--ink);
+  padding:6px 9px; border-radius:5px; background:rgba(0,0,0,.28);
+  border:1px solid var(--line-2); transition:border-color .18s ease, box-shadow .18s ease;
+}
+.${NS} .inject-in::placeholder{color:#6d6252; font-style:italic}
+.${NS} .inject-in:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,92,.13)}
+.${NS} .inject-btn{
+  flex:0 0 auto; font:inherit; font-size:11px; letter-spacing:.14em; padding:6px 14px;
+  border-radius:5px; cursor:pointer; color:#1a1210; border:1px solid #e8d3a2;
+  background:linear-gradient(180deg,#f0dcaa,#c9a25c);
+  transition:filter .18s ease, transform .08s ease;
+}
+.${NS} .inject-btn:hover{filter:brightness(1.08)}
+.${NS} .inject-btn:active{transform:translateY(1px)}
+.${NS} .inject-btn:disabled{opacity:.45; cursor:not-allowed; filter:none}
+.${NS} .inject-hint{min-height:12px; margin-top:5px; font-size:9.5px; color:var(--ink-3); font-style:italic; overflow-wrap:anywhere}
+.${NS} .inject-hint:empty{min-height:0}
+.${NS} .inject-hint.warn{color:#c9555c; font-style:normal}
+.${NS} .inject-hint.ok{color:#7fa268; font-style:normal}
+
+.${NS} .ledger{margin-top:8px; display:grid; gap:3px}
+.${NS} .ledger-empty{font-size:9.5px; color:var(--ink-3); font-style:italic}
+.${NS} .rule{
+  display:grid; grid-template-columns:16px minmax(0,1fr) auto auto; gap:6px; align-items:center;
+  font-size:9.5px; padding:4px 6px; border-radius:4px; background:rgba(255,255,255,.035);
+}
+.${NS} .rule .no{font-family:"Spectral",Georgia,serif; color:var(--ink-3); text-align:right}
+.${NS} .rule .txt{color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
+.${NS} .rule[data-off="1"] .txt{text-decoration:line-through; opacity:.5}
+.${NS} .rule button{
+  font:inherit; font-size:9px; padding:1px 6px; border-radius:3px; cursor:pointer;
+  border:1px solid var(--line-2); background:transparent; color:var(--ink-2); line-height:1.5;
+}
+.${NS} .rule button:hover{border-color:var(--gold); color:var(--gold-2)}
+.${NS} .rule button:disabled{opacity:.35; cursor:not-allowed}
+
+.${NS} .hud-foot{
+  position:relative; z-index:2; display:flex; gap:16px; flex-wrap:wrap; align-items:center;
+  padding:11px 18px; border-top:1px solid var(--line);
+  background:rgba(0,0,0,.22); font-size:10px; color:var(--ink-2); letter-spacing:.05em;
+}
+.${NS} .hud-foot b{font-family:"Spectral",Georgia,serif; font-weight:600; color:#e8d9c2; font-variant-numeric:tabular-nums; margin-left:3px}
+.${NS} .hud-empty{padding:14px 16px; font-size:11px; color:var(--ink-3); font-style:italic}
+@media (max-width:430px){
+  .${NS} .bar{width:70px}
+  .${NS} .cast{grid-template-columns:1fr}
+  .${NS} .hud-title .en{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .${NS} *{transition:none!important} }
+`;
+
+  /* ── 工具 ─────────────────────────────────────────────────────── */
+  function num(v, d) { const n = Number(v); return Number.isFinite(n) ? n : d; }
+  function clampPct(v) { return Math.max(0, Math.min(100, num(v, 0))); }
+  function txt(v, d) { return v == null ? d : (typeof v === 'string' ? v : String(v)); }
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function storeKey(suffix) {
+    let cid = '';
+    try {
+      cid = (window.SillyTavern && SillyTavern.getCurrentChatId)
+        ? SillyTavern.getCurrentChatId() : '';
+    } catch (e) {}
+    return NS + ':' + suffix + ':' + (cid || 'default');
+  }
+  function readOpen() { try { return localStorage.getItem(storeKey('open')) !== '0'; } catch (e) { return true; } }
+  function writeOpen(v) { try { localStorage.setItem(storeKey('open'), v ? '1' : '0'); } catch (e) {} }
+
+  /* ── 数据读取（只读，不初始化、不修复） ───────────────────────── */
+  function lastMesId() {
+    try {
+      if (typeof getLastMessageId === 'function') {
+        const id = getLastMessageId();
+        if (id != null && id !== '') return Number(id);
+      }
+    } catch (e) {}
+    const all = DOC.querySelectorAll('#chat .mes');
+    const last = all[all.length - 1];
+    const m = last && (last.getAttribute('mesid') || last.getAttribute('data-mesid'));
+    return m != null ? Number(m) : null;
+  }
+
+  function pickStat(obj) {
+    if (!obj) return null;
+    if (obj.stat_data && obj.stat_data['人物']) return obj.stat_data;
+    if (obj['人物']) return obj;
+    if (Array.isArray(obj)) {
+      for (let i = obj.length - 1; i >= 0; i--) {
+        const hit = pickStat(obj[i]);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  }
+
+  function readState() {
+    const id = lastMesId();
+    const ids = [];
+    if (id != null) ids.push(id);
+    ids.push(0);
+    const tries = [];
+    ids.forEach(function (mid) {
+      tries.push(function () {
+        return typeof getVariables === 'function'
+          ? getVariables({ type: 'message', message_id: mid }) : null;
+      });
+      tries.push(function () {
+        return (window.Mvu && typeof Mvu.getMvuData === 'function')
+          ? Mvu.getMvuData({ type: 'message', message_id: mid }) : null;
+      });
+    });
+    tries.push(function () {
+      return typeof getVariables === 'function' ? getVariables({ type: 'chat' }) : null;
+    });
+    tries.push(function () {
+      return (window.Mvu && typeof Mvu.getMvuData === 'function') ? Mvu.getMvuData({ type: 'chat' }) : null;
+    });
+    for (const t of tries) {
+      try { const hit = pickStat(t()); if (hit) return hit; } catch (e) {}
+    }
+    return null;
+  }
+
+  function signatureOf(data) {
+    if (!data) return 'null';
+    try { return JSON.stringify(data); } catch (e) { return String(Date.now()); }
+  }
+
+  /* ── 指令与发送 ───────────────────────────────────────────────── */
+  function cmdInject(name, text) { return '[常识修改 ' + name + ': ' + text + ']'; }
+  function cmdToggle(name, id) { return '[关闭常识 ' + name + ': ' + id + ']'; }
+  function cmdRevoke(name, id) { return '[撤回常识 ' + name + ': ' + id + ']'; }
+
+  function sendToTavern(cmd) {
+    const ta = parent.document.querySelector('#send_textarea');
+    if (!ta) return { ok: false, reason: 'no-input' };
+    const current = String(ta.value || '').trim();
+    const merged = current ? (current + '\n' + cmd) : cmd;
+    try {
+      const proto = window.HTMLTextAreaElement && window.HTMLTextAreaElement.prototype;
+      const setter = proto && Object.getOwnPropertyDescriptor(proto, 'value').set;
+      if (setter) setter.call(ta, merged); else ta.value = merged;
+    } catch (e) { ta.value = merged; }
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.focus();
+    const btn = parent.document.querySelector('#send_but');
+    if (!btn) return { ok: false, reason: 'no-send', cmd: cmd };
+    btn.click();
+    return { ok: true, keptExisting: !!current };
+  }
+
+  /* ── 渲染 ─────────────────────────────────────────────────────── */
+  function makeBar(value) {
+    const wrap = el('div', 'bar');
+    const fill = el('i');
+    fill.style.width = clampPct(value) + '%';
+    wrap.appendChild(fill);
+    wrap.setAttribute('role', 'progressbar');
+    wrap.setAttribute('aria-valuemin', '0');
+    wrap.setAttribute('aria-valuemax', '100');
+    wrap.setAttribute('aria-valuenow', String(Math.round(clampPct(value))));
+    return wrap;
+  }
+
+  function makeCard(name, axis, sys) {
+    const card = el('div', 'card');
+    card.setAttribute('aria-label', name + ' 状态')
+
+    const img = el('img', 'ava');
+    img.alt = name;
+    img.loading = 'lazy';
+    if (AVATAR[name]) img.src = AVATAR[name];
+    img.addEventListener('click', function (ev) { ev.stopPropagation(); });
+    card.appendChild(img);
+
+    const who = el('div', 'who');
+    who.appendChild(el('div', 'name', name));
+    if (ROLE[name]) who.appendChild(el('div', 'role', ROLE[name]));
+
+    const axes = el('div', 'axes');
+    [['好感', num(axis && axis['好感度'], 0)],
+     ['羞耻', num(axis && axis['羞耻'], 0)],
+     ['欲望', num(axis && axis['欲望'], 0)]].forEach(function (r) {
+      const row = el('div', 'axis');
+      row.dataset.k = r[0];
+      row.appendChild(el('span', 'axis-k', r[0]));
+      row.appendChild(makeBar(r[1]));
+      row.appendChild(el('span', 'axis-v', String(Math.round(clampPct(r[1])))));
+      axes.appendChild(row);
+    });
+    who.appendChild(axes);
+    card.appendChild(who);
+
+    const voice = el('div', 'voice', txt(axis && axis['心声'], ''));
+    card.appendChild(voice);
+
+    /* ── 台账 ── */
+    const log = (sys && sys['修改日志'] && Array.isArray(sys['修改日志'][name]))
+      ? sys['修改日志'][name] : [];
+    const live = log.filter(function (r) { return r && r['状态'] !== '已撤回'; });
+    const active = live.filter(function (r) { return r['启用'] !== false && r['状态'] !== '已关闭'; });
+
+    const box = el('div', 'inject');
+    const meta = el('div', 'inject-meta');
+    meta.appendChild(el('span', null, '生效 '));
+    meta.appendChild(el('b', null, String(active.length)));
+    meta.appendChild(el('span', null, ' 条 · 剩 '));
+    meta.appendChild(el('b', null, String(Math.round(num(sys && sys['可用次数'], num(sys && sys['充能池'], 0))))));
+    meta.appendChild(el('span', null, ' 次'));
+    box.appendChild(meta);
+
+
+
+    const hint = el('div', 'inject-hint');
+    box.appendChild(hint);
+
+    const ledger = el('div', 'ledger');
+    if (!live.length) {
+      ledger.appendChild(el('div', 'ledger-empty', '还没有常识灌进她脑子里。'));
+    } else {
+      live.slice(-6).forEach(function (r) {
+        const rule = el('div', 'rule');
+        const off = (r['启用'] === false || r['状态'] === '已关闭');
+        rule.dataset.off = off ? '1' : '0';
+        rule.appendChild(el('span', 'no', String(num(r['id'], 0))));
+        const t = el('span', 'txt', txt(r['内容'], ''));
+        t.title = txt(r['内容'], '');
+        rule.appendChild(t);
+
+        const bT = el('button', null, off ? '开' : '关');
+        bT.type = 'button';
+        bT.disabled = !active.length && off ? false : false;
+        bT.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          act(cmdToggle(name, num(r['id'], 0)), bT, off ? '已请求开启…' : '已请求关闭…');
+        });
+        rule.appendChild(bT);
+
+        const bR = el('button', null, '撤');
+        bR.type = 'button';
+        bR.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          act(cmdRevoke(name, num(r['id'], 0)), bR, '已请求撤回…');
+        });
+        rule.appendChild(bR);
+        ledger.appendChild(rule);
+      });
+    }
+    box.appendChild(ledger);
+    card.appendChild(box);
+
+    let busy = false;
+    function act(cmd, button, okMsg) {
+      if (busy) return;
+      busy = true;
+      button.disabled = true;
+      const res = sendToTavern(cmd);
+      if (!res.ok) {
+        hint.className = 'inject-hint warn';
+        hint.textContent = res.reason === 'no-input'
+          ? '找不到聊天输入框，请手动发送：' + cmd
+          : '找不到发送按钮，命令已填进输入框，请手动发送。';
+        busy = false; button.disabled = false;
+        return;
+      }
+      hint.className = 'inject-hint ok';
+      hint.textContent = okMsg + (res.keptExisting ? '（你输入框原有的内容已保留在前面）' : '');
+      setTimeout(function () { busy = false; button.disabled = false; }, 1200);
+    }
+
+
+
+    return card;
+  }
+
+  function injectBar() {
+    const bar = el('div', 'inject-bar');
+    const sel = el('select', 'inject-who');
+    PERSONS.forEach(function (n) { const o = el('option', null, n); o.value = n; sel.appendChild(o); });
+    const inp = el('input', 'inject-text');
+    inp.type = 'text'; inp.maxLength = 80; inp.placeholder = '写一句认知指令（消耗 1 次充能注入）';
+    const btn = el('button', 'inject-go', '注入常识');
+    btn.type = 'button';
+    const msg = el('div', 'inject-msg');
+    btn.addEventListener('click', function () {
+      const who = sel.value;
+      const text = String(inp.value || '').trim();
+      if (!text) { msg.className = 'inject-msg warn'; msg.textContent = '先写一句要她相信的话。'; return; }
+      if (text.length > 80) { msg.className = 'inject-msg warn'; msg.textContent = '太长了，别超过 80 字。'; return; }
+      const r = sendToTavern(cmdInject(who, text));
+      if (!r.ok) { msg.className = 'inject-msg warn'; msg.textContent = '发送失败：' + r.reason; return; }
+      inp.value = '';
+      msg.className = 'inject-msg ok';
+      msg.textContent = '已送出，等这一轮结算。';
+    });
+    bar.appendChild(sel); bar.appendChild(inp); bar.appendChild(btn); bar.appendChild(msg);
+    return bar;
+  }
+
+  function build(data) {
+    const root = el('div', NS);
+    const sys = (data && data[SYS]) || {};
+
+    const head = el('div', 'hud-head');
+    head.tabIndex = 0;
+    head.setAttribute('role', 'button');
+    const titleWrap = el('div', 'hud-title');
+    titleWrap.appendChild(el('span', 'cn', TITLE));
+    titleWrap.appendChild(el('span', 'en', 'Common Sense'));
+    head.appendChild(titleWrap);
+
+    const metrics = el('div', 'hud-metrics');
+    const shame = clampPct(sys['羞辱值']);
+
+    const mShame = el('div', 'metric');
+    const lblShame = el('span', 'metric-label', '羞辱');
+    lblShame.title = '攒满 100 换 1 次注入机会（受辱充能模式）';
+    mShame.appendChild(lblShame);
+    mShame.appendChild(makeBar(shame));
+    mShame.appendChild(el('span', 'metric-num', String(Math.round(shame))));
+    metrics.appendChild(mShame);
+
+    const mPool = el('div', 'metric');
+    const lblPool = el('span', 'metric-label', '充能');
+    lblPool.title = '已攒到的注入次数';
+    mPool.appendChild(lblPool);
+    const pips = el('div', 'pips');
+    const pool = Math.max(0, Math.min(POOL_MAX, num(sys['充能池'], 0)));
+    for (let i = 0; i < POOL_MAX; i++) pips.appendChild(el('span', i < pool ? 'pip on' : 'pip'));
+    mPool.appendChild(pips);
+    metrics.appendChild(mPool);
+
+    const mToday = el('div', 'metric');
+    const lblToday = el('span', 'metric-label', '今日');
+    lblToday.title = '今天累计获得的羞辱值 / 每日上限';
+    mToday.appendChild(lblToday);
+    mToday.appendChild(el('span', 'metric-num',
+      Math.round(num(sys['本日获取'], 0)) + '/' + Math.round(num(sys['本日上限'], 0))));
+    metrics.appendChild(mToday);
+
+    const mTime = el('div', 'metric');
+    const lblTime = el('span', 'metric-label', '时间');
+    mTime.appendChild(lblTime);
+    const tm = (data && data['时间']) || {};
+    mTime.appendChild(el('span', 'metric-num', (tm['日期'] || '—') + ' · ' + (tm['时段'] || '—')));
+    metrics.appendChild(mTime);
+    head.appendChild(metrics);
+
+    const toggleLabel = el('span', 'hud-toggle', '收起');
+    head.appendChild(toggleLabel);
+
+    const body = el('div', 'hud-body');
+    const cast = el('div', 'cast');
+    const people = (data && data['人物']) || {};
+    PERSONS.forEach(function (n) { cast.appendChild(makeCard(n, people[n], sys)); });
+    body.appendChild(cast);
+    body.appendChild(injectBar());
+
+    const foot = el('div', 'hud-foot');
+    foot.appendChild(el('span', null, '本轮注入 '));
+    foot.appendChild(el('b', null, Math.round(num(sys['本轮已注入'], 0)) + '/' + Math.max(1, num(sys['单轮注入上限'], 1))));
+    foot.appendChild(el('span', null, '可用次数 '));
+    foot.appendChild(el('b', null, String(Math.round(num(sys['可用次数'], 0)))));
+    body.appendChild(foot);
+
+    root.appendChild(head);
+    root.appendChild(body);
+
+    let open = readOpen();
+    body.hidden = !open;
+    toggleLabel.textContent = open ? '收起' : '展开';
+    head.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+    function flip() {
+      open = !open;
+      body.hidden = !open;
+      toggleLabel.textContent = open ? '收起' : '展开';
+      head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      writeOpen(open);
+    }
+    head.addEventListener('click', flip);
+    head.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); flip(); }
+    });
+    return root;
+  }
+
+  function emptyState() {
+    const box = el('div', NS);
+    const note = el('div', 'hud-empty');
+    note.appendChild(el('b', null, '状态未就位 · '));
+    note.appendChild(DOC.createTextNode(
+      '这一层还没有变量。发出第一条回复、或等模型写出变量更新块后，四人状态会出现在这里。'));
+    box.appendChild(note);
+    return box;
+  }
+
+  /* ── 文档：优先 jQuery body 的 ownerDocument（iframe 场景下指向父页面） ── */
+  
+
+function getMid(){try{if(typeof getCurrentMessageId==='function')return getCurrentMessageId()}catch(e){}try{var f=window.frameElement;if(f){var m=f.closest('.mes');if(m)return Number(m.getAttribute('mesid'))}}catch(e){}return null}
+function readStat(id){
+  try{var t=parent.TavernHelper||window.TavernHelper;if(t&&typeof t.getVariables==='function'){var v=t.getVariables({type:'message',message_id:id});if(v&&v.stat_data)return v.stat_data}}catch(e){}
+  try{var M=parent.Mvu;if(M&&typeof M.getMvuData==='function'){var d=M.getMvuData({type:'message',message_id:id});if(d&&d.stat_data)return d.stat_data}}catch(e){}
+  try{var c=parent.SillyTavern.getContext();var m=c.chat[id];var vv=m&&m.variables&&m.variables[m.swipe_id||0];if(vv&&vv.stat_data)return vv.stat_data}catch(e){}
+  return null;
+}
+function render(){
+  var mid=getMid();if(mid==null)return;
+  var st=readStat(mid);if(!st)return;
+  var old=document.querySelector('.cmns-hud');
+  var node=build(st);
+  if(old)old.replaceWith(node);else document.body.appendChild(node);
+}
+render();
+setTimeout(render,600);setTimeout(render,1800);
+try{var t=parent.TavernHelper;if(t&&t.eventOn){t.eventOn('mag_variable_update_ended',function(){setTimeout(render,120)});t.eventOn('mag_variable_initialized',function(){setTimeout(render,120)});}}catch(e){}
+setInterval(render,3000);
+
 })();
 </script>
