@@ -636,8 +636,8 @@ const NS = 'cmns-hud';
     try { cv = T.getVariables({ type: 'chat' }); } catch (e) { return { ok: false, msg: '读聊天变量失败' }; }
     if (!cv || typeof cv !== 'object') cv = {};
     var sys = cv[SYS] = cv[SYS] || {};
-    var left = Number(sys['可用次数'] != null ? sys['可用次数'] : sys['充能池']) || 0;
-    if (left <= 0) return { ok: false, msg: '充能不足：攒够 100 羞辱值才换 1 次注入' };
+    var left = Math.max(Number(sys['可用次数']) || 0, Number(sys['充能池']) || 0);
+    if (left <= 0) return { ok: false, msg: '充能不足：攒够 100 羞辱值才换 1 次注入（当前 0 次）' };
     var logs = sys['修改日志'] = sys['修改日志'] || {};
     var arr = logs[who] = Array.isArray(logs[who]) ? logs[who] : [];
     var maxId = 0;
