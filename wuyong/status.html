@@ -761,12 +761,25 @@ function readStat(id){
   try{var c=parent.SillyTavern.getContext();var m=c.chat[id];var vv=m&&m.variables&&m.variables[m.swipe_id||0];if(vv&&vv.stat_data)return vv.stat_data}catch(e){}
   return null;
 }
+var __lastSig='';
 function render(){
   var mid=getMid();if(mid==null)return;
   var st=readStat(mid);if(!st)return;
+  var sig='';try{sig=JSON.stringify(st)}catch(e){sig=String(Date.now())}
+  if(sig===__lastSig)return;            /* 数据没变就不重建，避免打断输入 */
+  __lastSig=sig;
+  var oldInp=document.querySelector('.inject-text');
+  var keepVal=oldInp?oldInp.value:'';
+  var keepFocus=oldInp&&document.activeElement===oldInp;
+  var keepPos=oldInp&&keepFocus?oldInp.selectionStart:null;
   var old=document.querySelector('.cmns-hud');
   var node=build(st);
   if(old)old.replaceWith(node);else document.body.appendChild(node);
+  var newInp=document.querySelector('.inject-text');
+  if(newInp){
+    if(keepVal)newInp.value=keepVal;
+    if(keepFocus){try{newInp.focus();if(keepPos!=null)newInp.setSelectionRange(keepPos,keepPos)}catch(e){}}
+  }
 }
 render();
 setTimeout(render,600);setTimeout(render,1800);
