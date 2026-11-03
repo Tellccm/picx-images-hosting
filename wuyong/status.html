@@ -1,32 +1,59 @@
 <style>
 .cmns-stat{margin:14px 0 4px;padding:14px 16px;border-radius:10px;border:1px solid #4a3a2c;background:linear-gradient(165deg,#1a1413,#0c0908);color:#efe6d6;font-family:"Noto Serif SC","Songti SC",Georgia,serif;font-size:13px;line-height:1.5;box-shadow:0 14px 36px -28px #000,inset 0 0 60px rgba(0,0,0,.55);box-sizing:border-box}
 .cmns-stat *{box-sizing:border-box}
-.cmns-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid #33281f}
-.cmns-title{font-size:14px;letter-spacing:.22em;font-weight:600;background:linear-gradient(180deg,#f7ead2,#c9a25c);-webkit-background-clip:text;background-clip:text;color:transparent}
-.cmns-m{font-size:10.5px;color:#b8a88f;letter-spacing:.08em}
+.cmns-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid #33281f;cursor:pointer}
+.cmns-title{font-size:14px;letter-spacing:.2em;font-weight:600;background:linear-gradient(180deg,#f7ead2,#c9a25c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cmns-m{font-size:10.5px;color:#b8a88f;letter-spacing:.06em}
 .cmns-m b{color:#f3e7d5;font-weight:600;font-variant-numeric:tabular-nums}
+.cmns-toggle{margin-left:auto;font-size:10px;color:#b8a88f;border-bottom:1px dotted #4a3a2c}
+.cmns-body[hidden]{display:none}
 .cmns-cast{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
 @media(max-width:760px){.cmns-cast{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.cmns-cast{grid-template-columns:1fr}}
-.cmns-card{display:flex;gap:10px;padding:10px;border:1px solid #33281f;border-radius:8px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.012));min-width:0}
+.cmns-card{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid #33281f;border-radius:8px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.012));min-width:0}
+.cmns-top{display:flex;gap:10px;min-width:0}
 .cmns-ava{width:52px;height:52px;border-radius:6px;object-fit:cover;flex:0 0 auto;border:1px solid #4a3a2c;background:#0a0807}
-.cmns-body{min-width:0;flex:1 1 auto}
-.cmns-name{font-size:13px;color:#f7eddc;letter-spacing:.12em}
-.cmns-role{font-size:9px;color:#c9a25c;letter-spacing:.1em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmns-info{min-width:0;flex:1 1 auto}
+.cmns-name{font-size:13px;color:#f7eddc;letter-spacing:.1em}
+.cmns-role{font-size:9px;color:#c9a25c;letter-spacing:.08em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cmns-axes{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:9.5px;color:#b8a88f}
 .cmns-axes b{color:#e8d3a2;font-weight:600;font-variant-numeric:tabular-nums}
-.cmns-voice{display:block;margin-top:6px;font-size:10px;line-height:1.6;color:#9b8a72;font-style:italic;min-height:1em}
-.cmns-voice:not(:empty)::before{content:"「"}
-.cmns-voice:not(:empty)::after{content:"」"}
+.cmns-voice{display:block;font-size:10px;line-height:1.6;color:#9b8a72;font-style:italic;min-height:1em}
+.cmns-voice:not(:empty)::before{content:"「"}.cmns-voice:not(:empty)::after{content:"」"}
+.cmns-ledger{display:flex;flex-direction:column;gap:4px;border-top:1px dashed #33281f;padding-top:6px;font-size:9.5px}
+.cmns-rule{display:flex;align-items:center;gap:6px;color:#c9bba4}
+.cmns-rule[data-off="1"]{opacity:.55;text-decoration:line-through}
+.cmns-rule .no{color:#7d7364;flex:0 0 auto}
+.cmns-rule .txt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmns-rule button{font:inherit;font-size:9px;color:#e8d3a2;background:transparent;border:1px solid #4a3a2c;border-radius:3px;padding:1px 5px;cursor:pointer}
+.cmns-rule button:hover{border-color:#c9a25c}
+.cmns-empty{color:#7d7364;font-size:9.5px}
+.cmns-inject{display:flex;gap:5px}
+.cmns-inject input{flex:1 1 auto;min-width:0;font:inherit;font-size:9.5px;color:#efe6d6;background:#0c0908;border:1px solid #4a3a2c;border-radius:4px;padding:4px 6px}
+.cmns-inject input::placeholder{color:#655c4f}
+.cmns-inject button{font:inherit;font-size:9.5px;color:#1a1210;background:linear-gradient(180deg,#f0dcaa,#c9a25c);border:0;border-radius:4px;padding:4px 9px;cursor:pointer;flex:0 0 auto}
+.cmns-inject button:disabled{opacity:.5;cursor:default}
+.cmns-hint{font-size:9px;color:#9b8a72;min-height:1em}
+.cmns-hint.warn{color:#d4735e}.cmns-hint.ok{color:#8fae7a}
+.cmns-foot{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid #33281f;font-size:9.5px;color:#b8a88f}
+.cmns-foot b{color:#e8d3a2}
 </style>
 <div class="cmns-stat" id="cmns-stat">
-  <div class="cmns-head">
+  <div class="cmns-head" id="cmns-head">
     <span class="cmns-title">索兰斯 · 常识面板</span>
-    <span class="cmns-m">羞辱 <b id="cmns-shame">0</b></span>
-    <span class="cmns-m">充能 <b id="cmns-pool">0</b></span>
-    <span class="cmns-m">今日 <b id="cmns-today">0</b>/<b id="cmns-todaymax">300</b></span>
+    <span class="cmns-m">羞辱 <b data-k="shame">0</b></span>
+    <span class="cmns-m">充能 <b data-k="pool">0</b></span>
+    <span class="cmns-m">今日 <b data-k="today">0</b>/<b data-k="todaymax">300</b></span>
+    <span class="cmns-toggle" id="cmns-toggle">收起</span>
   </div>
-  <div class="cmns-cast" id="cmns-cast"></div>
+  <div class="cmns-body" id="cmns-body">
+    <div class="cmns-cast" id="cmns-cast"></div>
+    <div class="cmns-foot">
+      <span>本轮注入 <b id="cmns-used">0</b>/<b id="cmns-cap">1</b></span>
+      <span>可用次数 <b id="cmns-left">0</b></span>
+      <span id="cmns-status">—</span>
+    </div>
+  </div>
 </div>
 <script>
 (function () {
@@ -39,66 +66,148 @@
   var BASE = 'https://cdn.jsdelivr.net/gh/Tellccm/picx-images-hosting@master/wuyong/';
   var root = document.getElementById('cmns-stat');
   if (!root) return;
-  var TH = (window.parent && window.parent.TavernHelper) || window.TavernHelper || null;
+  var head = document.getElementById('cmns-head');
+  var body = document.getElementById('cmns-body');
+  var toggleEl = document.getElementById('cmns-toggle');
+  var castEl = document.getElementById('cmns-cast');
+  var statusEl = document.getElementById('cmns-status');
+  var drafts = {};
 
+  function P() { try { return window.parent; } catch (e) { return window; } }
+  function PD() { try { var p = P(); if (p.document && p.document.getElementById('chat')) return p.document; } catch (e) {} return document; }
+  function TH() { try { var p = P(); return (p.TavernHelper) || window.TavernHelper || null; } catch (e) { return null; } }
   function getMid() {
     try { if (typeof getCurrentMessageId === 'function') return getCurrentMessageId(); } catch (e) {}
-    try { if (window.frameElement) { var m = window.frameElement.closest('.mes'); if (m) return Number(m.getAttribute('mesid')); } } catch (e) {}
+    try { var f = window.frameElement; if (f) { var m = f.closest('.mes'); if (m) return Number(m.getAttribute('mesid')); } } catch (e) {}
     return null;
   }
-  function pick(o, path) {
-    var p = String(path).split('/'), cur = o;
-    for (var i = 0; i < p.length; i++) { if (!p[i]) continue; if (cur == null) return null; cur = cur[p[i]]; }
-    return cur;
+  function readStat(id) {
+    var t = TH();
+    if (t && typeof t.getVariables === 'function') { try { var v = t.getVariables({ type: 'message', message_id: id }); if (v && v.stat_data) return v.stat_data; } catch (e) {} }
+    try { var p = P(); var M = p.Mvu; if (M && typeof M.getMvuData === 'function') { var d = M.getMvuData({ type: 'message', message_id: id }); if (d && d.stat_data) return d.stat_data; } } catch (e) {}
+    try { var c = P().SillyTavern.getContext(); var m = c.chat[id]; var vv = m && m.variables && m.variables[m.swipe_id || 0]; if (vv && vv.stat_data) return vv.stat_data; } catch (e) {}
+    return null;
   }
-  function setText(id, v) { var el = document.getElementById(id); if (el && v != null && String(v) !== '') el.textContent = String(v); }
+  function pick(o, path) { var p = String(path).split('/'), c = o; for (var i = 0; i < p.length; i++) { if (!p[i]) continue; if (c == null) return null; c = c[p[i]]; } return c; }
+  function setK(k, v) { var e = root.querySelector('[data-k="' + k + '"]'); if (e && v != null && String(v) !== '') e.textContent = String(v); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  var castEl = document.getElementById('cmns-cast');
   CAST.forEach(function (c) {
     var d = document.createElement('div');
     d.className = 'cmns-card';
     d.setAttribute('data-who', c[0]);
     d.innerHTML =
-      '<img class="cmns-ava" src="' + BASE + c[1] + '.avatar.webp" alt="' + esc(c[0]) + '">' +
-      '<div class="cmns-body"><div class="cmns-name">' + esc(c[0]) + '</div>' +
-      '<div class="cmns-role">' + esc(c[2]) + '</div>' +
-      '<div class="cmns-axes"><span>好感 <b data-k="' + c[1] + '-g">0</b></span>' +
-      '<span>羞耻 <b data-k="' + c[1] + '-s">0</b></span>' +
-      '<span>欲望 <b data-k="' + c[1] + '-d">0</b></span></div>' +
-      '<span class="cmns-voice" data-k="' + c[1] + '-v"></span></div>';
+      '<div class="cmns-top"><img class="cmns-ava" src="' + BASE + c[1] + '.avatar.webp" alt="' + esc(c[0]) + '">' +
+      '<div class="cmns-info"><div class="cmns-name">' + esc(c[0]) + '</div><div class="cmns-role">' + esc(c[2]) + '</div>' +
+      '<div class="cmns-axes"><span>好感 <b data-k="' + c[1] + '-g">0</b></span><span>羞耻 <b data-k="' + c[1] + '-s">0</b></span><span>欲望 <b data-k="' + c[1] + '-d">0</b></span></div></div></div>' +
+      '<span class="cmns-voice" data-k="' + c[1] + '-v"></span>' +
+      '<div class="cmns-ledger" data-ledger="' + esc(c[0]) + '"></div>' +
+      '<div class="cmns-inject"><input data-in="' + esc(c[0]) + '" maxlength="80" placeholder="让她相信的一句话…"><button data-go="' + esc(c[0]) + '">注入</button></div>' +
+      '<div class="cmns-hint" data-hint="' + esc(c[0]) + '"></div>';
     castEl.appendChild(d);
   });
 
-  function render() {
-    if (!TH) return;
-    var mid = getMid();
-    if (mid == null) return;
-    var st = null;
-    try { var v = TH.getVariables({ type: 'message', message_id: mid }); st = v && v.stat_data; } catch (e) {}
-    if (!st) return;
-    setText('cmns-shame', pick(st, '/常识修改系统/羞辱值'));
-    setText('cmns-pool', pick(st, '/常识修改系统/充能池'));
-    setText('cmns-today', pick(st, '/常识修改系统/本日获取'));
-    setText('cmns-todaymax', pick(st, '/常识修改系统/本日上限'));
-    CAST.forEach(function (c) {
-      var g = document.querySelector('[data-k="' + c[1] + '-g"]');
-      var s = document.querySelector('[data-k="' + c[1] + '-s"]');
-      var d = document.querySelector('[data-k="' + c[1] + '-d"]');
-      var vv = document.querySelector('[data-k="' + c[1] + '-v"]');
-      var who = pick(st, '/人物/' + c[0]);
-      if (g && who) g.textContent = who['好感度'] == null ? '0' : who['好感度'];
-      if (s && who) s.textContent = who['羞耻'] == null ? '0' : who['羞耻'];
-      if (d && who) d.textContent = who['欲望'] == null ? '0' : who['欲望'];
-      if (vv) vv.textContent = (who && who['心声']) ? String(who['心声']) : '';
+  function cmd(t) { return t; }
+  function send(text) {
+    try {
+      var doc = PD();
+      var ta = doc.querySelector('#send_textarea');
+      var btn = doc.querySelector('#send_but');
+      if (!ta || !btn) return { ok: false, msg: '找不到聊天输入框，请手动发送：' + text };
+      var cur = String(ta.value || '').trim();
+      var merged = cur ? (cur + '\n' + text) : text;
+      var proto = doc.defaultView.HTMLTextAreaElement && doc.defaultView.HTMLTextAreaElement.prototype;
+      var setter = proto && Object.getOwnPropertyDescriptor(proto, 'value').set;
+      if (setter) setter.call(ta, merged); else ta.value = merged;
+      ta.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true }));
+      btn.click();
+      return { ok: true, kept: !!cur };
+    } catch (e) { return { ok: false, msg: '发送失败：' + e.message }; }
+  }
+  function hint(who, msg, cls) { var e = root.querySelector('[data-hint="' + who + '"]'); if (e) { e.className = 'cmns-hint ' + (cls || ''); e.textContent = msg || ''; } }
+
+  function renderLedger(who, sys) {
+    var box = root.querySelector('[data-ledger="' + who + '"]');
+    if (!box) return;
+    var log = (sys && sys['修改日志'] && Array.isArray(sys['修改日志'][who])) ? sys['修改日志'][who] : [];
+    var live = log.filter(function (r) { return r && r['状态'] !== '已撤回'; });
+    box.innerHTML = '';
+    if (!live.length) { box.innerHTML = '<span class="cmns-empty">还没有常识灌进她脑子里。</span>'; return; }
+    live.slice(-6).forEach(function (r) {
+      var off = (r['启用'] === false || r['状态'] === '已关闭');
+      var row = document.createElement('div');
+      row.className = 'cmns-rule';
+      row.setAttribute('data-off', off ? '1' : '0');
+      row.innerHTML = '<span class="no">#' + esc(r['id']) + '</span><span class="txt" title="' + esc(r['内容']) + '">' + esc(r['内容']) + '</span>' +
+        '<button data-act="toggle">' + (off ? '开' : '关') + '</button><button data-act="revoke">撤</button>';
+      row.querySelector('[data-act="toggle"]').onclick = function () {
+        hint(who, '已请求' + (off ? '开启' : '关闭') + '…', 'ok');
+        send('[关闭常识 ' + who + ': ' + r['id'] + ']'.replace('关闭', off ? '开启' : '关闭'));
+      };
+      row.querySelector('[data-act="revoke"]').onclick = function () {
+        hint(who, '已请求撤回…', 'ok');
+        send('[撤回常识 ' + who + ': ' + r['id'] + ']');
+      };
+      box.appendChild(row);
     });
   }
 
+  function render() {
+    var mid = getMid(); if (mid == null) return;
+    var st = readStat(mid); if (!st) { statusEl.textContent = '这一层还没有变量'; return; }
+    var sys = st['常识修改系统'] || {};
+    setK('shame', sys['羞辱值']); setK('pool', sys['充能池']);
+    setK('today', sys['本日获取']); setK('todaymax', sys['本日上限']);
+    var used = root.querySelector('#cmns-used'), cap = root.querySelector('#cmns-cap'), left = root.querySelector('#cmns-left');
+    if (used) used.textContent = sys['本轮已注入'] == null ? '0' : sys['本轮已注入'];
+    if (cap) cap.textContent = sys['单轮注入上限'] == null ? '1' : sys['单轮注入上限'];
+    if (left) left.textContent = sys['可用次数'] == null ? (sys['充能池'] == null ? '0' : sys['充能池']) : sys['可用次数'];
+    var people = st['人物'] || {};
+    CAST.forEach(function (c) {
+      var who = people[c[0]] || {};
+      setK(c[1] + '-g', who['好感度']); setK(c[1] + '-s', who['羞耻']); setK(c[1] + '-d', who['欲望']);
+      var vv = root.querySelector('[data-k="' + c[1] + '-v"]');
+      if (vv) vv.textContent = who['心声'] ? String(who['心声']) : '';
+      renderLedger(c[0], sys);
+    });
+    statusEl.textContent = '变量已连接';
+  }
+
+  // 折叠状态
+  var open = true;
+  try { open = localStorage.getItem('cmns-stat-open') !== '0'; } catch (e) {}
+  body.hidden = !open; toggleEl.textContent = open ? '收起' : '展开';
+  head.onclick = function () {
+    open = !open; body.hidden = !open; toggleEl.textContent = open ? '收起' : '展开';
+    try { localStorage.setItem('cmns-stat-open', open ? '1' : '0'); } catch (e) {}
+  };
+
+  // 注入
+  root.addEventListener('click', function (ev) {
+    var who = ev.target.getAttribute && ev.target.getAttribute('data-go');
+    if (!who) return;
+    var inp = root.querySelector('[data-in="' + who + '"]');
+    var text = inp ? String(inp.value || '').trim() : '';
+    if (!text) { hint(who, '先写一句要她相信的话。', 'warn'); return; }
+    if (text.length > 80) { hint(who, '太长了，别超过 80 字。', 'warn'); return; }
+    var mid = getMid(); var st = mid == null ? null : readStat(mid); var sys = st && st['常识修改系统'] || {};
+    var usable = sys['可用次数'] == null ? (sys['充能池'] || 0) : sys['可用次数'];
+    var used = sys['本轮已注入'] || 0, cap = Math.max(1, sys['单轮注入上限'] || 1);
+    if ((sys['羞辱值'] || 0) < 100 && usable <= 0) { hint(who, '充能不足：攒够 100 羞辱值才换 1 次注入。', 'warn'); return; }
+    if (used >= cap) { hint(who, '本轮已注入 ' + used + ' 条（上限 ' + cap + '）。', 'warn'); return; }
+    var r = send('[常识修改 ' + who + ': ' + text + ']');
+    if (!r.ok) { hint(who, r.msg, 'warn'); return; }
+    inp.value = ''; drafts[who] = '';
+    hint(who, '已送出，等这一轮结算。', 'ok');
+  });
+  root.addEventListener('input', function (ev) {
+    var who = ev.target.getAttribute && ev.target.getAttribute('data-in');
+    if (who) drafts[who] = ev.target.value;
+  });
+
   render();
-  setTimeout(render, 500);
-  setTimeout(render, 1500);
-  try { TH.eventOn('mag_variable_update_ended', function () { setTimeout(render, 120); }); } catch (e) {}
-  try { TH.eventOn('mag_variable_initialized', function () { setTimeout(render, 120); }); } catch (e) {}
+  setTimeout(render, 600); setTimeout(render, 1800);
+  try { var t = TH(); if (t && t.eventOn) { t.eventOn('mag_variable_update_ended', function () { setTimeout(render, 120); }); t.eventOn('mag_variable_initialized', function () { setTimeout(render, 120); }); } } catch (e) {}
   setInterval(render, 3000);
 })();
 </script>
