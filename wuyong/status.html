@@ -587,7 +587,7 @@ const NS = 'cmns-hud';
         bT.type = 'button';
         bT.addEventListener('click', function (ev) {
           ev.stopPropagation();
-          act(cmdToggle(name, num(r['id'], 0), off), bT, off ? '已请求开启…' : '已请求关闭…');
+          act(off ? 'open' : 'close', num(r['id'], 0), bT, off ? '已开启' : '已关闭');
         });
         rule.appendChild(bT);
 
@@ -595,7 +595,7 @@ const NS = 'cmns-hud';
         bR.type = 'button';
         bR.addEventListener('click', function (ev) {
           ev.stopPropagation();
-          act(cmdRevoke(name, num(r['id'], 0)), bR, '已请求撤回…');
+          act('revoke', num(r['id'], 0), bR, '已撤回');
         });
         rule.appendChild(bR);
         ledger.appendChild(rule);
@@ -605,22 +605,20 @@ const NS = 'cmns-hud';
     card.appendChild(box);
 
     let busy = false;
-    function act(cmd, button, okMsg) {
+    function act(action, id, button, okMsg) {
       if (busy) return;
       busy = true;
       button.disabled = true;
-      const res = sendToTavern(cmd);
+      const res = silentMutate(name, id, action);
       if (!res.ok) {
         hint.className = 'inject-hint warn';
-        hint.textContent = res.reason === 'no-input'
-          ? '找不到聊天输入框，请手动发送：' + cmd
-          : '找不到发送按钮，命令已填进输入框，请手动发送。';
+        hint.textContent = res.msg;
         busy = false; button.disabled = false;
         return;
       }
       hint.className = 'inject-hint ok';
-      hint.textContent = okMsg + (res.keptExisting ? '（你输入框原有的内容已保留在前面）' : '');
-      setTimeout(function () { busy = false; button.disabled = false; }, 1200);
+      hint.textContent = res.msg;
+      setTimeout(function () { busy = false; button.disabled = false; }, 800);
     }
 
 
@@ -668,6 +666,41 @@ const NS = 'cmns-hud';
     __lastSig = '';
     render();
     return { ok: true, msg: '已静默注入，无需发送指令' };
+  }
+
+  function silentMutate(who, id, action) {
+    var T = window.TavernHelper || (parent && parent.TavernHelper) || null;
+    if (!T || typeof T.getVariables !== 'function' || typeof T.replaceVariables !== 'function') return { ok: false, msg: '拿不到变量接口' };
+    var mid = getMid();
+    var st = null; try { st = readStat(mid); } catch (e) {}
+    var cv = null; try { cv = T.getVariables({ type: 'chat' }); } catch (e) {}
+    var sys = (st && st[SYS]) || (cv && cv[SYS]) || {};
+    var arr = (sys['修改日志'] && Array.isArray(sys['修改日志'][who])) ? sys['修改日志'][who] : [];
+    var it = null;
+    for (var i = 0; i < arr.length; i++) { if (Number(arr[i] && arr[i].id) === Number(id)) { it = arr[i]; break; } }
+    if (!it) return { ok: false, msg: '找不到这条常识（#' + id + '）' };
+    if (action === 'close') { it['启用'] = false; it['状态'] = '已关闭'; it['失效原因'] = '玩家主动关闭'; }
+    else if (action === 'open') { it['启用'] = true; it['状态'] = '生效中'; it['失效原因'] = ''; }
+    else if (action === 'revoke') {
+      it['启用'] = false; it['状态'] = '已撤回'; it['失效原因'] = '玩家主动撤回';
+      var bl = sys['撤回黑名单'] = Array.isArray(sys['撤回黑名单']) ? sys['撤回黑名单'] : [];
+      var dup = false;
+      for (var k = 0; k < bl.length; k++) { if (bl[k] && bl[k].who === who && bl[k].text === it['内容']) { dup = true; break; } }
+      if (!dup) bl.push({ who: who, text: it['内容'] });
+    } else return { ok: false, msg: '未知操作' };
+
+    var clean = null; try { clean = JSON.parse(JSON.stringify(sys)); } catch (e) {}
+    if (clean) { delete clean['_基线']; delete clean['_基线字段']; }
+    if (mid != null && clean) {
+      try {
+        var mv = T.getVariables({ type: 'message', message_id: mid });
+        if (mv && mv.stat_data) { mv.stat_data[SYS] = clean; T.replaceVariables(mv, { type: 'message', message_id: mid }); }
+      } catch (e) {}
+    }
+    if (cv && clean) { try { cv[SYS] = clean; T.replaceVariables(cv, { type: 'chat' }); } catch (e) {} }
+    __lastSig = '';
+    render();
+    return { ok: true, msg: '已' + ({ close: '关闭', open: '开启', revoke: '撤回' }[action]) + '（#' + id + '）' };
   }
 
   function injectBar() {
