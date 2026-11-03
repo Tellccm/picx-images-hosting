@@ -484,7 +484,7 @@ const NS = 'cmns-hud';
 
   /* ── 指令与发送 ───────────────────────────────────────────────── */
   function cmdInject(name, text) { return '[常识修改 ' + name + ': ' + text + ']'; }
-  function cmdToggle(name, id) { return '[关闭常识 ' + name + ': ' + id + ']'; }
+  function cmdToggle(name, id, off) { return '[' + (off ? '开启' : '关闭') + '常识 ' + name + ': ' + id + ']'; }
   function cmdRevoke(name, id) { return '[撤回常识 ' + name + ': ' + id + ']'; }
 
   function sendToTavern(cmd) {
@@ -585,10 +585,9 @@ const NS = 'cmns-hud';
 
         const bT = el('button', null, off ? '开' : '关');
         bT.type = 'button';
-        bT.disabled = !active.length && off ? false : false;
         bT.addEventListener('click', function (ev) {
           ev.stopPropagation();
-          act(cmdToggle(name, num(r['id'], 0)), bT, off ? '已请求开启…' : '已请求关闭…');
+          act(cmdToggle(name, num(r['id'], 0), off), bT, off ? '已请求开启…' : '已请求关闭…');
         });
         rule.appendChild(bT);
 
@@ -643,6 +642,9 @@ const NS = 'cmns-hud';
       Number(sysNow['可用次数']) || 0, Number(sysNow['充能池']) || 0
     );
     if (left <= 0) return { ok: false, msg: '充能不足：攒够 100 羞辱值才换 1 次注入（当前 0 次）' };
+    var cap = Math.max(1, Number(sysNow['单轮注入上限'] || sys['单轮注入上限']) || 1);
+    var used = Number(sysNow['本轮已注入'] || sys['本轮已注入']) || 0;
+    if (used >= cap) return { ok: false, msg: '本轮已注入 ' + used + ' 条（上限 ' + cap + '），等下一轮' };
     var logs = sys['修改日志'] = sys['修改日志'] || {};
     var arr = logs[who] = Array.isArray(logs[who]) ? logs[who] : [];
     var maxId = 0;
@@ -650,12 +652,17 @@ const NS = 'cmns-hud';
     arr.push({ id: maxId + 1, '内容': text, '启用': true, '状态': '生效中', '失效原因': '', '已锁定受辱': true });
     var nl = left - 1;
     sys['充能池'] = nl; sys['可用次数'] = nl;
+    sys['本轮已注入'] = used + 1;
     try { T.replaceVariables(cv, { type: 'chat' }); } catch (e) { return { ok: false, msg: '写聊天变量失败' }; }
     var mid = getMid();
     if (mid != null) {
       try {
         var mv = T.getVariables({ type: 'message', message_id: mid });
-        if (mv && mv.stat_data) { mv.stat_data[SYS] = sys; T.replaceVariables(mv, { type: 'message', message_id: mid }); }
+        if (mv && mv.stat_data) {
+          var clean = null;
+          try { clean = JSON.parse(JSON.stringify(sys)); } catch (e) { clean = null; }
+          if (clean) { delete clean['_基线']; delete clean['_基线字段']; mv.stat_data[SYS] = clean; T.replaceVariables(mv, { type: 'message', message_id: mid }); }
+        }
       } catch (e) {}
     }
     __lastSig = '';
@@ -750,7 +757,7 @@ const NS = 'cmns-hud';
     foot.appendChild(el('span', null, '本轮注入 '));
     foot.appendChild(el('b', null, Math.round(num(sys['本轮已注入'], 0)) + '/' + Math.max(1, num(sys['单轮注入上限'], 1))));
     foot.appendChild(el('span', null, '可用次数 '));
-    foot.appendChild(el('b', null, String(Math.round(num(sys['可用次数'], 0)))));
+    foot.appendChild(el('b', null, String(Math.max(0, Math.round(Math.max(num(sys['可用次数'], 0), num(sys['充能池'], 0)))))));
     body.appendChild(foot);
 
     root.appendChild(head);
@@ -817,9 +824,6 @@ function render(){
 }
 render();
 setTimeout(render,600);setTimeout(render,1800);
-try{var t=parent.TavernHelper;if(t&&t.eventOn){t.eventOn('mag_variable_update_ended',function(){setTimeout(render,120)});t.eventOn('mag_variable_initialized',function(){setTimeout(render,120)});}}catch(e){}
-
-
 try{var t=parent.TavernHelper;if(t&&t.eventOn){
   t.eventOn('mag_variable_update_ended',function(){setTimeout(render,120)});
   t.eventOn('mag_variable_initialized',function(){setTimeout(render,120)});
