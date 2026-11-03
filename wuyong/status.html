@@ -784,7 +784,16 @@ function render(){
 render();
 setTimeout(render,600);setTimeout(render,1800);
 try{var t=parent.TavernHelper;if(t&&t.eventOn){t.eventOn('mag_variable_update_ended',function(){setTimeout(render,120)});t.eventOn('mag_variable_initialized',function(){setTimeout(render,120)});}}catch(e){}
-setInterval(render,3000);
 
+
+try{var t=parent.TavernHelper;if(t&&t.eventOn){
+  t.eventOn('mag_variable_update_ended',function(){setTimeout(render,120)});
+  t.eventOn('mag_variable_initialized',function(){setTimeout(render,120)});
+  t.eventOn('message_rendered',function(){setTimeout(render,200)});
+  t.eventOn('character_message_rendered',function(){setTimeout(render,200)});
+  t.eventOn('chat_changed',function(){setTimeout(render,400)});
+}}catch(e){}
+try{document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(render,200)});}catch(e){}
+setTimeout(render,4000);
 })();
 </script>
