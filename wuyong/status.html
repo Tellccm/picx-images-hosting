@@ -184,12 +184,12 @@
   /* ── 工具 ─────────────────────────────────────────────────────── */
   
 .inject-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02)}
-.inject-bar .inject-who{font:inherit;font-size:11px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);border-radius:5px;padding:5px 7px}
-.inject-bar .inject-text{flex:1 1 220px;min-width:0;font:inherit;font-size:11.5px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);border-radius:5px;padding:5px 8px}
+.inject-bar .inject-who{order:1;flex:0 0 auto;font:inherit;font-size:11px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);border-radius:5px;padding:5px 7px}
+.inject-bar .inject-text{order:3;flex:1 1 100%;min-width:0;font:inherit;font-size:11.5px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);border-radius:5px;padding:6px 8px}
 .inject-bar .inject-text::placeholder{color:var(--ink-3)}
-.inject-bar .inject-go{font:inherit;font-size:11px;letter-spacing:.1em;color:#1a1210;background:linear-gradient(180deg,#f0dcaa,#c9a25c);border:0;border-radius:5px;padding:6px 14px;cursor:pointer}
+.inject-bar .inject-go{order:2;flex:0 0 auto;font:inherit;font-size:11px;letter-spacing:.1em;color:#1a1210;background:linear-gradient(180deg,#f0dcaa,#c9a25c);border:0;border-radius:5px;padding:6px 14px;cursor:pointer}
 .inject-bar .inject-go:hover{filter:brightness(1.06)}
-.inject-msg{flex:1 1 100%;font-size:10px;color:var(--ink-2);min-height:1em}
+.inject-msg{order:4;flex:1 1 100%;font-size:10px;color:var(--ink-2);min-height:1em}
 .inject-msg.ok{color:#8fae6a}.inject-msg.warn{color:#d4735e}
 </style>
 <script>
@@ -634,7 +634,7 @@ const NS = 'cmns-hud';
     const sel = el('select', 'inject-who');
     PERSONS.forEach(function (n) { const o = el('option', null, n); o.value = n; sel.appendChild(o); });
     const inp = el('input', 'inject-text');
-    inp.type = 'text'; inp.maxLength = 80; inp.placeholder = '写一句认知指令（消耗 1 次充能注入）';
+    inp.type = 'text'; inp.maxLength = 80; inp.placeholder = '写一句她该相信的话，例如：踩我是每天必修';
     const btn = el('button', 'inject-go', '注入常识');
     btn.type = 'button';
     const msg = el('div', 'inject-msg');
