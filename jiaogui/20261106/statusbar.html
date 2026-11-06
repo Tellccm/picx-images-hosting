@@ -47,9 +47,19 @@ html,body{margin:0;padding:0;background:transparent}
     var t = ls(LS_THEME);
     return THEMES.some(function (x) { return x.id === t; }) ? t : 'gold';
   }
+  function unwrap(v) {
+    if (v == null) return undefined;
+    if (Array.isArray(v)) return v.length ? unwrap(v[0]) : undefined;
+    if (typeof v === 'object' && v.value !== undefined) return unwrap(v.value);
+    return v;
+  }
+  function numOf(v) {
+    var n = Number(unwrap(v));
+    return Number.isFinite(n) ? n : 0;
+  }
   function clampNum(v) {
-    var n = Number(v);
-    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 0;
+    var n = numOf(v);
+    return Math.max(0, Math.min(100, Math.round(n)));
   }
   function stageOf(p, n) {
     for (var i = 0; i < p.stages.length; i++) if (n <= p.stages[i][0]) return p.stages[i][1];
@@ -106,7 +116,7 @@ html,body{margin:0;padding:0;background:transparent}
 
     var out = '<div class="jg-hud" data-theme="' + esc(theme) + '">'
       + '<div class="jg-head"><div class="jg-title"><span class="jg-cn">家规</span>'
-      + '<span class="jg-en">Family Rules</span><span class="jg-ver">v11</span></div>'
+      + '<span class="jg-en">Family Rules</span><span class="jg-ver">v12</span></div>'
       + '<div class="jg-when"><i></i>' + esc(meta || '——') + '</div><div class="jg-dots">';
     THEMES.forEach(function (t) {
       out += '<button class="jg-dot' + (t.id === theme ? ' on' : '') + '" data-t="' + t.id + '" title="' + t.label + '"></button>';
@@ -115,8 +125,8 @@ html,body{margin:0;padding:0;background:transparent}
 
     PERSONS.forEach(function (p) {
       var ax = persons[p.key] || {};
-      var n = Number(ax['内射次数']);
-      n = Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
+      var n = Math.round(numOf(ax['内射次数']));
+      n = n >= 0 ? n : 0;
       var ctrl = clampNum(ax['索取值']);
       var ava = AVA[p.key] || { u: '', f: '' };
       out += '<div class="jg-p"><div class="jg-avawrap" style="--p:' + ctrl + ';--jg-ava-c:var(' + p.tone + ')">'
